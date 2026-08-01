@@ -653,6 +653,7 @@
   function gameLoop(){drawBackground();drawBricks();drawPaddle();updateBall();drawBall();drawFloatingTexts();drawPauseOverlay();requestAnimationFrame(gameLoop);}
 
   canvas.addEventListener('touchstart',function(e){e.preventDefault();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();},{passive:false});
+  canvas.addEventListener('click',function(e){if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();});
   canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
   canvas.addEventListener('mousemove',function(e){if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var mx=(e.clientX-rect.left)*(W/rect.width);mx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,mx));paddle.x=mx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}});
 
@@ -663,9 +664,34 @@
   setInterval(updatePaddle,16);
 
   var _gameJustStarted = false;
-  document.getElementById('startBtn').addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;ball.stuck=false;_gameJustStarted=true;setTimeout(function(){_gameJustStarted=false;},400);});
-  document.getElementById('restartBtn').addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');});
-  document.getElementById('nextBtn').addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();});
+  var startHandler = function(e) {
+    e.preventDefault(); e.stopPropagation();
+    startGameMusic(); startOverlay.classList.add('hidden');
+    gameRunning = true; ball.stuck = false;
+    _gameJustStarted = true;
+    setTimeout(function() { _gameJustStarted = false; }, 400);
+  };
+  document.getElementById('startBtn').addEventListener('touchend', startHandler);
+  document.getElementById('startBtn').addEventListener('click', startHandler);
+
+  var restartHandler = function(e) {
+    e.preventDefault(); e.stopPropagation();
+    stopBgMusic(); gameOverOverlay.classList.add('hidden');
+    initGame(); startOverlay.classList.remove('hidden');
+  };
+  document.getElementById('restartBtn').addEventListener('touchend', restartHandler);
+  document.getElementById('restartBtn').addEventListener('click', restartHandler);
+
+  var nextHandler = function(e) {
+    e.preventDefault(); e.stopPropagation();
+    stopBgMusic(); winOverlay.classList.add('hidden');
+    level++; createBricks();
+    paddle.x = (W - paddle.w) / 2; resetBall();
+    floatingTexts = []; updateUI(); hideWordDisplay();
+    gameRunning = true; startGameMusic();
+  };
+  document.getElementById('nextBtn').addEventListener('touchend', nextHandler);
+  document.getElementById('nextBtn').addEventListener('click', nextHandler);
 
   initGame();gameLoop();
 </script>
