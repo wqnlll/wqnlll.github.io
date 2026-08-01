@@ -141,22 +141,21 @@
     .rotate-hint { display: flex !important; }
   }
 
-  .canvas-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  /* 单词栏 - 独立在外，不挡画布 */
+  .word-bar {
+    width: 100%;
+    max-width: 700px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px 14px 14px;
-    background: linear-gradient(rgba(10,10,26,0) 0%, rgba(10,10,26,0.93) 25%);
+    padding: 8px 12px;
+    margin-top: 4px;
+    background: rgba(0,240,255,0.08);
+    border: 1px solid rgba(0,240,255,0.15);
+    border-radius: 6px;
     gap: 10px;
-    pointer-events: none;
-    min-height: 60px;
+    min-height: 44px;
   }
-
-  .canvas-footer > * { pointer-events: auto; }
 
   .word-display { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
 
@@ -180,13 +179,13 @@
 
   .listen-btn {
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
-    padding: 6px 16px;
-    border: 2px solid var(--cyan);
-    background: rgba(0, 0, 0, 0.6);
-    color: var(--cyan);
-    border-radius: 6px;
+    padding: 8px 18px;
+    border: 2px solid #00e5ff;
+    background: rgba(0,229,255,0.12);
+    color: #00e5ff;
+    border-radius: 8px;
     cursor: pointer;
     letter-spacing: 1px;
     transition: all 0.2s;
@@ -194,7 +193,7 @@
     white-space: nowrap;
   }
   .listen-btn.show { display: inline-block; }
-  .listen-btn:active { background: var(--cyan); color: var(--bg); }
+  .listen-btn:active { background: #00e5ff; color: #000; }
 
   .controls-hint {
     display: flex;
@@ -330,15 +329,17 @@
       <button class="btn" id="nextBtn">下一关</button>
     </div>
 
-    <div class="canvas-footer">
-      <div class="word-display">
-        <div class="word-text-group" id="wordGroup">
-          <span class="word-en" id="wordEn">cat</span>
-          <span class="word-cn" id="wordCn">猫</span>
-        </div>
+  </div>
+
+  <!-- 单词栏 - 独立在画布外面 -->
+  <div class="word-bar">
+    <div class="word-display">
+      <div class="word-text-group" id="wordGroup">
+        <span class="word-en" id="wordEn">cat</span>
+        <span class="word-cn" id="wordCn">猫</span>
       </div>
-      <button class="listen-btn" id="listenBtn">🔊 再听一次</button>
     </div>
+    <button class="listen-btn" id="listenBtn">🔊 再听一次</button>
   </div>
 
   <div class="controls-hint">
@@ -670,7 +671,7 @@
 
   function gameLoop(){drawBackground();drawBricks();drawPaddle();updateBall();drawBall();drawFloatingTexts();drawPauseOverlay();requestAnimationFrame(gameLoop);}
 
-  canvas.addEventListener('touchstart',function(e){e.preventDefault();if(!gameRunning)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();},{passive:false});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();},{passive:false});
   canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
   canvas.addEventListener('mousemove',function(e){if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var mx=(e.clientX-rect.left)*(W/rect.width);mx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,mx));paddle.x=mx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}});
 
@@ -680,7 +681,8 @@
   function updatePaddle(){if(!gameRunning||paused)return;if(keys['ArrowLeft']||keys['a']||keys['A']){paddle.x=Math.max(0,paddle.x-paddle.speed);if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}}if(keys['ArrowRight']||keys['d']||keys['D']){paddle.x=Math.min(W-paddle.w,paddle.x+paddle.speed);if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}}}
   setInterval(updatePaddle,16);
 
-  document.getElementById('startBtn').addEventListener('click',function(){startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;if(ball.stuck)ball.stuck=false;});
+  var _gameJustStarted = false;
+  document.getElementById('startBtn').addEventListener('click',function(e){e.stopPropagation();startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;if(ball.stuck)ball.stuck=false;_gameJustStarted=true;setTimeout(function(){_gameJustStarted=false;},300);});
   document.getElementById('restartBtn').addEventListener('click',function(){stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');});
   document.getElementById('nextBtn').addEventListener('click',function(){stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();});
 

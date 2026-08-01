@@ -126,7 +126,7 @@ function wall(x,y,w,h){
   return false;
 }
 
-function mktx(x,y,d,p){return{x:x,y:y,w:26,h:26,d:d,s:p?1.6:0.7,hp:1,mhp:1,cd:0,rt:p?28:90};}
+function mktx(x,y,d,p){return{x:x,y:y,w:26,h:26,d:d,s:p?1.6:0.7,hp:1,mhp:1,cd:0,rt:p?20:90};}
 
 function spawn(){
   var sp=[[0,0],[W/2-T,0],[W-T*2,0]],s=sp[Math.floor(Math.random()*sp.length)];
