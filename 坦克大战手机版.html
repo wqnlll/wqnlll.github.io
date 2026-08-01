@@ -10,77 +10,56 @@ body { background: #111; display: flex; flex-direction: column; align-items: cen
 h1 { color: #f44; margin: 4px 0; font-size: clamp(16px, 4vw, 24px); }
 #hud { color: #ff0; font-size: clamp(11px, 3vw, 16px); margin-bottom: 3px; text-align: center; }
 canvas { border: 2px solid #f44; background: #1a1a2e; display: block; max-width: 100%; max-height: 55vh; max-height: 55dvh; }
-#tip { color: #888; margin: 3px 0; font-size: 11px; }
 #msg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
 #msg h2 { color: #f44; font-size: clamp(28px, 8vw, 42px); margin-bottom: 20px; }
 #msg button { padding: 14px 44px; font-size: clamp(18px, 5vw, 24px); background: #f44; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: monospace; }
-#msg button:hover { background: #c33; }
 #msg button:active { background: #a22; transform: scale(0.95); }
-
-/* 触控区域 */
 #controls { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 500px; margin-top: 8px; gap: 10px; padding: 0 5px; }
-
-/* D-Pad */
-#dpad { display: grid; grid-template-columns: 70px 70px 70px; grid-template-rows: 70px 70px 70px; gap: 4px; flex-shrink: 0; }
-#dpad button { width: 70px; height: 70px; border: 2px solid #555; background: rgba(255,255,255,0.08); color: #ccc; font-size: 28px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.1s; }
-#dpad button:active, #dpad button.pressed { background: rgba(255,255,255,0.3); border-color: #f44; }
+#dpad { display: grid; grid-template-columns: 60px 60px 60px; grid-template-rows: 60px 60px 60px; gap: 4px; flex-shrink: 0; }
+#dpad button { width: 60px; height: 60px; border: 2px solid #555; background: rgba(255,255,255,0.08); color: #ccc; font-size: 26px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.1s; touch-action: none; }
+#dpad button:active, #dpad button.pressed { background: rgba(255,68,68,0.4); border-color: #f44; }
 #dpad .empty { border: none; background: transparent; }
-
 #btn-up { grid-column: 2; grid-row: 1; }
 #btn-left { grid-column: 1; grid-row: 2; }
 #btn-right { grid-column: 3; grid-row: 2; }
 #btn-down { grid-column: 2; grid-row: 3; }
-
-/* 开火按钮 */
-#btn-fire { width: 120px; height: 120px; border-radius: 50%; border: 3px solid #f44; background: rgba(255,68,68,0.2); color: #f44; font-size: 22px; font-weight: bold; cursor: pointer; font-family: monospace; letter-spacing: 2px; flex-shrink: 0; transition: all 0.1s; }
+#btn-fire { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #f44; background: rgba(255,68,68,0.2); color: #f44; font-size: 20px; font-weight: bold; cursor: pointer; font-family: monospace; letter-spacing: 2px; flex-shrink: 0; transition: all 0.1s; touch-action: none; }
 #btn-fire:active, #btn-fire.pressed { background: rgba(255,68,68,0.5); transform: scale(0.9); box-shadow: 0 0 30px rgba(255,68,68,0.5); }
-
-/* 重启按钮 */
-#btn-restart { width: 56px; height: 56px; border-radius: 50%; border: 2px solid #0af; background: rgba(0,170,255,0.15); color: #0af; font-size: 20px; cursor: pointer; flex-shrink: 0; transition: all 0.1s; }
+#btn-restart { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #0af; background: rgba(0,170,255,0.15); color: #0af; font-size: 18px; cursor: pointer; flex-shrink: 0; transition: all 0.1s; touch-action: none; }
 #btn-restart:active { background: rgba(0,170,255,0.4); transform: scale(0.9); }
 </style>
 </head>
 <body>
 <h1>🎮 坦克大战</h1>
-<div id="hud">
-  生命: <span id="lives">3</span> | 分数: <span id="score">0</span> | 关卡: <span id="level">1</span> | 敌军: <span id="enemies">0</span> | 基地: <span id="basehp">❤❤❤</span>
-</div>
+<div id="hud">生命: <span id="lives">3</span> | 分数: <span id="score">0</span> | 关卡: <span id="level">1</span> | 敌军: <span id="enemies">0</span> | 基地: <span id="basehp">❤❤❤</span></div>
 <canvas id="c" width="640" height="480"></canvas>
 <div id="msg"><h2 id="msgText">坦克大战</h2><button id="msgBtn">开始游戏</button></div>
-
 <div id="controls">
   <div id="dpad">
-    <button id="btn-up" class="touch-btn">▲</button>
-    <button id="btn-left" class="touch-btn">◀</button>
+    <button id="btn-up">▲</button>
+    <button id="btn-left">◀</button>
     <div class="empty"></div>
-    <button id="btn-right" class="touch-btn">▶</button>
-    <button id="btn-down" class="touch-btn">▼</button>
+    <button id="btn-right">▶</button>
+    <button id="btn-down">▼</button>
   </div>
   <button id="btn-fire">开 火</button>
   <button id="btn-restart">🔄</button>
 </div>
-
 <script>
-// ==================== 触控适配层 ====================
-var touchState = { up: false, down: false, left: false, right: false, fire: false };
-
+// 触控状态
+var touchState = { up:false, down:false, left:false, right:false, fire:false };
 function bindBtn(id, key) {
   var el = document.getElementById(id);
-  el.addEventListener('pointerdown', function(e) { e.preventDefault(); touchState[key] = true; el.classList.add('pressed'); });
-  el.addEventListener('pointerup', function(e) { e.preventDefault(); touchState[key] = false; el.classList.remove('pressed'); });
-  el.addEventListener('pointerleave', function(e) { touchState[key] = false; el.classList.remove('pressed'); });
-  el.addEventListener('pointercancel', function(e) { touchState[key] = false; el.classList.remove('pressed'); });
+  el.addEventListener('touchstart', function(e) { e.preventDefault(); e.stopPropagation(); touchState[key]=true; el.classList.add('pressed'); }, {passive:false});
+  el.addEventListener('touchend',   function(e) { e.preventDefault(); touchState[key]=false; el.classList.remove('pressed'); });
+  el.addEventListener('touchcancel',function(e) { touchState[key]=false; el.classList.remove('pressed'); });
+  el.addEventListener('mousedown',  function(e) { e.preventDefault(); touchState[key]=true; el.classList.add('pressed'); });
+  el.addEventListener('mouseup',    function(e) { touchState[key]=false; el.classList.remove('pressed'); });
+  el.addEventListener('mouseleave', function(e) { touchState[key]=false; el.classList.remove('pressed'); });
 }
-bindBtn('btn-up', 'up');
-bindBtn('btn-down', 'down');
-bindBtn('btn-left', 'left');
-bindBtn('btn-right', 'right');
-bindBtn('btn-fire', 'fire');
+bindBtn('btn-up','up'); bindBtn('btn-down','down'); bindBtn('btn-left','left'); bindBtn('btn-right','right'); bindBtn('btn-fire','fire');
 
-// 阻止触控区域的双指缩放和滚动
-document.getElementById('controls').addEventListener('touchstart', function(e) { e.preventDefault(); }, {passive: false});
-
-// ==================== 原游戏逻辑 ====================
+// 游戏逻辑
 var c=document.getElementById('c'),ctx=c.getContext('2d'),W=640,H=480,T=32,COLS=20,ROWS=15;
 var E=0,BK=1,SK=2,WT=3,GS=4,BS=5;
 var map,player,enemies,pbullets,ebullets,parts,score,lvl,lives,over,run,timer,animId,baseHp;
@@ -147,7 +126,7 @@ function wall(x,y,w,h){
   return false;
 }
 
-function mktx(x,y,d,p){return{x:x,y:y,w:26,h:26,d:d,s:p?1.3:0.7,hp:1,mhp:1,cd:0,rt:p?15:90};}
+function mktx(x,y,d,p){return{x:x,y:y,w:26,h:26,d:d,s:p?1.6:0.7,hp:1,mhp:1,cd:0,rt:p?28:90};}
 
 function spawn(){
   var sp=[[0,0],[W/2-T,0],[W-T*2,0]],s=sp[Math.floor(Math.random()*sp.length)];
@@ -168,19 +147,18 @@ function boom(x,y,col,n){
 
 function update(){
   if(!run||over)return;
-  // 合并触控状态到keys
-  keys['ArrowUp'] = keys['ArrowUp'] || keys['KeyW'] || touchState.up;
-  keys['ArrowDown'] = keys['ArrowDown'] || keys['KeyS'] || touchState.down;
-  keys['ArrowLeft'] = keys['ArrowLeft'] || keys['KeyA'] || touchState.left;
+  keys['ArrowUp']    = keys['ArrowUp']    || keys['KeyW'] || touchState.up;
+  keys['ArrowDown']  = keys['ArrowDown']  || keys['KeyS'] || touchState.down;
+  keys['ArrowLeft']  = keys['ArrowLeft']  || keys['KeyA'] || touchState.left;
   keys['ArrowRight'] = keys['ArrowRight'] || keys['KeyD'] || touchState.right;
-  keys['Space'] = keys['Space'] || touchState.fire;
+  keys['Space']      = keys['Space']      || touchState.fire;
 
   if(player&&player.hp>0){
     var nx=player.x,ny=player.y;
     if(keys['ArrowUp']||keys['KeyW']){player.d=0;ny-=player.s;}
-    else if(keys['ArrowRight']||keys['KeyD']){player.d=1;nx+=player.s;}
-    else if(keys['ArrowDown']||keys['KeyS']){player.d=2;ny+=player.s;}
-    else if(keys['ArrowLeft']||keys['KeyA']){player.d=3;nx-=player.s;}
+    if(keys['ArrowDown']||keys['KeyS']){player.d=2;ny+=player.s;}
+    if(keys['ArrowLeft']||keys['KeyA']){player.d=3;nx-=player.s;}
+    if(keys['ArrowRight']||keys['KeyD']){player.d=1;nx+=player.s;}
     if(!wall(nx,player.y,player.w,player.h))player.x=nx;
     if(!wall(player.x,ny,player.w,player.h))player.y=ny;
     if(keys['Space']&&player.cd<=0){shoot(player,false);player.cd=player.rt;}
@@ -202,7 +180,7 @@ function update(){
       var tt=map[cr][cc];
       if(tt===BK){map[cr][cc]=E;boom(b.x,b.y,'#a0522d',5);playSfx('brickHit');hit=true;}
       else if(tt===SK){boom(b.x,b.y,'#aaa',3);playSfx('steelHit');hit=true;}
-          else if(tt===BS){baseHp--;boom(b.x,b.y,'#e94560',12);playSfx('playerHit');if(baseHp<=0){map[cr][cc]=E;boom(b.x,b.y,'#e94560',20);playSfx('baseBoom');over=true;}hit=true;}
+      else if(tt===BS){baseHp--;boom(b.x,b.y,'#e94560',12);playSfx('playerHit');if(baseHp<=0){map[cr][cc]=E;boom(b.x,b.y,'#e94560',20);playSfx('baseBoom');over=true;}hit=true;}
     }
     if(!hit){for(var j=enemies.length-1;j>=0;j--){var en=enemies[j];if(en.hp<=0)continue;
       if(b.x<en.x+en.w&&b.x+b.w>en.x&&b.y<en.y+en.h&&b.y+b.h>en.y){en.hp--;boom(b.x,b.y,'#f66',6);playSfx('hitTank');
@@ -218,7 +196,7 @@ function update(){
       var tt=map[cr][cc];
       if(tt===BK){map[cr][cc]=E;boom(b.x,b.y,'#a0522d',5);playSfx('brickHit');hit=true;}
       else if(tt===SK){boom(b.x,b.y,'#aaa',3);playSfx('steelHit');hit=true;}
-          else if(tt===BS){baseHp--;boom(b.x,b.y,'#e94560',12);playSfx('playerHit');if(baseHp<=0){map[cr][cc]=E;boom(b.x,b.y,'#e94560',20);playSfx('baseBoom');over=true;}hit=true;}
+      else if(tt===BS){baseHp--;boom(b.x,b.y,'#e94560',12);playSfx('playerHit');if(baseHp<=0){map[cr][cc]=E;boom(b.x,b.y,'#e94560',20);playSfx('baseBoom');over=true;}hit=true;}
     }
     if(!hit&&player&&player.hp>0){
       if(b.x<player.x+player.w&&b.x+b.w>player.x&&b.y<player.y+player.h&&b.y+b.h>player.y){
@@ -239,10 +217,6 @@ function update(){
   document.getElementById('enemies').textContent=act2;
   var bh='';for(var i=0;i<baseHp;i++)bh+='❤';document.getElementById('basehp').textContent=bh||'💀';
   if(over)showMsg(lives<=0?'游戏结束':'基地被毁！','再来一局');
-
-  // 每帧结束后清除触控的持续按键（开火只触发一次，方向键保持按住状态）
-  // 方向键保持touchState状态不变，但开火键每帧重置（需要连续点击）
-  // 实际上开火也需要按住连续射击，所以不清除
 }
 
 function initLvl(){
@@ -289,25 +263,16 @@ function startGame(){
   hideMsg();score=0;lvl=1;lives=3;over=false;run=true;baseHp=3;
   map=mkmap(1);pbullets=[];ebullets=[];parts=[];timer=50;
   player=null;initLvl();enemies=[];for(var i=0;i<3;i++)spawn();
-  // 解锁音频（iOS需要用户手势触发）
   initAudio();
   if(animId)cancelAnimationFrame(animId);loop();
 }
 
 function loop(){update();draw();animId=requestAnimationFrame(loop);}
 
-// 键盘事件（电脑上也能玩）
 document.addEventListener('keydown',function(e){keys[e.code]=true;var gk=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'];if(gk.indexOf(e.code)>=0)e.preventDefault();});
 document.addEventListener('keyup',function(e){keys[e.code]=false;});
 document.getElementById('msgBtn').onclick=function(){startGame();};
-
-// 重启按钮
-document.getElementById('btn-restart').onclick = function() {
-  over = true; run = false;
-  showMsg('坦克大战', '开始游戏');
-};
-
-// 初始绘制
+document.getElementById('btn-restart').onclick=function(){over=true;run=false;showMsg('坦克大战','开始游戏');};
 draw();
 </script>
 </body>
