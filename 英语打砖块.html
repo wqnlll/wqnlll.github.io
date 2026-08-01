@@ -128,19 +128,6 @@
     vertical-align: bottom;
   }
 
-  /* 竖屏时提示横屏 — 点击可关闭 */
-  .rotate-hint {
-    display: none;
-    position: fixed; inset: 0; background: rgba(10,10,26,0.95); z-index: 9999;
-    align-items: center; justify-content: center; flex-direction: column; gap: 20px; text-align: center;
-  }
-  .rotate-hint .icon { font-size: 60px; }
-  .rotate-hint .text { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 20px; color: var(--cyan); }
-  .rotate-hint .sub { color: var(--dim); font-size: 14px; }
-  .rotate-hint .close-btn { margin-top: 16px; padding: 10px 30px; border: 2px solid var(--cyan); background: transparent; color: var(--cyan); border-radius: 6px; font-size: 16px; cursor: pointer; }
-  @media (orientation: portrait) and (max-width: 500px) {
-    .rotate-hint { display: flex !important; }
-  }
 
   /* 单词栏 - 独立在外，不挡画布 */
   .word-bar {
@@ -287,14 +274,6 @@
 </style>
 </head>
 <body>
-
-<!-- 竖屏提示 -->
-<div class="rotate-hint" id="rotateHint">
-  <div class="icon">📱</div>
-  <div class="text">请横屏使用</div>
-  <div class="sub">旋转手机横过来，体验更好哦</div>
-  <button class="close-btn" onclick="document.getElementById('rotateHint').style.display='none'">竖屏也能玩，继续</button>
-</div>
 
 <div class="game-wrapper">
   <div class="header">
