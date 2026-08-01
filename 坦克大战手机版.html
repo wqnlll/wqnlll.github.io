@@ -147,11 +147,11 @@ function boom(x,y,col,n){
 
 function update(){
   if(!run||over)return;
-  keys['ArrowUp']    = keys['ArrowUp']    || keys['KeyW'] || touchState.up;
-  keys['ArrowDown']  = keys['ArrowDown']  || keys['KeyS'] || touchState.down;
-  keys['ArrowLeft']  = keys['ArrowLeft']  || keys['KeyA'] || touchState.left;
-  keys['ArrowRight'] = keys['ArrowRight'] || keys['KeyD'] || touchState.right;
-  keys['Space']      = keys['Space']      || touchState.fire;
+  keys['ArrowUp']    = touchState.up    || keys['KeyW'];
+  keys['ArrowDown']  = touchState.down  || keys['KeyS'];
+  keys['ArrowLeft']  = touchState.left  || keys['KeyA'];
+  keys['ArrowRight'] = touchState.right || keys['KeyD'];
+  keys['Space']      = touchState.fire  || keys['Space'];
 
   if(player&&player.hp>0){
     var nx=player.x,ny=player.y;
@@ -159,7 +159,7 @@ function update(){
     if(keys['ArrowDown']||keys['KeyS']){player.d=2;ny+=player.s;}
     if(keys['ArrowLeft']||keys['KeyA']){player.d=3;nx-=player.s;}
     if(keys['ArrowRight']||keys['KeyD']){player.d=1;nx+=player.s;}
-    if(!wall(nx,player.y,player.w,player.h))player.x=nx;
+    if(!wall(nx,player.y,player.w,player.h))player.x=nx; else nx=player.x;
     if(!wall(player.x,ny,player.w,player.h))player.y=ny;
     if(keys['Space']&&player.cd<=0){shoot(player,false);player.cd=player.rt;}
     if(player.cd>0)player.cd--;
