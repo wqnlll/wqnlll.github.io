@@ -167,15 +167,15 @@
 
   .listen-btn {
     font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 700;
-    padding: 8px 18px;
-    border: 2px solid #00e5ff;
+    padding: 5px 10px;
+    border: 1.5px solid #00e5ff;
     background: rgba(0,229,255,0.12);
     color: #00e5ff;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     transition: all 0.2s;
     display: none;
     white-space: nowrap;
@@ -320,8 +320,8 @@
         <span class="word-cn" id="wordCn">猫</span>
       </div>
     </div>
-    <button class="listen-btn" id="listenBtn">🔊 再听一次</button>
-    <button class="listen-btn" id="pauseBtn" style="display:none;font-size:13px;padding:6px 12px;border-color:#ffaa00;background:rgba(255,170,0,0.1);color:#ffaa00;">⏸ 暂停</button>
+    <button class="listen-btn" id="listenBtn">🔊</button>
+    <button class="listen-btn" id="pauseBtn" style="display:none;font-size:11px;padding:5px 10px;border-color:#ffaa00;background:rgba(255,170,0,0.1);color:#ffaa00;">⏸</button>
   </div>
 
   <div class="controls-hint">
@@ -528,33 +528,51 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
-  var _isSpeaking = false;
-  function speakWord(word) {
-    if (!window.speechSynthesis || !word) return;
+  var _speechReady = false;
+  var _pendingWord = null;
+
+  function unlockSpeech() {
+    // 移动端（iOS/Android）必须在用户手势中触发首次 speechSynthesis 才能解锁
+    if (!window.speechSynthesis) return;
     try {
-      window.speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(String(word));
+      // 先加载语音列表
+      window.speechSynthesis.getVoices();
+      // 用真实内容朗读来激活（空字符串或 volume:0 在某些浏览器上无效）
+      var u = new SpeechSynthesisUtterance('a');
       var voice = getEnglishVoice();
       if (voice) u.voice = voice;
       u.lang = 'en-US';
-      u.rate = 0.75;
-      u.pitch = 1.0;
-      u.volume = 1;
-      u.onstart = function() { _isSpeaking = true; };
-      u.onend = function() { _isSpeaking = false; };
-      u.onerror = function() { _isSpeaking = false; };
+      u.rate = 1.5;
+      u.volume = 0.01;
+      u.onend = function() { _speechReady = true; if (_pendingWord) { speakWord(_pendingWord); _pendingWord = null; } };
+      u.onerror = function() { _speechReady = true; };
       window.speechSynthesis.speak(u);
-    } catch(e) {}
+    } catch(e) { _speechReady = true; }
   }
 
-  function unlockSpeech() {
-    // 移动端需要用户手势才能解锁 speechSynthesis，用一句无声朗读来激活
-    if (!window.speechSynthesis) return;
+  function speakWord(word) {
+    if (!window.speechSynthesis || !word) return;
+    // 如果还没解锁，先排队等解锁完成后再播
+    if (!_speechReady) { _pendingWord = word; return; }
     try {
-      var u = new SpeechSynthesisUtterance('');
-      u.volume = 0;
-      u.rate = 1.5;
-      window.speechSynthesis.speak(u);
+      // iOS: cancel 后需要等一小段时间才能 speak，否则会被静默丢弃
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        window.speechSynthesis.cancel();
+      }
+      // 延迟一下让 cancel 生效（iOS 需要）
+      var w = String(word);
+      setTimeout(function() {
+        try {
+          var u = new SpeechSynthesisUtterance(w);
+          var voice = getEnglishVoice();
+          if (voice) u.voice = voice;
+          u.lang = 'en-US';
+          u.rate = 0.8;
+          u.pitch = 1.0;
+          u.volume = 1;
+          window.speechSynthesis.speak(u);
+        } catch(e) {}
+      }, window.speechSynthesis.speaking ? 50 : 0);
     } catch(e) {}
   }
 
@@ -718,8 +736,8 @@
   function togglePause() {
     if (!gameRunning) return;
     paused = !paused;
-    if (paused) { stopBgMusic(); pauseBtn.textContent = '▶ 继续'; pauseBtn.style.color = '#00e5ff'; pauseBtn.style.borderColor = '#00e5ff'; pauseBtn.style.background = 'rgba(0,229,255,0.12)'; }
-    else { startBgMusic(); pauseBtn.textContent = '⏸ 暂停'; pauseBtn.style.color = '#ffaa00'; pauseBtn.style.borderColor = '#ffaa00'; pauseBtn.style.background = 'rgba(255,170,0,0.1)'; }
+    if (paused) { stopBgMusic(); pauseBtn.textContent = '▶'; pauseBtn.style.color = '#00e5ff'; pauseBtn.style.borderColor = '#00e5ff'; pauseBtn.style.background = 'rgba(0,229,255,0.12)'; }
+    else { startBgMusic(); pauseBtn.textContent = '⏸'; pauseBtn.style.color = '#ffaa00'; pauseBtn.style.borderColor = '#ffaa00'; pauseBtn.style.background = 'rgba(255,170,0,0.1)'; }
   }
 
   initGame();gameLoop();
