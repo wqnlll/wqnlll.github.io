@@ -321,6 +321,7 @@
       </div>
     </div>
     <button class="listen-btn" id="listenBtn">🔊 再听一次</button>
+    <button class="listen-btn" id="pauseBtn" style="display:none;font-size:13px;padding:6px 12px;border-color:#ffaa00;background:rgba(255,170,0,0.1);color:#ffaa00;">⏸ 暂停</button>
   </div>
 
   <div class="controls-hint">
@@ -527,10 +528,10 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
+  var _isSpeaking = false;
   function speakWord(word) {
     if (!window.speechSynthesis || !word) return;
     try {
-      // 先取消之前没读完的，避免重叠颤抖
       window.speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(String(word));
       var voice = getEnglishVoice();
@@ -539,6 +540,20 @@
       u.rate = 0.75;
       u.pitch = 1.0;
       u.volume = 1;
+      u.onstart = function() { _isSpeaking = true; };
+      u.onend = function() { _isSpeaking = false; };
+      u.onerror = function() { _isSpeaking = false; };
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
+  function unlockSpeech() {
+    // 移动端需要用户手势才能解锁 speechSynthesis，用一句无声朗读来激活
+    if (!window.speechSynthesis) return;
+    try {
+      var u = new SpeechSynthesisUtterance('');
+      u.volume = 0;
+      u.rate = 1.5;
       window.speechSynthesis.speak(u);
     } catch(e) {}
   }
@@ -637,7 +652,7 @@
     if(ball.x-ball.r<=0){ball.x=ball.r;ball.dx=-ball.dx;}
     if(ball.x+ball.r>=W){ball.x=W-ball.r;ball.dx=-ball.dx;}
     if(ball.y-ball.r<=0){ball.y=ball.r;ball.dy=-ball.dy;}
-    if(ball.y+ball.r>H){lives--;updateUI();if(lives<=0){gameRunning=false;stopBgMusic();finalScore.textContent='最终得分: '+score;gameOverOverlay.classList.remove('hidden');return;}resetBall();return;}
+    if(ball.y+ball.r>H){lives--;updateUI();if(lives<=0){gameRunning=false;stopBgMusic();document.getElementById('pauseBtn').style.display='none';finalScore.textContent='最终得分: '+score;gameOverOverlay.classList.remove('hidden');return;}resetBall();return;}
     if(ball.dy>0&&ball.y+ball.r>=paddle.y&&ball.y+ball.r<=paddle.y+paddle.h+5&&ball.x>=paddle.x-ball.r&&ball.x<=paddle.x+paddle.w+ball.r){
       var hit=(ball.x-paddle.x)/paddle.w;var angle=(hit-0.5)*1.2;var speed=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);ball.dx=Math.sin(angle)*speed;ball.dy=-Math.cos(angle)*speed;ball.y=paddle.y-ball.r;if(Math.abs(ball.dy)<speed*0.3)ball.dy=-speed*0.3;var spd=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(spd>7){ball.dx=(ball.dx/spd)*7;ball.dy=(ball.dy/spd)*7;}
     }
@@ -646,13 +661,13 @@
         var overlapX=ball.r-Math.abs(distX);var overlapY=ball.r-Math.abs(distY);if(overlapX<overlapY){ball.dx=-ball.dx;ball.x+=(distX>0?overlapX:-overlapX);}else{ball.dy=-ball.dy;ball.y+=(distY>0?overlapY:-overlapY);}break;}
     }
     var allDead=true;for(var i=0;i<bricks.length;i++){if(bricks[i].alive){allDead=false;break;}}
-    if(allDead){gameRunning=false;stopBgMusic();var tn=VOCAB_TOPICS[(level-1)%VOCAB_TOPICS.length].name;winScore.textContent='得分: '+score+' | 学了 '+(BRICK_COLS*BRICK_ROWS)+' 个'+tn+'单词!';winOverlay.classList.remove('hidden');}
+    if(allDead){gameRunning=false;stopBgMusic();document.getElementById('pauseBtn').style.display='none';var tn=VOCAB_TOPICS[(level-1)%VOCAB_TOPICS.length].name;winScore.textContent='得分: '+score+' | 学了 '+(BRICK_COLS*BRICK_ROWS)+' 个'+tn+'单词!';winOverlay.classList.remove('hidden');}
     var cs=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(cs>7){ball.dx=(ball.dx/cs)*7;ball.dy=(ball.dy/cs)*7;}
   }
 
   function gameLoop(){drawBackground();drawBricks();drawPaddle();updateBall();drawBall();drawFloatingTexts();drawPauseOverlay();requestAnimationFrame(gameLoop);}
 
-  canvas.addEventListener('touchstart',function(e){e.preventDefault();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();},{passive:false});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}/* 移动端不暂停 - 使用下方暂停按钮 */},{passive:false});
   canvas.addEventListener('click',function(e){if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();});
   canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
   canvas.addEventListener('mousemove',function(e){if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var mx=(e.clientX-rect.left)*(W/rect.width);mx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,mx));paddle.x=mx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}});
@@ -666,9 +681,11 @@
   var _gameJustStarted = false;
   var startHandler = function(e) {
     e.preventDefault(); e.stopPropagation();
+    unlockSpeech();
     startGameMusic(); startOverlay.classList.add('hidden');
     gameRunning = true; ball.stuck = false;
     _gameJustStarted = true;
+    document.getElementById('pauseBtn').style.display = 'inline-block';
     setTimeout(function() { _gameJustStarted = false; }, 400);
   };
   document.getElementById('startBtn').addEventListener('touchend', startHandler);
@@ -677,6 +694,7 @@
   var restartHandler = function(e) {
     e.preventDefault(); e.stopPropagation();
     stopBgMusic(); gameOverOverlay.classList.add('hidden');
+    document.getElementById('pauseBtn').style.display = 'none';
     initGame(); startOverlay.classList.remove('hidden');
   };
   document.getElementById('restartBtn').addEventListener('touchend', restartHandler);
@@ -692,6 +710,17 @@
   };
   document.getElementById('nextBtn').addEventListener('touchend', nextHandler);
   document.getElementById('nextBtn').addEventListener('click', nextHandler);
+
+  var pauseBtn = document.getElementById('pauseBtn');
+  pauseBtn.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); togglePause(); });
+  pauseBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); togglePause(); });
+
+  function togglePause() {
+    if (!gameRunning) return;
+    paused = !paused;
+    if (paused) { stopBgMusic(); pauseBtn.textContent = '▶ 继续'; pauseBtn.style.color = '#00e5ff'; pauseBtn.style.borderColor = '#00e5ff'; pauseBtn.style.background = 'rgba(0,229,255,0.12)'; }
+    else { startBgMusic(); pauseBtn.textContent = '⏸ 暂停'; pauseBtn.style.color = '#ffaa00'; pauseBtn.style.borderColor = '#ffaa00'; pauseBtn.style.background = 'rgba(255,170,0,0.1)'; }
+  }
 
   initGame();gameLoop();
 </script>
