@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>小学英语打砖块</title>
+<meta name="description" content="小学英语打砖块 · 200+单词 8大主题 · 自动朗读发音 · 手机电脑都能玩！免费在线学英语单词。English Brick Breaker — learn English words while playing!">
+<meta name="keywords" content="英语学习,打砖块,小学英语,英语单词,在线游戏,教育游戏,English learning,brick breaker,educational game,小学生英语,背单词">
+<meta property="og:title" content="小学英语打砖块 · 一边打砖块一边学英语单词">
+<meta property="og:description" content="200+ 小学英语单词，8 大主题，自动朗读发音！打砖块学英语，孩子越玩越上瘾。免费在线玩，无需下载。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wqnlll.github.io/英语打砖块.html">
+<meta property="og:image" content="https://wqnlll.github.io/og-image.png">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="小学英语打砖块 · 学单词神器">
+<meta name="twitter:description" content="200+ 单词，自动朗读，手机电脑都能玩！免费！">
+<link rel="canonical" href="https://wqnlll.github.io/英语打砖块.html">
+<title>小学英语打砖块 · 学单词神器 | English Brick Breaker</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -253,6 +265,18 @@
     text-align: center;
   }
 
+  .share-row {
+    display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .share-btn {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 12px; padding: 8px 16px; border-radius: 20px;
+    border: 1px solid var(--dim); background: rgba(255,255,255,0.05);
+    color: var(--dim); cursor: pointer; text-decoration: none;
+    transition: all 0.3s; white-space: nowrap;
+  }
+  .share-btn:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,240,255,0.08); }
+
   .btn {
     font-family: 'Courier New', monospace;
     font-size: 13px;
@@ -303,12 +327,20 @@
       <div class="overlay-title game-over">游戏结束</div>
       <div class="overlay-score" id="finalScore">0</div>
       <button class="btn" id="restartBtn">再来一局</button>
+      <div class="share-row">
+        <button class="share-btn" onclick="shareGame()">📤 分享给朋友</button>
+        <a class="share-btn" href="https://wqnlll.github.io" target="_blank">🎮 更多游戏</a>
+      </div>
     </div>
 
     <div class="overlay hidden" id="winOverlay">
       <div class="overlay-title win">太棒了!</div>
       <div class="overlay-score" id="winScore">0</div>
       <button class="btn" id="nextBtn">下一关</button>
+      <div class="share-row">
+        <button class="share-btn" onclick="shareGame()">📤 分享战绩</button>
+        <a class="share-btn" href="https://wqnlll.github.io" target="_blank">🎮 更多游戏</a>
+      </div>
     </div>
 
   </div>
@@ -761,6 +793,25 @@
   }
 
   initGame();gameLoop();
+
+  function shareGame() {
+    var url = 'https://wqnlll.github.io/英语打砖块.html';
+    var text = '🎮 小学英语打砖块 · 200+单词自动朗读！免费在线玩，一起来学英语吧！';
+    if (navigator.share) {
+      navigator.share({ title: '小学英语打砖块', text: text, url: url }).catch(function(){});
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text + ' ' + url;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      var el = event.target;
+      var orig = el.textContent;
+      el.textContent = '✅ 已复制链接！';
+      el.style.color = '#0f0'; el.style.borderColor = '#0f0';
+      setTimeout(function(){ el.textContent = orig; el.style.color = ''; el.style.borderColor = ''; }, 2000);
+    }
+  }
 </script>
 </body>
 </html>

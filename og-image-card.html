@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OG Image Generator</title>
+<style>
+  body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #000; }
+  .card {
+    width: 1200px; height: 630px;
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  }
+  .card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,240,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+  .icon { font-size: 120px; position: relative; z-index: 1; margin-bottom: 20px; filter: drop-shadow(0 0 40px rgba(0,240,255,0.3)); }
+  .title {
+    font-size: 64px; font-weight: 900; letter-spacing: 4px; position: relative; z-index: 1;
+    background: linear-gradient(135deg, #00f0ff, #ff00aa, #00f0ff);
+    background-size: 200% 200%; -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; animation: gradient 3s ease infinite;
+  }
+  @keyframes gradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .subtitle { font-size: 28px; color: #8888aa; position: relative; z-index: 1; margin-top: 16px; letter-spacing: 2px; }
+  .url { font-size: 22px; color: #555; position: absolute; bottom: 40px; z-index: 1; letter-spacing: 1px; }
+  .accent { color: #ff00aa; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🎮📚</div>
+    <div class="title">wqnlll 游戏中心</div>
+    <div class="subtitle">英语打砖块 + 坦克大战 · <span class="accent">免费在线玩</span></div>
+    <div class="url">wqnlll.github.io</div>
+  </div>
+  <script>
+    // Screenshot this page (F12 → Ctrl+Shift+P → "Capture full size screenshot")
+    // Save as og-image.png and upload to repo root
+  </script>
+</body>
+</html>
