@@ -529,22 +529,21 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
-  // ========== 语音播放 — AudioContext + Google TTS（电脑和手机都能响） ==========
-  // <audio> 元素在手机上被自动播放策略阻止 → 改用 AudioContext 解码+播放
-  // AudioContext 走"媒体"通道，和钢琴背景音乐同一条管线，不受静音键影响
+  // ========== 语音播放 — AudioContext + 有道词典 TTS ==========
+  // 时序关键：AudioContext 必须在用户手势内创建/resume 之后才能 decode+播放
+  // 所以预缓存在 startHandler / nextHandler 中触发（AudioContext 已激活后）
 
-  var _audioBufCache = {};   // word → AudioBuffer（已解码的 PCM）
-  var _audioFetching = {};   // word → true（正在下载中，避免重复 fetch）
+  var _audioBufCache = {};   // word → AudioBuffer
+  var _audioFetching = {};   // word → true（防重复 fetch）
 
   function buildTtsUrl(word) {
-    return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=' + encodeURIComponent(word);
+    // 有道词典发音 API，国内访问快，返回 MP3，无 CORS 限制
+    return 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(word) + '&type=1';
   }
 
   function ensureAudioCtx() {
     if (!audioCtx) {
-      try {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      } catch(e) { return null; }
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; }
     }
     if (audioCtx.state === 'suspended') {
       try { audioCtx.resume(); } catch(e) {}
@@ -556,71 +555,52 @@
     if (_audioBufCache[word] || _audioFetching[word]) return;
     _audioFetching[word] = true;
     var ac = ensureAudioCtx();
-    if (!ac) { _audioFetching[word] = false; return; }
+    if (!ac || ac.state !== 'running') { _audioFetching[word] = false; return; }
     fetch(buildTtsUrl(word))
-      .then(function(resp) {
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        return resp.arrayBuffer();
-      })
-      .then(function(buf) {
-        return new Promise(function(resolve, reject) {
-          ac.decodeAudioData(buf, resolve, reject);
-        });
-      })
-      .then(function(audioBuf) {
-        _audioBufCache[word] = audioBuf;
-        _audioFetching[word] = false;
-      })
-      .catch(function() {
-        _audioFetching[word] = false;
-      });
+      .then(function(resp) { if (!resp.ok) throw new Error('fail'); return resp.arrayBuffer(); })
+      .then(function(buf) { return new Promise(function(res, rej) { ac.decodeAudioData(buf, res, rej); }); })
+      .then(function(audioBuf) { _audioBufCache[word] = audioBuf; _audioFetching[word] = false; })
+      .catch(function() { _audioFetching[word] = false; });
   }
 
   function preCacheLevelWords(words) {
-    _audioBufCache = {};
+    if (!audioCtx || audioCtx.state !== 'running') return; // 等 AudioContext 激活后再预缓存
+    // 不清空旧缓存，跨关卡复用已下载的单词
     _audioFetching = {};
     for (var i = 0; i < words.length; i++) {
       fetchAndDecodeWord(words[i]);
     }
   }
 
-  function unlockSpeech() {
-    // 不需要了，AudioContext 在 startGameMusic 中已通过用户手势解锁
-  }
+  function unlockSpeech() {}
 
   function speakWord(word) {
     if (!word) return;
-    // 尝试从 AudioContext 缓存播放
     var buf = _audioBufCache[word];
     if (buf) {
       var ac = ensureAudioCtx();
-      if (ac) {
+      if (ac && ac.state === 'running') {
         try {
           var src = ac.createBufferSource();
           src.buffer = buf;
-          // 连到独立的 gain 节点，不影响背景音乐
-          var g = ac.createGain();
-          g.gain.value = 1.0;
-          src.connect(g);
-          g.connect(ac.destination);
+          var g = ac.createGain(); g.gain.value = 1.0;
+          src.connect(g); g.connect(ac.destination);
           src.start(0);
-          return; // 播放成功
+          return;
         } catch(e) {}
       }
     }
-    // 缓存未命中 → 尝试现场 fetch（第一次遇到这个词）
-    if (!_audioFetching[word]) {
-      fetchAndDecodeWord(word);
-    }
-    // 兜底：尝试 speechSynthesis，并立即 resume 对抗 iOS 暂停
+    // 缓存未命中 → 触发 fetch（AudioContext 现在应该 running 了）
+    if (!_audioFetching[word]) fetchAndDecodeWord(word);
+    // 兜底 speechSynthesis
     if (window.speechSynthesis) {
       try {
-        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        window.speechSynthesis.resume();
         var u = new SpeechSynthesisUtterance(String(word));
         u.lang = 'en-US'; u.rate = 0.8; u.volume = 1;
         window.speechSynthesis.speak(u);
         window.speechSynthesis.resume();
-      } catch(e2) {}
+      } catch(e) {}
     }
   }
 
@@ -643,14 +623,17 @@
     return arr;
   }
 
+  function getCurrentLevelWords() {
+    var topic = VOCAB_TOPICS[(level - 1) % VOCAB_TOPICS.length];
+    var words = [];
+    for (var i = 0; i < topic.words.length; i++) { if (words.indexOf(topic.words[i].en) < 0) words.push(topic.words[i].en); }
+    return words;
+  }
+
   function createBricks() {
     bricks = [];
     var topic = VOCAB_TOPICS[(level - 1) % VOCAB_TOPICS.length];
     var wordPool = shuffleArray(topic.words.slice());
-    // 预加载本关所有英语单词的 TTS 音频
-    var uniqueWords = [];
-    for (var i = 0; i < wordPool.length; i++) { if (uniqueWords.indexOf(wordPool[i].en) < 0) uniqueWords.push(wordPool[i].en); }
-    preCacheLevelWords(uniqueWords);
     for (var r = 0; r < BRICK_ROWS; r++) {
       for (var c = 0; c < BRICK_COLS; c++) {
         var w = wordPool[(r * BRICK_COLS + c) % wordPool.length];
@@ -756,6 +739,8 @@
     gameRunning = true; ball.stuck = false;
     _gameJustStarted = true;
     document.getElementById('pauseBtn').style.display = 'inline-block';
+    // AudioContext 已通过 startGameMusic 激活，现在预缓存本关音频
+    setTimeout(function() { preCacheLevelWords(getCurrentLevelWords()); }, 200);
     setTimeout(function() { _gameJustStarted = false; }, 400);
   };
   // touchstart 提前解锁语音（iOS 对 touchend/click 的语音授权更严格）
@@ -779,6 +764,8 @@
     paddle.x = (W - paddle.w) / 2; resetBall();
     floatingTexts = []; updateUI(); hideWordDisplay();
     gameRunning = true; startGameMusic();
+    // 预缓存新关卡音频（AudioContext 已在运行中）
+    setTimeout(function() { preCacheLevelWords(getCurrentLevelWords()); }, 200);
   };
   document.getElementById('nextBtn').addEventListener('touchend', nextHandler);
   document.getElementById('nextBtn').addEventListener('click', nextHandler);
