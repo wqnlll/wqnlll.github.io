@@ -145,13 +145,21 @@ function boom(x,y,col,n){
   for(var i=0;i<n;i++)parts.push({x:x,y:y,vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,l:15+Math.random()*15,ml:30,col:col,sz:2+Math.random()*4});
 }
 
+var _fireWasDown = false;
 function update(){
-  if(!run||over)return;
+  if(!run||over){
+    if(over){pbullets=[];ebullets=[];}
+    return;
+  }
   keys['ArrowUp']    = touchState.up    || keys['KeyW'];
   keys['ArrowDown']  = touchState.down  || keys['KeyS'];
   keys['ArrowLeft']  = touchState.left  || keys['KeyA'];
   keys['ArrowRight'] = touchState.right || keys['KeyD'];
-  keys['Space']      = touchState.fire  || keys['Space'];
+  // 点射：只在按下瞬间触发一次（false→true）
+  var fireTrigger = (touchState.fire && !_fireWasDown) || keys['Space'];
+  _fireWasDown = touchState.fire;
+  // 键盘空格每帧重置，避免连发
+  keys['Space'] = false;
 
   if(player&&player.hp>0){
     var nx=player.x,ny=player.y;
@@ -161,7 +169,7 @@ function update(){
     if(keys['ArrowRight']||keys['KeyD']){player.d=1;nx+=player.s;}
     if(!wall(nx,player.y,player.w,player.h))player.x=nx; else nx=player.x;
     if(!wall(player.x,ny,player.w,player.h))player.y=ny;
-    if(keys['Space']&&player.cd<=0){shoot(player,false);player.cd=player.rt;}
+    if(fireTrigger&&player.cd<=0){shoot(player,false);player.cd=player.rt;}
     if(player.cd>0)player.cd--;
   }
   for(var ei=0;ei<enemies.length;ei++){

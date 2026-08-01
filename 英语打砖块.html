@@ -122,12 +122,23 @@
     width: 100%;
     height: auto;
     aspect-ratio: 4 / 3;
-    max-height: 48vh;
-    max-height: 48dvh;
     background: #0d0d20;
     border-radius: 4px;
     touch-action: none;
     vertical-align: bottom;
+  }
+
+  /* 竖屏时提示横屏 */
+  .rotate-hint {
+    display: none;
+    position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+    align-items: center; justify-content: center; flex-direction: column; gap: 20px; text-align: center;
+  }
+  .rotate-hint .icon { font-size: 60px; }
+  .rotate-hint .text { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 20px; color: var(--cyan); }
+  .rotate-hint .sub { color: var(--dim); font-size: 14px; }
+  @media (orientation: portrait) and (max-width: 500px) {
+    .rotate-hint { display: flex !important; }
   }
 
   .canvas-footer {
@@ -276,6 +287,13 @@
 </style>
 </head>
 <body>
+
+<!-- 竖屏提示 -->
+<div class="rotate-hint" id="rotateHint">
+  <div class="icon">📱</div>
+  <div class="text">请横屏使用</div>
+  <div class="sub">旋转手机横过来，才能看到完整游戏哦</div>
+</div>
 
 <div class="game-wrapper">
   <div class="header">
