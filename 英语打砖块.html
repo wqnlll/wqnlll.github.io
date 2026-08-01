@@ -682,9 +682,15 @@
   setInterval(updatePaddle,16);
 
   var _gameJustStarted = false;
-  document.getElementById('startBtn').addEventListener('click',function(e){e.stopPropagation();startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;if(ball.stuck)ball.stuck=false;_gameJustStarted=true;setTimeout(function(){_gameJustStarted=false;},300);});
-  document.getElementById('restartBtn').addEventListener('click',function(){stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');});
-  document.getElementById('nextBtn').addEventListener('click',function(){stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();});
+  function onStart(e){e.preventDefault();e.stopPropagation();startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;if(ball.stuck)ball.stuck=false;_gameJustStarted=true;setTimeout(function(){_gameJustStarted=false;},400);}
+  function onRestart(e){e.preventDefault();stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');}
+  function onNext(e){e.preventDefault();stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();}
+  document.getElementById('startBtn').addEventListener('pointerdown',onStart);
+  document.getElementById('startBtn').addEventListener('click',onStart);
+  document.getElementById('restartBtn').addEventListener('pointerdown',onRestart);
+  document.getElementById('restartBtn').addEventListener('click',onRestart);
+  document.getElementById('nextBtn').addEventListener('pointerdown',onNext);
+  document.getElementById('nextBtn').addEventListener('click',onNext);
 
   initGame();gameLoop();
 </script>
