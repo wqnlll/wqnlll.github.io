@@ -529,72 +529,98 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
-  // ========== 语音播放 — 使用 Audio 元素（绕过 speechSynthesis 的移动端限制） ==========
-  // speechSynthesis 在 iPhone 上走的是"铃声"通道（受静音键控制），而 AudioContext 背景音乐走"媒体"通道
-  // 所以背景音乐能响但朗读没声。改用 Audio 元素播放 Google TTS，走媒体通道，不受静音键影响。
+  // ========== 语音播放 — AudioContext + Google TTS（电脑和手机都能响） ==========
+  // <audio> 元素在手机上被自动播放策略阻止 → 改用 AudioContext 解码+播放
+  // AudioContext 走"媒体"通道，和钢琴背景音乐同一条管线，不受静音键影响
 
-  var _audioCache = {};
+  var _audioBufCache = {};   // word → AudioBuffer（已解码的 PCM）
+  var _audioFetching = {};   // word → true（正在下载中，避免重复 fetch）
 
   function buildTtsUrl(word) {
     return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=' + encodeURIComponent(word);
   }
 
+  function ensureAudioCtx() {
+    if (!audioCtx) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') {
+      try { audioCtx.resume(); } catch(e) {}
+    }
+    return audioCtx;
+  }
+
+  function fetchAndDecodeWord(word) {
+    if (_audioBufCache[word] || _audioFetching[word]) return;
+    _audioFetching[word] = true;
+    var ac = ensureAudioCtx();
+    if (!ac) { _audioFetching[word] = false; return; }
+    fetch(buildTtsUrl(word))
+      .then(function(resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.arrayBuffer();
+      })
+      .then(function(buf) {
+        return new Promise(function(resolve, reject) {
+          ac.decodeAudioData(buf, resolve, reject);
+        });
+      })
+      .then(function(audioBuf) {
+        _audioBufCache[word] = audioBuf;
+        _audioFetching[word] = false;
+      })
+      .catch(function() {
+        _audioFetching[word] = false;
+      });
+  }
+
   function preCacheLevelWords(words) {
-    // 预加载本关卡的单词音频
-    _audioCache = {};
+    _audioBufCache = {};
+    _audioFetching = {};
     for (var i = 0; i < words.length; i++) {
-      var w = words[i];
-      if (_audioCache[w]) continue;
-      var audio = new Audio();
-      audio.preload = 'auto';
-      audio.volume = 1;
-      audio.src = buildTtsUrl(w);
-      audio.load();
-      _audioCache[w] = audio;
+      fetchAndDecodeWord(words[i]);
     }
   }
 
   function unlockSpeech() {
-    // 保留空函数，兼容旧代码调用
+    // 不需要了，AudioContext 在 startGameMusic 中已通过用户手势解锁
   }
 
   function speakWord(word) {
     if (!word) return;
-    // 先从缓存拿
-    var audio = _audioCache[word];
-    if (!audio) {
-      // 没有预缓存则当场创建
-      audio = new Audio();
-      audio.preload = 'auto';
-      audio.volume = 1;
-      audio.src = buildTtsUrl(word);
-      _audioCache[word] = audio;
-    }
-    // 从头播放
-    try {
-      audio.currentTime = 0;
-      var p = audio.play();
-      if (p) {
-        p.catch(function(e) {
-          // Google TTS 无法播放（可能是网络问题），回退到 speechSynthesis
-          if (window.speechSynthesis) {
-            try {
-              var u = new SpeechSynthesisUtterance(String(word));
-              u.lang = 'en-US'; u.rate = 0.8; u.volume = 1;
-              window.speechSynthesis.speak(u);
-            } catch(e2) {}
-          }
-        });
-      }
-    } catch(e) {
-      // audio.play() threw, try speechSynthesis
-      if (window.speechSynthesis) {
+    // 尝试从 AudioContext 缓存播放
+    var buf = _audioBufCache[word];
+    if (buf) {
+      var ac = ensureAudioCtx();
+      if (ac) {
         try {
-          var u2 = new SpeechSynthesisUtterance(String(word));
-          u2.lang = 'en-US'; u2.rate = 0.8; u2.volume = 1;
-          window.speechSynthesis.speak(u2);
-        } catch(e3) {}
+          var src = ac.createBufferSource();
+          src.buffer = buf;
+          // 连到独立的 gain 节点，不影响背景音乐
+          var g = ac.createGain();
+          g.gain.value = 1.0;
+          src.connect(g);
+          g.connect(ac.destination);
+          src.start(0);
+          return; // 播放成功
+        } catch(e) {}
       }
+    }
+    // 缓存未命中 → 尝试现场 fetch（第一次遇到这个词）
+    if (!_audioFetching[word]) {
+      fetchAndDecodeWord(word);
+    }
+    // 兜底：尝试 speechSynthesis，并立即 resume 对抗 iOS 暂停
+    if (window.speechSynthesis) {
+      try {
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        var u = new SpeechSynthesisUtterance(String(word));
+        u.lang = 'en-US'; u.rate = 0.8; u.volume = 1;
+        window.speechSynthesis.speak(u);
+        window.speechSynthesis.resume();
+      } catch(e2) {}
     }
   }
 
