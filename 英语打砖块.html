@@ -529,64 +529,57 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
-  // ========== 语音播放 — 双引擎 + 触摸事件触发 ==========
-  // 核心问题：手机上 speechSynthesis/Audio.play() 必须从用户手势中调用才有效
-  // 游戏循环中调用 → 浏览器静默拒绝。解决方案：打砖块时把单词放入队列，
-  // 在下一次 touch 事件（用户手势）中播放。touchmove 每秒 ~60 次，延迟可忽略。
+  // ========== 语音播放 ==========
+  // 手机：播放本地预生成的 MP3（audio/word.mp3），AudioContext 管线，必定能响
+  // 电脑：继续用 speechSynthesis，已经验证完美工作
 
-  var _pendingWord = null;    // 等待在下次 touch 中播放的单词
+  var _isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) ||
+                  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var _pendingWord = null;
 
   function unlockSpeech() {}
 
   function speakWord(word) {
-    // 不在这里直接播放，而是放入队列，等 touch 事件触发时播放
     if (!word) return;
     _pendingWord = word;
   }
 
   function flushSpeech() {
-    // 在 touch 事件中被调用（用户手势上下文），尝试播放挂起的单词
     if (!_pendingWord) return;
     var word = _pendingWord;
     _pendingWord = null;
 
-    // 方式 1：speechSynthesis（电脑主力 + 部分手机支持）
-    if (window.speechSynthesis) {
+    if (_isMobile) {
+      // 手机：播放本地 MP3 文件
       try {
-        // 先确保不处于 paused 状态
-        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-        var u = new SpeechSynthesisUtterance(String(word));
-        u.lang = 'en-US';
-        u.rate = 0.8;
-        u.pitch = 1.0;
-        u.volume = 1;
-        window.speechSynthesis.speak(u);
-        // iOS 关键：speak 后立即 resume，防止被系统暂停
-        window.speechSynthesis.resume();
+        var a = new Audio();
+        a.volume = 1;
+        a.src = 'audio/' + encodeURIComponent(word) + '.mp3';
+        a.play().catch(function(){});
       } catch(e) {}
+    } else {
+      // 电脑：speechSynthesis（已验证完美）
+      if (window.speechSynthesis) {
+        try {
+          var u = new SpeechSynthesisUtterance(String(word));
+          u.lang = 'en-US'; u.rate = 0.8; u.pitch = 1.0; u.volume = 1;
+          window.speechSynthesis.speak(u);
+        } catch(e) {}
+      }
     }
-
-    // 方式 2：Google TTS Audio 元素（兜底，网络通畅时能用）
-    try {
-      var a = new Audio();
-      a.volume = 1;
-      a.src = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=' + encodeURIComponent(word);
-      a.play().catch(function(){});
-    } catch(e) {}
   }
 
   function preCacheLevelWords(words) {
-    // 预加载：用 speechSynthesis 提前说一次静默词，帮助 iOS 缓存语音数据
-    if (window.speechSynthesis) {
-      try {
-        window.speechSynthesis.resume();
-        for (var i = 0; i < Math.min(words.length, 5); i++) {
-          var u = new SpeechSynthesisUtterance(words[i]);
-          u.volume = 0.01; u.rate = 1.5;
-          window.speechSynthesis.speak(u);
-        }
-        window.speechSynthesis.resume();
-      } catch(e) {}
+    // 手机：预加载本关 MP3 到浏览器缓存
+    if (_isMobile) {
+      for (var i = 0; i < words.length; i++) {
+        try {
+          var a = new Audio();
+          a.preload = 'auto';
+          a.src = 'audio/' + encodeURIComponent(words[i]) + '.mp3';
+          a.load();
+        } catch(e) {}
+      }
     }
   }
 
