@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>英语打砖块 - 边打边学</title>
+<title>小学英语打砖块</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -296,7 +296,7 @@
 
 <div class="game-wrapper">
   <div class="header">
-    <span class="title">📚 英语打砖块</span>
+    <span class="title">📚 小学英语打砖块</span>
     <div class="stats">
       <div class="stat"><span class="stat-label">分数</span><span class="stat-value" id="scoreDisplay">0</span></div>
       <div class="stat"><span class="stat-label">关卡</span><span class="stat-value" id="levelDisplay">1</span></div>
@@ -308,9 +308,9 @@
     <canvas id="gameCanvas" width="700" height="525"></canvas>
 
     <div class="overlay" id="startOverlay">
-      <div class="overlay-title">📚 英语打砖块</div>
+      <div class="overlay-title">📚 小学英语打砖块</div>
       <div class="overlay-sub">
-        打碎砖块学英语单词<br>
+        打碎砖块学英语单词！适合小学生<br>
         每个砖块都有 <span class="highlight">英文 + 中文翻译</span><br>
         打碎时自动朗读发音！
       </div>
@@ -682,15 +682,9 @@
   setInterval(updatePaddle,16);
 
   var _gameJustStarted = false;
-  function onStart(e){e.preventDefault();e.stopPropagation();startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;if(ball.stuck)ball.stuck=false;_gameJustStarted=true;setTimeout(function(){_gameJustStarted=false;},400);}
-  function onRestart(e){e.preventDefault();stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');}
-  function onNext(e){e.preventDefault();stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();}
-  document.getElementById('startBtn').addEventListener('pointerdown',onStart);
-  document.getElementById('startBtn').addEventListener('click',onStart);
-  document.getElementById('restartBtn').addEventListener('pointerdown',onRestart);
-  document.getElementById('restartBtn').addEventListener('click',onRestart);
-  document.getElementById('nextBtn').addEventListener('pointerdown',onNext);
-  document.getElementById('nextBtn').addEventListener('click',onNext);
+  document.getElementById('startBtn').addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;ball.stuck=false;_gameJustStarted=true;setTimeout(function(){_gameJustStarted=false;},400);});
+  document.getElementById('restartBtn').addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');});
+  document.getElementById('nextBtn').addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();});
 
   initGame();gameLoop();
 </script>
