@@ -529,46 +529,29 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
-  // ========== 语音播放 — AudioContext + 有道词典 TTS ==========
-  // 时序关键：AudioContext 必须在用户手势内创建/resume 之后才能 decode+播放
-  // 所以预缓存在 startHandler / nextHandler 中触发（AudioContext 已激活后）
+  // ========== 语音播放：Audio 元素 + 触摸事件重试 ==========
+  // fetch + decodeAudioData 在手机上有 CORS 问题 → 回到 <audio> 元素加载（无 CORS）
+  // <audio>.play() 在手机游戏循环中被阻止 → 失败时挂起，下次 touchmove 重试（用户手势）
 
-  var _audioBufCache = {};   // word → AudioBuffer
-  var _audioFetching = {};   // word → true（防重复 fetch）
+  var _audioElements = {};  // word → Audio 元素（已预加载）
+  var _pendingPlay = null;  // 被阻止播放的单词，等待下一个 touch 事件重试
 
   function buildTtsUrl(word) {
-    // 有道词典发音 API，国内访问快，返回 MP3，无 CORS 限制
-    return 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(word) + '&type=1';
-  }
-
-  function ensureAudioCtx() {
-    if (!audioCtx) {
-      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; }
-    }
-    if (audioCtx.state === 'suspended') {
-      try { audioCtx.resume(); } catch(e) {}
-    }
-    return audioCtx;
-  }
-
-  function fetchAndDecodeWord(word) {
-    if (_audioBufCache[word] || _audioFetching[word]) return;
-    _audioFetching[word] = true;
-    var ac = ensureAudioCtx();
-    if (!ac || ac.state !== 'running') { _audioFetching[word] = false; return; }
-    fetch(buildTtsUrl(word))
-      .then(function(resp) { if (!resp.ok) throw new Error('fail'); return resp.arrayBuffer(); })
-      .then(function(buf) { return new Promise(function(res, rej) { ac.decodeAudioData(buf, res, rej); }); })
-      .then(function(audioBuf) { _audioBufCache[word] = audioBuf; _audioFetching[word] = false; })
-      .catch(function() { _audioFetching[word] = false; });
+    return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=' + encodeURIComponent(word);
   }
 
   function preCacheLevelWords(words) {
-    if (!audioCtx || audioCtx.state !== 'running') return; // 等 AudioContext 激活后再预缓存
-    // 不清空旧缓存，跨关卡复用已下载的单词
-    _audioFetching = {};
+    _audioElements = {};
+    _pendingPlay = null;
     for (var i = 0; i < words.length; i++) {
-      fetchAndDecodeWord(words[i]);
+      var w = words[i];
+      if (_audioElements[w]) continue;
+      var a = new Audio();
+      a.preload = 'auto';
+      a.volume = 1;
+      a.src = buildTtsUrl(w);
+      a.load();
+      _audioElements[w] = a;
     }
   }
 
@@ -576,31 +559,36 @@
 
   function speakWord(word) {
     if (!word) return;
-    var buf = _audioBufCache[word];
-    if (buf) {
-      var ac = ensureAudioCtx();
-      if (ac && ac.state === 'running') {
-        try {
-          var src = ac.createBufferSource();
-          src.buffer = buf;
-          var g = ac.createGain(); g.gain.value = 1.0;
-          src.connect(g); g.connect(ac.destination);
-          src.start(0);
-          return;
-        } catch(e) {}
-      }
+    var a = _audioElements[word];
+    if (!a) {
+      a = new Audio();
+      a.preload = 'auto';
+      a.volume = 1;
+      a.src = buildTtsUrl(word);
+      _audioElements[word] = a;
     }
-    // 缓存未命中 → 触发 fetch（AudioContext 现在应该 running 了）
-    if (!_audioFetching[word]) fetchAndDecodeWord(word);
-    // 兜底 speechSynthesis
-    if (window.speechSynthesis) {
-      try {
-        window.speechSynthesis.resume();
-        var u = new SpeechSynthesisUtterance(String(word));
-        u.lang = 'en-US'; u.rate = 0.8; u.volume = 1;
-        window.speechSynthesis.speak(u);
-        window.speechSynthesis.resume();
-      } catch(e) {}
+    a.currentTime = 0;
+    try {
+      var p = a.play();
+      if (p) {
+        p.catch(function() {
+          // 手机浏览器的自动播放策略阻止了 → 挂起等待下次触摸
+          _pendingPlay = word;
+        });
+      }
+    } catch(e) {
+      _pendingPlay = word;
+    }
+  }
+
+  function retryPendingPlay() {
+    if (!_pendingPlay) return;
+    var word = _pendingPlay;
+    _pendingPlay = null;
+    var a = _audioElements[word];
+    if (a) {
+      a.currentTime = 0;
+      try { a.play(); } catch(e) {}
     }
   }
 
@@ -720,9 +708,9 @@
 
   function gameLoop(){drawBackground();drawBricks();drawPaddle();updateBall();drawBall();drawFloatingTexts();drawPauseOverlay();requestAnimationFrame(gameLoop);}
 
-  canvas.addEventListener('touchstart',function(e){e.preventDefault();unlockSpeech();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}/* 移动端不暂停 - 使用下方暂停按钮 */},{passive:false});
-  canvas.addEventListener('click',function(e){if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();});
-  canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();unlockSpeech();retryPendingPlay();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}/* 移动端不暂停 - 使用下方暂停按钮 */},{passive:false});
+  canvas.addEventListener('click',function(e){retryPendingPlay();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();retryPendingPlay();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
   canvas.addEventListener('mousemove',function(e){if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var mx=(e.clientX-rect.left)*(W/rect.width);mx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,mx));paddle.x=mx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}});
 
   var keys={};
