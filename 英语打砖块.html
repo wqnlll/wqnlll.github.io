@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英语打砖块 - 边打边学</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a1a;
+    --cyan: #00f0ff;
+    --magenta: #ff00aa;
+    --warm: #e8e8f0;
+    --dim: #505070;
+    --gold: #ffd700;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--warm);
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Courier New', monospace;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 8px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .game-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    max-width: 700px;
+    padding: 4px;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .title {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: clamp(14px, 3.5vw, 16px);
+    font-weight: 900;
+    color: var(--cyan);
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-label {
+    color: var(--dim);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .stat-value {
+    color: var(--warm);
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 20px;
+    text-align: right;
+  }
+
+  .stat-value.lives {
+    color: var(--magenta);
+    text-shadow: 0 0 12px rgba(255, 0, 170, 0.5);
+  }
+
+  .canvas-container {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    border-radius: 4px;
+    box-shadow:
+      0 0 30px rgba(0, 240, 255, 0.05),
+      inset 0 0 30px rgba(0, 240, 255, 0.03);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    background: #0d0d20;
+    border-radius: 4px;
+    touch-action: none;
+    vertical-align: bottom;
+  }
+
+  .canvas-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 14px 14px;
+    background: linear-gradient(rgba(10,10,26,0) 0%, rgba(10,10,26,0.93) 25%);
+    gap: 10px;
+    pointer-events: none;
+    min-height: 60px;
+  }
+
+  .canvas-footer > * { pointer-events: auto; }
+
+  .word-display { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+
+  .word-text-group { display: none; flex-direction: column; align-items: flex-start; gap: 1px; }
+  .word-text-group.show { display: flex; }
+
+  .word-en {
+    font-family: 'Courier New', monospace;
+    font-size: clamp(16px, 4vw, 20px);
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  }
+
+  .word-cn {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: clamp(13px, 3vw, 15px);
+    color: var(--warm);
+    font-weight: 400;
+  }
+
+  .listen-btn {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border: 2px solid var(--cyan);
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--cyan);
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    display: none;
+    white-space: nowrap;
+  }
+  .listen-btn.show { display: inline-block; }
+  .listen-btn:active { background: var(--cyan); color: var(--bg); }
+
+  .controls-hint {
+    display: flex;
+    gap: 12px;
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .controls-hint kbd {
+    font-family: 'Courier New', monospace;
+    color: var(--warm);
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 10, 26, 0.88);
+    border-radius: 4px;
+    gap: 12px;
+    transition: opacity 0.4s;
+  }
+
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .overlay-title {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: clamp(22px, 6vw, 28px);
+    font-weight: 900;
+    color: var(--cyan);
+    text-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
+    letter-spacing: 3px;
+    text-align: center;
+    line-height: 1.4;
+    padding: 0 16px;
+  }
+
+  .overlay-title.game-over { color: var(--magenta); text-shadow: 0 0 40px rgba(255, 0, 170, 0.5); }
+  .overlay-title.win { color: var(--gold); text-shadow: 0 0 40px rgba(255, 215, 0, 0.5); }
+
+  .overlay-sub {
+    color: var(--dim);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 1.8;
+    max-width: 400px;
+    padding: 0 16px;
+  }
+
+  .overlay-sub .highlight { color: var(--gold); }
+
+  .overlay-score {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--warm);
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  .btn {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 32px;
+    border: 2px solid var(--cyan);
+    background: transparent;
+    color: var(--cyan);
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn:hover { background: var(--cyan); color: var(--bg); box-shadow: 0 0 30px rgba(0, 240, 255, 0.3); }
+  .btn:active { background: var(--cyan); color: var(--bg); }
+
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+</style>
+</head>
+<body>
+
+<div class="game-wrapper">
+  <div class="header">
+    <span class="title">📚 英语打砖块</span>
+    <div class="stats">
+      <div class="stat"><span class="stat-label">分数</span><span class="stat-value" id="scoreDisplay">0</span></div>
+      <div class="stat"><span class="stat-label">关卡</span><span class="stat-value" id="levelDisplay">1</span></div>
+      <div class="stat"><span class="stat-label">生命</span><span class="stat-value lives" id="livesDisplay">♥♥♥</span></div>
+    </div>
+  </div>
+
+  <div class="canvas-container">
+    <canvas id="gameCanvas" width="700" height="525"></canvas>
+
+    <div class="overlay" id="startOverlay">
+      <div class="overlay-title">📚 英语打砖块</div>
+      <div class="overlay-sub">
+        打碎砖块学英语单词<br>
+        每个砖块都有 <span class="highlight">英文 + 中文翻译</span><br>
+        打碎时自动朗读发音！
+      </div>
+      <button class="btn" id="startBtn">开始学习</button>
+    </div>
+
+    <div class="overlay hidden" id="gameOverOverlay">
+      <div class="overlay-title game-over">游戏结束</div>
+      <div class="overlay-score" id="finalScore">0</div>
+      <button class="btn" id="restartBtn">再来一局</button>
+    </div>
+
+    <div class="overlay hidden" id="winOverlay">
+      <div class="overlay-title win">太棒了!</div>
+      <div class="overlay-score" id="winScore">0</div>
+      <button class="btn" id="nextBtn">下一关</button>
+    </div>
+
+    <div class="canvas-footer">
+      <div class="word-display">
+        <div class="word-text-group" id="wordGroup">
+          <span class="word-en" id="wordEn">cat</span>
+          <span class="word-cn" id="wordCn">猫</span>
+        </div>
+      </div>
+      <button class="listen-btn" id="listenBtn">🔊 再听一次</button>
+    </div>
+  </div>
+
+  <div class="controls-hint">
+    <span>💻 <kbd>← →</kbd> 移动 <kbd>空格</kbd> 发射</span>
+    <span>📱 <span>滑动移动 · 点击发射</span></span>
+  </div>
+</div>
+
+<script>
+  var canvas = document.getElementById('gameCanvas');
+  var ctx = canvas.getContext('2d');
+  var W = 700, H = 525;
+
+  var scoreDisplay = document.getElementById('scoreDisplay');
+  var levelDisplay = document.getElementById('levelDisplay');
+  var livesDisplay = document.getElementById('livesDisplay');
+  var startOverlay = document.getElementById('startOverlay');
+  var gameOverOverlay = document.getElementById('gameOverOverlay');
+  var winOverlay = document.getElementById('winOverlay');
+  var finalScore = document.getElementById('finalScore');
+  var winScore = document.getElementById('winScore');
+  var wordGroup = document.getElementById('wordGroup');
+  var wordEn = document.getElementById('wordEn');
+  var wordCn = document.getElementById('wordCn');
+  var listenBtn = document.getElementById('listenBtn');
+
+  var VOCAB_TOPICS = [
+    {
+      name: '动物', words: [
+        { en: 'cat', zh: '猫' }, { en: 'dog', zh: '狗' }, { en: 'fish', zh: '鱼' },
+        { en: 'bird', zh: '鸟' }, { en: 'bear', zh: '熊' }, { en: 'frog', zh: '青蛙' },
+        { en: 'duck', zh: '鸭子' }, { en: 'cow', zh: '奶牛' }, { en: 'pig', zh: '猪' },
+        { en: 'hen', zh: '母鸡' }, { en: 'rat', zh: '老鼠' }, { en: 'ant', zh: '蚂蚁' },
+        { en: 'bee', zh: '蜜蜂' }, { en: 'fox', zh: '狐狸' }, { en: 'owl', zh: '猫头鹰' },
+        { en: 'ape', zh: '猩猩' }, { en: 'bat', zh: '蝙蝠' }, { en: 'lion', zh: '狮子' },
+        { en: 'wolf', zh: '狼' }, { en: 'deer', zh: '鹿' }, { en: 'shark', zh: '鲨鱼' },
+        { en: 'whale', zh: '鲸鱼' }, { en: 'snake', zh: '蛇' }, { en: 'horse', zh: '马' },
+        { en: 'sheep', zh: '羊' }, { en: 'goat', zh: '山羊' }, { en: 'mouse', zh: '老鼠' },
+        { en: 'rabbit', zh: '兔子' }, { en: 'tiger', zh: '老虎' }, { en: 'panda', zh: '熊猫' },
+      ]
+    },
+    {
+      name: '食物', words: [
+        { en: 'apple', zh: '苹果' }, { en: 'bread', zh: '面包' }, { en: 'milk', zh: '牛奶' },
+        { en: 'egg', zh: '鸡蛋' }, { en: 'rice', zh: '米饭' }, { en: 'meat', zh: '肉' },
+        { en: 'soup', zh: '汤' }, { en: 'cake', zh: '蛋糕' }, { en: 'juice', zh: '果汁' },
+        { en: 'water', zh: '水' }, { en: 'grape', zh: '葡萄' }, { en: 'peach', zh: '桃子' },
+        { en: 'lemon', zh: '柠檬' }, { en: 'cherry', zh: '樱桃' }, { en: 'mango', zh: '芒果' },
+        { en: 'cream', zh: '奶油' }, { en: 'sugar', zh: '糖' }, { en: 'honey', zh: '蜂蜜' },
+        { en: 'toast', zh: '吐司' }, { en: 'cheese', zh: '奶酪' }, { en: 'pizza', zh: '披萨' },
+        { en: 'noodle', zh: '面条' }, { en: 'candy', zh: '糖果' }, { en: 'cookie', zh: '饼干' },
+        { en: 'salad', zh: '沙拉' }, { en: 'coffee', zh: '咖啡' }, { en: 'banana', zh: '香蕉' },
+        { en: 'orange', zh: '橙子' }, { en: 'tomato', zh: '西红柿' },
+      ]
+    },
+    {
+      name: '身体', words: [
+        { en: 'eye', zh: '眼睛' }, { en: 'ear', zh: '耳朵' }, { en: 'arm', zh: '手臂' },
+        { en: 'leg', zh: '腿' }, { en: 'lip', zh: '嘴唇' }, { en: 'nose', zh: '鼻子' },
+        { en: 'hand', zh: '手' }, { en: 'foot', zh: '脚' }, { en: 'head', zh: '头' },
+        { en: 'back', zh: '背' }, { en: 'neck', zh: '脖子' }, { en: 'knee', zh: '膝盖' },
+        { en: 'chin', zh: '下巴' }, { en: 'heel', zh: '脚跟' }, { en: 'skin', zh: '皮肤' },
+        { en: 'tooth', zh: '牙齿' }, { en: 'elbow', zh: '手肘' }, { en: 'thumb', zh: '拇指' },
+        { en: 'wrist', zh: '手腕' }, { en: 'ankle', zh: '脚踝' }, { en: 'brain', zh: '大脑' },
+        { en: 'heart', zh: '心脏' }, { en: 'blood', zh: '血液' }, { en: 'bone', zh: '骨头' },
+        { en: 'mouth', zh: '嘴巴' }, { en: 'finger', zh: '手指' }, { en: 'tongue', zh: '舌头' },
+        { en: 'chest', zh: '胸部' }, { en: 'waist', zh: '腰' }, { en: 'shoulder', zh: '肩膀' },
+      ]
+    },
+    {
+      name: '自然', words: [
+        { en: 'sun', zh: '太阳' }, { en: 'moon', zh: '月亮' }, { en: 'star', zh: '星星' },
+        { en: 'sky', zh: '天空' }, { en: 'sea', zh: '大海' }, { en: 'tree', zh: '树' },
+        { en: 'rock', zh: '岩石' }, { en: 'sand', zh: '沙子' }, { en: 'wave', zh: '波浪' },
+        { en: 'wind', zh: '风' }, { en: 'fire', zh: '火' }, { en: 'lake', zh: '湖' },
+        { en: 'hill', zh: '小山' }, { en: 'rain', zh: '雨' }, { en: 'snow', zh: '雪' },
+        { en: 'cloud', zh: '云' }, { en: 'river', zh: '河流' }, { en: 'ocean', zh: '海洋' },
+        { en: 'beach', zh: '沙滩' }, { en: 'storm', zh: '暴风雨' }, { en: 'field', zh: '田野' },
+        { en: 'plant', zh: '植物' }, { en: 'earth', zh: '地球' }, { en: 'stone', zh: '石头' },
+        { en: 'grass', zh: '草' }, { en: 'leaf', zh: '叶子' }, { en: 'flower', zh: '花' },
+        { en: 'mountain', zh: '山' }, { en: 'island', zh: '岛屿' }, { en: 'forest', zh: '森林' },
+      ]
+    },
+    {
+      name: '颜色与形状', words: [
+        { en: 'red', zh: '红色' }, { en: 'blue', zh: '蓝色' }, { en: 'gold', zh: '金色' },
+        { en: 'pink', zh: '粉色' }, { en: 'gray', zh: '灰色' }, { en: 'black', zh: '黑色' },
+        { en: 'white', zh: '白色' }, { en: 'green', zh: '绿色' }, { en: 'brown', zh: '棕色' },
+        { en: 'purple', zh: '紫色' }, { en: 'circle', zh: '圆形' }, { en: 'square', zh: '正方形' },
+        { en: 'triangle', zh: '三角形' }, { en: 'diamond', zh: '菱形' }, { en: 'heart', zh: '心形' },
+        { en: 'oval', zh: '椭圆形' }, { en: 'star', zh: '星形' }, { en: 'cross', zh: '十字形' },
+      ]
+    },
+    {
+      name: '动作', words: [
+        { en: 'run', zh: '跑' }, { en: 'jump', zh: '跳' }, { en: 'swim', zh: '游泳' },
+        { en: 'fly', zh: '飞' }, { en: 'eat', zh: '吃' }, { en: 'read', zh: '阅读' },
+        { en: 'sing', zh: '唱歌' }, { en: 'dance', zh: '跳舞' }, { en: 'draw', zh: '画画' },
+        { en: 'play', zh: '玩' }, { en: 'clap', zh: '拍手' }, { en: 'wave', zh: '挥手' },
+        { en: 'kick', zh: '踢' }, { en: 'pull', zh: '拉' }, { en: 'push', zh: '推' },
+        { en: 'lift', zh: '举起' }, { en: 'drop', zh: '放下' }, { en: 'catch', zh: '接住' },
+        { en: 'throw', zh: '扔' }, { en: 'climb', zh: '爬' }, { en: 'smile', zh: '微笑' },
+        { en: 'laugh', zh: '大笑' }, { en: 'shout', zh: '喊' }, { en: 'write', zh: '写' },
+        { en: 'paint', zh: '涂色' }, { en: 'build', zh: '搭建' }, { en: 'cook', zh: '做饭' },
+        { en: 'wash', zh: '洗' }, { en: 'sleep', zh: '睡觉' }, { en: 'stand', zh: '站' },
+      ]
+    },
+    {
+      name: '学校', words: [
+        { en: 'book', zh: '书' }, { en: 'pen', zh: '钢笔' }, { en: 'desk', zh: '书桌' },
+        { en: 'ruler', zh: '尺子' }, { en: 'paper', zh: '纸' }, { en: 'pencil', zh: '铅笔' },
+        { en: 'eraser', zh: '橡皮' }, { en: 'school', zh: '学校' }, { en: 'teacher', zh: '老师' },
+        { en: 'student', zh: '学生' }, { en: 'class', zh: '班级' }, { en: 'lesson', zh: '课' },
+        { en: 'homework', zh: '作业' }, { en: 'exam', zh: '考试' }, { en: 'bag', zh: '书包' },
+        { en: 'map', zh: '地图' }, { en: 'clock', zh: '时钟' }, { en: 'chair', zh: '椅子' },
+        { en: 'board', zh: '黑板' }, { en: 'glue', zh: '胶水' }, { en: 'crayon', zh: '蜡笔' },
+        { en: 'library', zh: '图书馆' }, { en: 'playground', zh: '操场' }, { en: 'bell', zh: '铃' },
+        { en: 'math', zh: '数学' }, { en: 'english', zh: '英语' }, { en: 'music', zh: '音乐' },
+      ]
+    },
+    {
+      name: '日用品', words: [
+        { en: 'cup', zh: '杯子' }, { en: 'plate', zh: '盘子' }, { en: 'bowl', zh: '碗' },
+        { en: 'knife', zh: '刀' }, { en: 'spoon', zh: '勺子' }, { en: 'table', zh: '桌子' },
+        { en: 'door', zh: '门' }, { en: 'window', zh: '窗户' }, { en: 'lamp', zh: '台灯' },
+        { en: 'bed', zh: '床' }, { en: 'sofa', zh: '沙发' }, { en: 'phone', zh: '电话' },
+        { en: 'brush', zh: '刷子' }, { en: 'towel', zh: '毛巾' }, { en: 'soap', zh: '肥皂' },
+        { en: 'comb', zh: '梳子' }, { en: 'mirror', zh: '镜子' }, { en: 'basket', zh: '篮子' },
+        { en: 'candle', zh: '蜡烛' }, { en: 'pillow', zh: '枕头' }, { en: 'blanket', zh: '毯子' },
+        { en: 'bucket', zh: '水桶' }, { en: 'bottle', zh: '瓶子' }, { en: 'key', zh: '钥匙' },
+        { en: 'umbrella', zh: '雨伞' }, { en: 'camera', zh: '相机' }, { en: 'ladder', zh: '梯子' },
+        { en: 'rope', zh: '绳子' },
+      ]
+    },
+  ];
+
+  var audioCtx = null;
+  var bgMusicPlaying = false;
+  var musicGain = null;
+  var musicTimeout = null;
+  var SCALE = [261.63, 293.66, 329.63, 392.00, 440.00];
+  var MELODY = [0,2,4,3, 0,2,4,3, 1,3,4,2, 0,2,4,4, 4,3,2,0, 4,3,2,1, 3,2,0,1, 0,0,2,4, 0,2,4,3, 0,2,4,3, 1,3,4,2, 0,2,4,4, 4,3,2,0, 4,3,2,1, 3,2,0,1, 0,0,4,2];
+  var melodyIdx = 0;
+
+  function playNote(freq, duration) {
+    if (!audioCtx) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var env = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      env.gain.setValueAtTime(0, audioCtx.currentTime);
+      env.gain.linearRampToValueAtTime(0.10, audioCtx.currentTime + 0.02);
+      env.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + duration * 0.3);
+      env.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+      osc.connect(env);
+      env.connect(musicGain);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function scheduleNextNote() {
+    if (!bgMusicPlaying || !audioCtx) return;
+    var note = SCALE[MELODY[melodyIdx % MELODY.length]];
+    playNote(note, 0.18);
+    melodyIdx++;
+    musicTimeout = setTimeout(scheduleNextNote, 126);
+  }
+
+  function startBgMusic() {
+    if (bgMusicPlaying) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!musicGain) { musicGain = audioCtx.createGain(); musicGain.gain.value = 0.06; musicGain.connect(audioCtx.destination); }
+      bgMusicPlaying = true; melodyIdx = 0;
+      scheduleNextNote();
+    } catch(e) {}
+  }
+
+  function stopBgMusic() { bgMusicPlaying = false; if (musicTimeout) { clearTimeout(musicTimeout); musicTimeout = null; } }
+
+  function startGameMusic() { stopBgMusic(); setTimeout(startBgMusic, 150); }
+
+  var englishVoice = null;
+  function getEnglishVoice() {
+    if (englishVoice) return englishVoice;
+    if (!window.speechSynthesis) return null;
+    var voices = window.speechSynthesis.getVoices();
+    // 优先找原生英语语音
+    for (var i = 0; i < voices.length; i++) {
+      var v = voices[i];
+      if (v.lang === 'en-US' && v.localService && v.name.indexOf('Zira') >= 0) { englishVoice = v; break; }
+      if (v.lang === 'en-US' && v.localService && !englishVoice) englishVoice = v;
+      if (v.lang.startsWith('en-') && v.localService && !englishVoice) englishVoice = v;
+      if (v.lang.startsWith('en-') && !englishVoice) englishVoice = v;
+    }
+    return englishVoice;
+  }
+  // 预加载语音列表（异步）
+  if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
+  }
+
+  function speakWord(word) {
+    if (!window.speechSynthesis || !word) return;
+    try {
+      // 先取消之前没读完的，避免重叠颤抖
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(String(word));
+      var voice = getEnglishVoice();
+      if (voice) u.voice = voice;
+      u.lang = 'en-US';
+      u.rate = 0.75;
+      u.pitch = 1.0;
+      u.volume = 1;
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
+  var floatingTexts = [];
+  function addFloatingText(x, y, text) { floatingTexts.push({ x: x, y: y, text: text, life: 1.0, vy: -2 }); }
+
+  var score = 0, lives = 3, level = 1, gameRunning = false, paused = false;
+  var paddle = { w: 100, h: 14, x: 0, y: H - 32, speed: 7 };
+  paddle.x = (W - paddle.w) / 2;
+  var ball = { x: 0, y: 0, r: 10, dx: 4, dy: -4, speed: 4.5, stuck: true };
+  var trail = [];
+  var BRICK_COLS = 10, BRICK_ROWS = 5, BRICK_W = 62, BRICK_H = 32, BRICK_PAD = 6, BRICK_TOP = 50;
+  var BRICK_LEFT = (W - (BRICK_COLS * (BRICK_W + BRICK_PAD) - BRICK_PAD)) / 2;
+  var BRICK_COLORS = [['#ff0044','#cc0033'],['#ff6600','#cc5200'],['#ffcc00','#cca300'],['#44cc44','#339933'],['#00bbff','#0095cc'],['#ff00aa','#cc0088']];
+
+  var bricks = [];
+
+  function shuffleArray(arr) {
+    for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; }
+    return arr;
+  }
+
+  function createBricks() {
+    bricks = [];
+    var topic = VOCAB_TOPICS[(level - 1) % VOCAB_TOPICS.length];
+    var wordPool = shuffleArray(topic.words.slice());
+    for (var r = 0; r < BRICK_ROWS; r++) {
+      for (var c = 0; c < BRICK_COLS; c++) {
+        var w = wordPool[(r * BRICK_COLS + c) % wordPool.length];
+        var colorIdx = r % BRICK_COLORS.length;
+        var baseHp = w.en.length >= 7 ? 3 : (w.en.length >= 5 ? 2 : 1);
+        bricks.push({ x: BRICK_LEFT + c*(BRICK_W+BRICK_PAD), y: BRICK_TOP + r*(BRICK_H+BRICK_PAD), w:BRICK_W, h:BRICK_H, hp:baseHp, maxHp:baseHp, color:BRICK_COLORS[colorIdx], en:w.en, zh:w.zh, alive:true });
+      }
+    }
+  }
+
+  function resetBall() { ball.stuck = true; ball.x = paddle.x+paddle.w/2; ball.y = paddle.y-ball.r; ball.dx=(Math.random()>0.5?1:-1)*ball.speed*0.6; ball.dy=-ball.speed; trail.length=0; }
+
+  function initGame() { score=0;lives=3;level=1;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay(); }
+
+  function updateUI() { scoreDisplay.textContent=String(score);levelDisplay.textContent=String(level);var h='';for(var i=0;i<Math.max(0,lives);i++)h+='♥';livesDisplay.textContent=h; }
+
+  function showWord(en,zh) { wordEn.textContent=en;wordCn.textContent=zh;wordGroup.className='word-text-group show';listenBtn.className='listen-btn show';listenBtn.onclick=function(){speakWord(en);}; }
+
+  function hideWordDisplay() { wordGroup.className='word-text-group';listenBtn.className='listen-btn'; }
+
+  function drawBackground() { ctx.fillStyle='#0d0d20';ctx.fillRect(0,0,W,H);ctx.fillStyle='rgba(0,240,255,0.015)';for(var y=0;y<H;y+=3)ctx.fillRect(0,y,W,1); }
+
+  function drawPaddle() {
+    var g=ctx.createLinearGradient(paddle.x,paddle.y,paddle.x,paddle.y+paddle.h);g.addColorStop(0,'#00f0ff');g.addColorStop(1,'#00b0cc');ctx.fillStyle=g;
+    var pr=5;ctx.beginPath();ctx.moveTo(paddle.x+pr,paddle.y);ctx.lineTo(paddle.x+paddle.w-pr,paddle.y);ctx.quadraticCurveTo(paddle.x+paddle.w,paddle.y,paddle.x+paddle.w,paddle.y+pr);ctx.lineTo(paddle.x+paddle.w,paddle.y+paddle.h-pr);ctx.quadraticCurveTo(paddle.x+paddle.w,paddle.y+paddle.h,paddle.x+paddle.w-pr,paddle.y+paddle.h);ctx.lineTo(paddle.x+pr,paddle.y+paddle.h);ctx.quadraticCurveTo(paddle.x,paddle.y+paddle.h,paddle.x,paddle.y+paddle.h-pr);ctx.lineTo(paddle.x,paddle.y+pr);ctx.quadraticCurveTo(paddle.x,paddle.y,paddle.x+pr,paddle.y);ctx.closePath();ctx.fill();
+    ctx.shadowColor='#00f0ff';ctx.shadowBlur=15;ctx.strokeStyle='rgba(0,240,255,0.3)';ctx.lineWidth=1;ctx.stroke();ctx.shadowBlur=0;
+  }
+
+  function drawBall() {
+    for(var i=0;i<trail.length;i++){var alpha=(i/trail.length)*0.25;var size=ball.r*(0.3+0.7*(i/trail.length));ctx.beginPath();ctx.arc(trail[i].x,trail[i].y,size,0,Math.PI*2);ctx.fillStyle='rgba(0,240,255,'+alpha+')';ctx.fill();}
+    ctx.shadowColor='#00f0ff';ctx.shadowBlur=30;
+    var g=ctx.createRadialGradient(ball.x-2,ball.y-3,0,ball.x,ball.y,ball.r);g.addColorStop(0,'#ffffff');g.addColorStop(0.3,'#aaf0ff');g.addColorStop(1,'#00aacc');ctx.fillStyle=g;ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    var eyeOff=ball.r*0.32,eyeR=ball.r*0.2;
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(ball.x-eyeOff,ball.y-1,eyeR+1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ball.x+eyeOff,ball.y-1,eyeR+1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#0a0a1a';ctx.beginPath();ctx.arc(ball.x-eyeOff+1,ball.y,eyeR*0.65,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ball.x+eyeOff+1,ball.y,eyeR*0.65,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(ball.x-eyeOff+2,ball.y-2,eyeR*0.3,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ball.x+eyeOff+2,ball.y-2,eyeR*0.3,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#0a0a1a';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(ball.x,ball.y+1,ball.r*0.25,0.1,Math.PI-0.1);ctx.stroke();
+    ctx.fillStyle='rgba(255,150,180,0.5)';ctx.beginPath();ctx.arc(ball.x-eyeOff-2,ball.y+3,eyeR*0.7,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(ball.x+eyeOff+2,ball.y+3,eyeR*0.7,0,Math.PI*2);ctx.fill();
+  }
+
+  function drawBricks() {
+    for(var i=0;i<bricks.length;i++){var b=bricks[i];if(!b.alive)continue;
+      var c1=b.color[0],c2=b.color[1];ctx.shadowColor=c1;ctx.shadowBlur=6;
+      var g=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);g.addColorStop(0,c1);g.addColorStop(1,c2);ctx.fillStyle=g;
+      var br=2;ctx.beginPath();ctx.moveTo(b.x+br,b.y);ctx.lineTo(b.x+b.w-br,b.y);ctx.quadraticCurveTo(b.x+b.w,b.y,b.x+b.w,b.y+br);ctx.lineTo(b.x+b.w,b.y+b.h-br);ctx.quadraticCurveTo(b.x+b.w,b.y+b.h,b.x+b.w-br,b.y+b.h);ctx.lineTo(b.x+br,b.y+b.h);ctx.quadraticCurveTo(b.x,b.y+b.h,b.x,b.y+b.h-br);ctx.lineTo(b.x,b.y+br);ctx.quadraticCurveTo(b.x,b.y,b.x+br,b.y);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+      ctx.fillStyle='rgba(255,255,255,0.12)';ctx.fillRect(b.x+3,b.y+2,b.w-6,2);
+      ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(b.x+2,b.y+b.h/2-9,b.w-4,20);
+      ctx.shadowColor='#000000';ctx.shadowBlur=10;ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';
+      var enSize=b.en.length<=3?18:(b.en.length<=5?16:(b.en.length<=7?13:11));
+      ctx.font='bold '+enSize+'px "Courier New", monospace';ctx.fillText(b.en,b.x+b.w/2,b.y+b.h/2-5);ctx.shadowBlur=0;
+      ctx.shadowColor='#000000';ctx.shadowBlur=5;ctx.fillStyle='#f0f0ff';
+      var cnSize=b.zh.length>=3?12:14;
+      ctx.font=cnSize+'px "PingFang SC", "Microsoft YaHei", sans-serif';ctx.fillText(b.zh,b.x+b.w/2,b.y+b.h/2+12);ctx.shadowBlur=0;
+      if(b.maxHp>1){ctx.fillStyle='rgba(255,255,255,0.25)';ctx.font='7px monospace';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('x'+b.hp,b.x+b.w-2,b.y+2);}
+    }
+  }
+
+  function drawFloatingTexts() {
+    for(var i=floatingTexts.length-1;i>=0;i--){var ft=floatingTexts[i];ft.y+=ft.vy;ft.life-=0.025;if(ft.life<=0){floatingTexts.splice(i,1);continue;}ctx.globalAlpha=ft.life;ctx.fillStyle='#ffd700';ctx.font='bold 15px "Courier New", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ffd700';ctx.shadowBlur=15;ctx.fillText(ft.text,ft.x,ft.y);ctx.shadowBlur=0;ctx.globalAlpha=1.0;}
+  }
+
+  function drawPauseOverlay() { if(!paused)return;ctx.fillStyle='rgba(10,10,26,0.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#00f0ff';ctx.font='18px "PingFang SC", "Microsoft YaHei", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('暂停',W/2,H/2-10);ctx.fillStyle='#505070';ctx.font='10px monospace';ctx.fillText('点击继续',W/2,H/2+20); }
+
+  function updateBall() {
+    if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;return;}
+    if(paused||!gameRunning)return;
+    trail.push({x:ball.x,y:ball.y});if(trail.length>10)trail.shift();
+    ball.x+=ball.dx;ball.y+=ball.dy;
+    if(ball.x-ball.r<=0){ball.x=ball.r;ball.dx=-ball.dx;}
+    if(ball.x+ball.r>=W){ball.x=W-ball.r;ball.dx=-ball.dx;}
+    if(ball.y-ball.r<=0){ball.y=ball.r;ball.dy=-ball.dy;}
+    if(ball.y+ball.r>H){lives--;updateUI();if(lives<=0){gameRunning=false;stopBgMusic();finalScore.textContent='最终得分: '+score;gameOverOverlay.classList.remove('hidden');return;}resetBall();return;}
+    if(ball.dy>0&&ball.y+ball.r>=paddle.y&&ball.y+ball.r<=paddle.y+paddle.h+5&&ball.x>=paddle.x-ball.r&&ball.x<=paddle.x+paddle.w+ball.r){
+      var hit=(ball.x-paddle.x)/paddle.w;var angle=(hit-0.5)*1.2;var speed=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);ball.dx=Math.sin(angle)*speed;ball.dy=-Math.cos(angle)*speed;ball.y=paddle.y-ball.r;if(Math.abs(ball.dy)<speed*0.3)ball.dy=-speed*0.3;var spd=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(spd>7){ball.dx=(ball.dx/spd)*7;ball.dy=(ball.dy/spd)*7;}
+    }
+    for(var i=0;i<bricks.length;i++){var b=bricks[i];if(!b.alive)continue;var bx=Math.max(b.x,Math.min(ball.x,b.x+b.w));var by=Math.max(b.y,Math.min(ball.y,b.y+b.h));var distX=ball.x-bx;var distY=ball.y-by;var dist=Math.sqrt(distX*distX+distY*distY);
+      if(dist<ball.r){b.hp--;var destroyed=b.hp<=0;if(destroyed){b.alive=false;showWord(b.en,b.zh);speakWord(b.en);addFloatingText(b.x+b.w/2,b.y+b.h/2-4,b.en);score+=10*level;}else{score+=5;}updateUI();
+        var overlapX=ball.r-Math.abs(distX);var overlapY=ball.r-Math.abs(distY);if(overlapX<overlapY){ball.dx=-ball.dx;ball.x+=(distX>0?overlapX:-overlapX);}else{ball.dy=-ball.dy;ball.y+=(distY>0?overlapY:-overlapY);}break;}
+    }
+    var allDead=true;for(var i=0;i<bricks.length;i++){if(bricks[i].alive){allDead=false;break;}}
+    if(allDead){gameRunning=false;stopBgMusic();var tn=VOCAB_TOPICS[(level-1)%VOCAB_TOPICS.length].name;winScore.textContent='得分: '+score+' | 学了 '+(BRICK_COLS*BRICK_ROWS)+' 个'+tn+'单词!';winOverlay.classList.remove('hidden');}
+    var cs=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(cs>7){ball.dx=(ball.dx/cs)*7;ball.dy=(ball.dy/cs)*7;}
+  }
+
+  function gameLoop(){drawBackground();drawBricks();drawPaddle();updateBall();drawBall();drawFloatingTexts();drawPauseOverlay();requestAnimationFrame(gameLoop);}
+
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();if(!gameRunning)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();},{passive:false});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
+  canvas.addEventListener('mousemove',function(e){if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var mx=(e.clientX-rect.left)*(W/rect.width);mx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,mx));paddle.x=mx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}});
+
+  var keys={};
+  document.addEventListener('keydown',function(e){keys[e.key]=true;if(e.key===' '||e.key==='Space'){e.preventDefault();if(ball.stuck&&gameRunning){ball.stuck=false;}else if(gameRunning){paused=!paused;if(paused)stopBgMusic();else startBgMusic();}}});
+  document.addEventListener('keyup',function(e){keys[e.key]=false;});
+  function updatePaddle(){if(!gameRunning||paused)return;if(keys['ArrowLeft']||keys['a']||keys['A']){paddle.x=Math.max(0,paddle.x-paddle.speed);if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}}if(keys['ArrowRight']||keys['d']||keys['D']){paddle.x=Math.min(W-paddle.w,paddle.x+paddle.speed);if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}}}
+  setInterval(updatePaddle,16);
+
+  document.getElementById('startBtn').addEventListener('click',function(){startGameMusic();startOverlay.classList.add('hidden');gameRunning=true;if(ball.stuck)ball.stuck=false;});
+  document.getElementById('restartBtn').addEventListener('click',function(){stopBgMusic();gameOverOverlay.classList.add('hidden');initGame();startOverlay.classList.remove('hidden');});
+  document.getElementById('nextBtn').addEventListener('click',function(){stopBgMusic();winOverlay.classList.add('hidden');level++;createBricks();paddle.x=(W-paddle.w)/2;resetBall();floatingTexts=[];updateUI();hideWordDisplay();gameRunning=true;startGameMusic();});
+
+  initGame();gameLoop();
+</script>
+</body>
+</html>
