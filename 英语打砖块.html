@@ -529,66 +529,64 @@
     window.speechSynthesis.onvoiceschanged = function() { getEnglishVoice(); };
   }
 
-  // ========== 语音播放：Audio 元素 + 触摸事件重试 ==========
-  // fetch + decodeAudioData 在手机上有 CORS 问题 → 回到 <audio> 元素加载（无 CORS）
-  // <audio>.play() 在手机游戏循环中被阻止 → 失败时挂起，下次 touchmove 重试（用户手势）
+  // ========== 语音播放 — 双引擎 + 触摸事件触发 ==========
+  // 核心问题：手机上 speechSynthesis/Audio.play() 必须从用户手势中调用才有效
+  // 游戏循环中调用 → 浏览器静默拒绝。解决方案：打砖块时把单词放入队列，
+  // 在下一次 touch 事件（用户手势）中播放。touchmove 每秒 ~60 次，延迟可忽略。
 
-  var _audioElements = {};  // word → Audio 元素（已预加载）
-  var _pendingPlay = null;  // 被阻止播放的单词，等待下一个 touch 事件重试
-
-  function buildTtsUrl(word) {
-    return 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=' + encodeURIComponent(word);
-  }
-
-  function preCacheLevelWords(words) {
-    _audioElements = {};
-    _pendingPlay = null;
-    for (var i = 0; i < words.length; i++) {
-      var w = words[i];
-      if (_audioElements[w]) continue;
-      var a = new Audio();
-      a.preload = 'auto';
-      a.volume = 1;
-      a.src = buildTtsUrl(w);
-      a.load();
-      _audioElements[w] = a;
-    }
-  }
+  var _pendingWord = null;    // 等待在下次 touch 中播放的单词
 
   function unlockSpeech() {}
 
   function speakWord(word) {
+    // 不在这里直接播放，而是放入队列，等 touch 事件触发时播放
     if (!word) return;
-    var a = _audioElements[word];
-    if (!a) {
-      a = new Audio();
-      a.preload = 'auto';
-      a.volume = 1;
-      a.src = buildTtsUrl(word);
-      _audioElements[word] = a;
-    }
-    a.currentTime = 0;
-    try {
-      var p = a.play();
-      if (p) {
-        p.catch(function() {
-          // 手机浏览器的自动播放策略阻止了 → 挂起等待下次触摸
-          _pendingPlay = word;
-        });
-      }
-    } catch(e) {
-      _pendingPlay = word;
-    }
+    _pendingWord = word;
   }
 
-  function retryPendingPlay() {
-    if (!_pendingPlay) return;
-    var word = _pendingPlay;
-    _pendingPlay = null;
-    var a = _audioElements[word];
-    if (a) {
-      a.currentTime = 0;
-      try { a.play(); } catch(e) {}
+  function flushSpeech() {
+    // 在 touch 事件中被调用（用户手势上下文），尝试播放挂起的单词
+    if (!_pendingWord) return;
+    var word = _pendingWord;
+    _pendingWord = null;
+
+    // 方式 1：speechSynthesis（电脑主力 + 部分手机支持）
+    if (window.speechSynthesis) {
+      try {
+        // 先确保不处于 paused 状态
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        var u = new SpeechSynthesisUtterance(String(word));
+        u.lang = 'en-US';
+        u.rate = 0.8;
+        u.pitch = 1.0;
+        u.volume = 1;
+        window.speechSynthesis.speak(u);
+        // iOS 关键：speak 后立即 resume，防止被系统暂停
+        window.speechSynthesis.resume();
+      } catch(e) {}
+    }
+
+    // 方式 2：Google TTS Audio 元素（兜底，网络通畅时能用）
+    try {
+      var a = new Audio();
+      a.volume = 1;
+      a.src = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=' + encodeURIComponent(word);
+      a.play().catch(function(){});
+    } catch(e) {}
+  }
+
+  function preCacheLevelWords(words) {
+    // 预加载：用 speechSynthesis 提前说一次静默词，帮助 iOS 缓存语音数据
+    if (window.speechSynthesis) {
+      try {
+        window.speechSynthesis.resume();
+        for (var i = 0; i < Math.min(words.length, 5); i++) {
+          var u = new SpeechSynthesisUtterance(words[i]);
+          u.volume = 0.01; u.rate = 1.5;
+          window.speechSynthesis.speak(u);
+        }
+        window.speechSynthesis.resume();
+      } catch(e) {}
     }
   }
 
@@ -638,7 +636,7 @@
 
   function updateUI() { scoreDisplay.textContent=String(score);levelDisplay.textContent=String(level);var h='';for(var i=0;i<Math.max(0,lives);i++)h+='♥';livesDisplay.textContent=h; }
 
-  function showWord(en,zh) { wordEn.textContent=en;wordCn.textContent=zh;wordGroup.className='word-text-group show';listenBtn.className='listen-btn show';listenBtn.onclick=function(){speakWord(en);}; }
+  function showWord(en,zh) { wordEn.textContent=en;wordCn.textContent=zh;wordGroup.className='word-text-group show';listenBtn.className='listen-btn show';listenBtn.onclick=function(){speakWord(en);flushSpeech();}; }
 
   function hideWordDisplay() { wordGroup.className='word-text-group';listenBtn.className='listen-btn'; }
 
@@ -708,9 +706,9 @@
 
   function gameLoop(){drawBackground();drawBricks();drawPaddle();updateBall();drawBall();drawFloatingTexts();drawPauseOverlay();requestAnimationFrame(gameLoop);}
 
-  canvas.addEventListener('touchstart',function(e){e.preventDefault();unlockSpeech();retryPendingPlay();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}/* 移动端不暂停 - 使用下方暂停按钮 */},{passive:false});
-  canvas.addEventListener('click',function(e){retryPendingPlay();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();});
-  canvas.addEventListener('touchmove',function(e){e.preventDefault();retryPendingPlay();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
+  canvas.addEventListener('touchstart',function(e){e.preventDefault();flushSpeech();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}/* 移动端不暂停 */},{passive:false});
+  canvas.addEventListener('click',function(e){flushSpeech();if(!gameRunning||_gameJustStarted)return;if(ball.stuck){ball.stuck=false;return;}paused=!paused;if(paused)stopBgMusic();else startBgMusic();});
+  canvas.addEventListener('touchmove',function(e){e.preventDefault();flushSpeech();if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var scaleX=W/rect.width;var tx=(e.touches[0].clientX-rect.left)*scaleX;tx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,tx));paddle.x=tx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}},{passive:false});
   canvas.addEventListener('mousemove',function(e){if(!gameRunning||paused)return;var rect=canvas.getBoundingClientRect();var mx=(e.clientX-rect.left)*(W/rect.width);mx=Math.max(paddle.w/2,Math.min(W-paddle.w/2,mx));paddle.x=mx-paddle.w/2;if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;}});
 
   var keys={};
