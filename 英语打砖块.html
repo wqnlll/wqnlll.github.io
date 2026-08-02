@@ -722,7 +722,7 @@
       var hit=(ball.x-paddle.x)/paddle.w;var angle=(hit-0.5)*1.2;var speed=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);ball.dx=Math.sin(angle)*speed;ball.dy=-Math.cos(angle)*speed;ball.y=paddle.y-ball.r;if(Math.abs(ball.dy)<speed*0.3)ball.dy=-speed*0.3;var spd=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(spd>7){ball.dx=(ball.dx/spd)*7;ball.dy=(ball.dy/spd)*7;}
     }
     for(var i=0;i<bricks.length;i++){var b=bricks[i];if(!b.alive)continue;var bx=Math.max(b.x,Math.min(ball.x,b.x+b.w));var by=Math.max(b.y,Math.min(ball.y,b.y+b.h));var distX=ball.x-bx;var distY=ball.y-by;var dist=Math.sqrt(distX*distX+distY*distY);
-      if(dist<ball.r){b.hp--;var destroyed=b.hp<=0;if(destroyed){b.alive=false;showWord(b.en,b.zh);speakWord(b.en);addFloatingText(b.x+b.w/2,b.y+b.h/2-4,b.en);score+=10*level;}else{score+=5;}updateUI();
+      if(dist<ball.r){b.hp--;var destroyed=b.hp<=0;if(destroyed){b.alive=false;showWord(b.en,b.zh);speakWord(b.en);if(!_isMobile)flushSpeech();addFloatingText(b.x+b.w/2,b.y+b.h/2-4,b.en);score+=10*level;}else{score+=5;}updateUI();
         var overlapX=ball.r-Math.abs(distX);var overlapY=ball.r-Math.abs(distY);if(overlapX<overlapY){ball.dx=-ball.dx;ball.x+=(distX>0?overlapX:-overlapX);}else{ball.dy=-ball.dy;ball.y+=(distY>0?overlapY:-overlapY);}break;}
     }
     var allDead=true;for(var i=0;i<bricks.length;i++){if(bricks[i].alive){allDead=false;break;}}
