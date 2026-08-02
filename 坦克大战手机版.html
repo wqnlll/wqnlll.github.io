@@ -283,5 +283,37 @@ document.getElementById('msgBtn').onclick=function(){startGame();};
 document.getElementById('btn-restart').onclick=function(){over=true;run=false;showMsg('坦克大战','开始游戏');};
 draw();
 </script>
+<style>
+.game-info { max-width: 700px; margin: 20px auto 40px; padding: 24px 28px; background: #13131f; border: 1px solid #1e1e30; border-radius: 14px; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; color: #aaa; font-size: 0.9em; line-height: 1.9; }
+.game-info h2 { color: #fff; font-size: 1.2em; margin-bottom: 14px; }
+.game-info h3 { color: #ddd; font-size: 1em; margin: 18px 0 8px; }
+.game-info ul { padding-left: 20px; }
+.game-info li { margin-bottom: 4px; }
+.game-info strong { color: #ddd; }
+.game-info .back-link { display: inline-block; margin-top: 16px; color: #f44; text-decoration: none; font-weight: 700; }
+.game-info .back-link:hover { text-decoration: underline; }
+@media (max-width: 600px) { .game-info { margin: 16px 12px 30px; padding: 18px 16px; } }
+</style>
+<div class="game-info">
+  <h2>📱 坦克大战 · 手机版</h2>
+  <p>专为<strong>手机触屏</strong>优化的坦克大战，随时随地掏出手机就能来一局！</p>
+  <h3>🎯 核心特色</h3>
+  <ul>
+    <li><strong>虚拟摇杆操控</strong>：屏幕底部方向键，直觉式操作，上手零门槛</li>
+    <li><strong>一键开火</strong>：大号开火按钮，战斗中不会误触</li>
+    <li><strong>经典玩法</strong>：保护基地、消灭敌军坦克，还原红白机经典体验</li>
+    <li><strong>即时反馈</strong>：实时分数、生命值、敌军数量一目了然</li>
+  </ul>
+  <h3>🕹 玩法说明</h3>
+  <ul>
+    <li>屏幕底部<strong>方向键（▲◀▶▼）</strong>控制坦克移动</li>
+    <li>点击<strong>「开火」</strong>按钮发射炮弹</li>
+    <li>消灭所有敌军坦克并<strong>保护基地</strong>不被摧毁</li>
+    <li>基地有 3 点生命值，被击中即损失一点</li>
+  </ul>
+  <h3>💡 小贴士</h3>
+  <p>手机版同时支持键盘操作（连接蓝牙键盘时），WASD 移动 + 空格开火。也支持电脑浏览器访问，用键盘玩。</p>
+  <a class="back-link" href="index.html">← 返回首页 · 更多游戏</a>
+</div>
 </body>
 </html>
