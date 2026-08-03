@@ -20,6 +20,8 @@
     'common.startGame': { zh: '开始游戏',      en: 'Start Game' },
     'common.moreGames': { zh: '🎮 更多游戏',   en: '🎮 More Games' },
     'common.backHome':  { zh: '← 返回首页 · 更多游戏', en: '← Back to Home · More Games' },
+    'common.statsLabel':{ zh: '本站被访问 ',          en: 'Total visits: ' },
+    'common.statsUnit': { zh: ' 次 · 访客 ',          en: ' · Visitors: ' },
 
     /* ---------- index.html 首页 ---------- */
     'index.title':      { zh: 'wqnlll · 游戏中心 | 英语打砖块 + 坦克大战', en: 'wqnlll · Game Center | English Brick Breaker + Tank Battle' },
