@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9748302823213677" crossorigin="anonymous"></script>
-<title>坦克大战</title>
+<script src="i18n.js"></script>
+<title data-i18n="tank.title">坦克大战</title>
 <style>
 body { background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: monospace; color: #fff; }
 h1 { color: #f44; margin-bottom: 10px; }
@@ -17,10 +18,10 @@ canvas { border: 2px solid #f44; background: #1a1a2e; }
 </style>
 </head>
 <body>
-<h1>坦克大战</h1>
-<div id="hud">生命: <span id="lives">3</span> | 分数: <span id="score">0</span> | 关卡: <span id="level">1</span> | 敌军: <span id="enemies">0</span> | 基地: <span id="basehp">❤❤❤</span></div>
+<h1 data-i18n="tank.title">坦克大战</h1>
+<div id="hud"><span data-i18n="common.lives">生命</span>: <span id="lives">3</span> | <span data-i18n="common.score">分数</span>: <span id="score">0</span> | <span data-i18n="common.level">关卡</span>: <span id="level">1</span> | <span data-i18n="common.enemies">敌军</span>: <span id="enemies">0</span> | <span data-i18n="common.base">基地</span>: <span id="basehp">❤❤❤</span></div>
 <canvas id="c" width="640" height="480"></canvas>
-<div id="tip">WASD/方向键移动 空格射击 保护基地 消灭所有敌军</div>
+<div id="tip" data-i18n="tank.controls">WASD/方向键移动 空格射击 保护基地 消灭所有敌军</div>
 <div id="msg"><h2 id="msgText">坦克大战</h2><button id="msgBtn">开始游戏</button></div>
 
 <script>
@@ -174,7 +175,7 @@ function update(){
   document.getElementById('level').textContent=lvl;
   document.getElementById('enemies').textContent=act2;
   var bh='';for(var i=0;i<baseHp;i++)bh+='❤';document.getElementById('basehp').textContent=bh||'💀';
-  if(over)showMsg(lives<=0?'游戏结束':'基地被毁！','再来一局');
+  if(over)showMsg(lives<=0?'common.gameOver':'tank.baseDestroyed','common.restart');
 }
 
 function initLvl(){
@@ -214,7 +215,7 @@ function drawTx(t,col,track){
   if(t.mhp>1){ctx.fillStyle='#333';ctx.fillRect(t.x,t.y-4,t.w,3);ctx.fillStyle='#0f0';ctx.fillRect(t.x,t.y-4,t.w*(t.hp/t.mhp),3);}
 }
 
-function showMsg(txt,btn){document.getElementById('msgText').textContent=txt;document.getElementById('msgBtn').textContent=btn;document.getElementById('msg').style.display='flex';}
+var _lastMsg=null;function showMsg(txtKey,btnKey,vars){_lastMsg={k:txtKey,b:btnKey,v:vars};document.getElementById('msgText').textContent=_t(txtKey,vars);document.getElementById('msgBtn').textContent=_t(btnKey);document.getElementById('msg').style.display='flex';}
 function hideMsg(){document.getElementById('msg').style.display='none';}
 
 function startGame(){
@@ -229,6 +230,8 @@ function loop(){update();draw();animId=requestAnimationFrame(loop);}
 document.addEventListener('keydown',function(e){keys[e.code]=true;var gk=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','Space'];if(gk.indexOf(e.code)>=0)e.preventDefault();});
 document.addEventListener('keyup',function(e){keys[e.code]=false;});
 document.getElementById('msgBtn').onclick=function(){startGame();};
+showMsg('tank.title','common.startGame');
+if(window.I18N)I18N.onLangChange(function(){if(_lastMsg&&document.getElementById('msg').style.display==='flex')showMsg(_lastMsg.k,_lastMsg.b,_lastMsg.v);});
 draw();
 </script>
 <style>
@@ -243,26 +246,26 @@ draw();
 @media (max-width: 600px) { .game-info { margin: 16px 12px 30px; padding: 18px 16px; } }
 </style>
 <div class="game-info">
-  <h2>🎮 坦克大战 · 经典版</h2>
-  <p>经典俯视角坦克射击游戏，<strong>还原红白机时代的纯粹乐趣</strong>。用键盘操控坦克，在砖墙迷宫中与敌军周旋！</p>
-  <h3>🎯 核心特色</h3>
+  <h2 data-i18n="tank.infoTitle">🎮 坦克大战 · 经典版</h2>
+  <p data-i18n="tank.infoDesc">经典俯视角坦克射击游戏，<strong>还原红白机时代的纯粹乐趣</strong>。用键盘操控坦克，在砖墙迷宫中与敌军周旋！</p>
+  <h3 data-i18n="tank.featuresTitle">🎯 核心特色</h3>
   <ul>
-    <li><strong>经典玩法</strong>：致敬 FC 红白机经典，俯视角迷宫射击</li>
-    <li><strong>键盘操控</strong>：WASD 移动 + 空格开火，手感流畅</li>
-    <li><strong>基地保卫战</strong>：基地有 3 点生命值，被击中即损失，归零则游戏结束</li>
-    <li><strong>多波敌军</strong>：每关多辆敌军坦克，逐关难度递增</li>
+    <li data-i18n="tank.feature1"><strong>经典玩法</strong>：致敬 FC 红白机经典，俯视角迷宫射击</li>
+    <li data-i18n="tank.feature2"><strong>键盘操控</strong>：WASD 移动 + 空格开火，手感流畅</li>
+    <li data-i18n="tank.feature3"><strong>基地保卫战</strong>：基地有 3 点生命值，被击中即损失，归零则游戏结束</li>
+    <li data-i18n="tank.feature4"><strong>多波敌军</strong>：每关多辆敌军坦克，逐关难度递增</li>
   </ul>
-  <h3>🕹 操控说明</h3>
+  <h3 data-i18n="tank.controlsTitle">🕹 操控说明</h3>
   <ul>
-    <li><strong>W / ↑</strong>：向上移动</li>
-    <li><strong>S / ↓</strong>：向下移动</li>
-    <li><strong>A / ←</strong>：向左移动</li>
-    <li><strong>D / →</strong>：向右移动</li>
-    <li><strong>空格键</strong>：发射炮弹</li>
+    <li data-i18n="tank.ctrl1"><strong>W / ↑</strong>：向上移动</li>
+    <li data-i18n="tank.ctrl2"><strong>S / ↓</strong>：向下移动</li>
+    <li data-i18n="tank.ctrl3"><strong>A / ←</strong>：向左移动</li>
+    <li data-i18n="tank.ctrl4"><strong>D / →</strong>：向右移动</li>
+    <li data-i18n="tank.ctrl5"><strong>空格键</strong>：发射炮弹</li>
   </ul>
-  <h3>💡 小贴士</h3>
-  <p>利用砖墙作为掩体，不要待在开阔地带。优先保护基地——消灭靠近基地的敌军是第一优先级！</p>
-  <a class="back-link" href="index.html">← 返回首页 · 更多游戏</a>
+  <h3 data-i18n="tank.tipTitle">💡 小贴士</h3>
+  <p data-i18n="tank.tip">利用砖墙作为掩体，不要待在开阔地带。优先保护基地——消灭靠近基地的敌军是第一优先级！</p>
+  <a class="back-link" href="index.html" data-i18n="common.backHome">← 返回首页 · 更多游戏</a>
 </div>
 </body>
 </html>

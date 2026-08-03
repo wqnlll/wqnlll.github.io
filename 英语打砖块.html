@@ -3,20 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9748302823213677" crossorigin="anonymous"></script>
+<script src="i18n.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="description" content="小学英语打砖块 · 200+单词 8大主题 · 自动朗读发音 · 手机电脑都能玩！免费在线学英语单词。English Brick Breaker — learn English words while playing!">
+<meta name="description" content="小学英语打砖块 · 200+单词 8大主题 · 自动朗读发音 · 手机电脑都能玩！免费在线学英语单词。English Brick Breaker — learn English words while playing!" data-i18n="brick.desc">
 <meta name="keywords" content="英语学习,打砖块,小学英语,英语单词,在线游戏,教育游戏,English learning,brick breaker,educational game,小学生英语,背单词">
-<meta property="og:title" content="小学英语打砖块 · 一边打砖块一边学英语单词">
-<meta property="og:description" content="200+ 小学英语单词，8 大主题，自动朗读发音！打砖块学英语，孩子越玩越上瘾。免费在线玩，无需下载。">
+<meta property="og:title" content="小学英语打砖块 · 一边打砖块一边学英语单词" data-i18n="brick.ogTitle">
+<meta property="og:description" content="200+ 小学英语单词，8 大主题，自动朗读发音！打砖块学英语，孩子越玩越上瘾。免费在线玩，无需下载。" data-i18n="brick.ogDesc">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://wqnlll.github.io/英语打砖块.html">
 <meta property="og:image" content="https://wqnlll.github.io/og-image.png">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="小学英语打砖块 · 学单词神器">
-<meta name="twitter:description" content="200+ 单词，自动朗读，手机电脑都能玩！免费！">
+<meta name="twitter:title" content="小学英语打砖块 · 学单词神器" data-i18n="brick.twTitle">
+<meta name="twitter:description" content="200+ 单词，自动朗读，手机电脑都能玩！免费！" data-i18n="brick.twDesc">
 <link rel="canonical" href="https://wqnlll.github.io/英语打砖块.html">
-<title>小学英语打砖块 · 学单词神器 | English Brick Breaker</title>
+<title data-i18n="brick.title">小学英语打砖块 · 学单词神器 | English Brick Breaker</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -303,11 +304,11 @@
 
 <div class="game-wrapper">
   <div class="header">
-    <span class="title">📚 小学英语打砖块</span>
+    <span class="title" data-i18n="brick.name">📚 小学英语打砖块</span>
     <div class="stats">
-      <div class="stat"><span class="stat-label">分数</span><span class="stat-value" id="scoreDisplay">0</span></div>
-      <div class="stat"><span class="stat-label">关卡</span><span class="stat-value" id="levelDisplay">1</span></div>
-      <div class="stat"><span class="stat-label">生命</span><span class="stat-value lives" id="livesDisplay">♥♥♥</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="common.score">分数</span><span class="stat-value" id="scoreDisplay">0</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="common.level">关卡</span><span class="stat-value" id="levelDisplay">1</span></div>
+      <div class="stat"><span class="stat-label" data-i18n="common.lives">生命</span><span class="stat-value lives" id="livesDisplay">♥♥♥</span></div>
     </div>
   </div>
 
@@ -315,32 +316,32 @@
     <canvas id="gameCanvas" width="700" height="525"></canvas>
 
     <div class="overlay" id="startOverlay">
-      <div class="overlay-title">📚 小学英语打砖块</div>
-      <div class="overlay-sub">
+      <div class="overlay-title" data-i18n="brick.name">📚 小学英语打砖块</div>
+      <div class="overlay-sub" data-i18n="brick.startSub">
         打碎砖块学英语单词！适合小学生<br>
         每个砖块都有 <span class="highlight">英文 + 中文翻译</span><br>
         打碎时自动朗读发音！
       </div>
-      <button class="btn" id="startBtn">开始学习</button>
+      <button class="btn" id="startBtn" data-i18n="brick.startBtn">开始学习</button>
     </div>
 
     <div class="overlay hidden" id="gameOverOverlay">
-      <div class="overlay-title game-over">游戏结束</div>
+      <div class="overlay-title game-over" data-i18n="common.gameOver">游戏结束</div>
       <div class="overlay-score" id="finalScore">0</div>
-      <button class="btn" id="restartBtn">再来一局</button>
+      <button class="btn" id="restartBtn" data-i18n="common.restart">再来一局</button>
       <div class="share-row">
-        <button class="share-btn" onclick="shareGame()">📤 分享给朋友</button>
-        <a class="share-btn" href="index.html" target="_blank">🎮 更多游戏</a>
+        <button class="share-btn" onclick="shareGame()" data-i18n="brick.shareFriend">📤 分享给朋友</button>
+        <a class="share-btn" href="index.html" target="_blank" data-i18n="common.moreGames">🎮 更多游戏</a>
       </div>
     </div>
 
     <div class="overlay hidden" id="winOverlay">
-      <div class="overlay-title win">太棒了!</div>
+      <div class="overlay-title win" data-i18n="brick.winTitle">太棒了!</div>
       <div class="overlay-score" id="winScore">0</div>
-      <button class="btn" id="nextBtn">下一关</button>
+      <button class="btn" id="nextBtn" data-i18n="brick.nextLevel">下一关</button>
       <div class="share-row">
-        <button class="share-btn" onclick="shareGame()">📤 分享战绩</button>
-        <a class="share-btn" href="index.html" target="_blank">🎮 更多游戏</a>
+        <button class="share-btn" onclick="shareGame()" data-i18n="brick.shareScore">📤 分享战绩</button>
+        <a class="share-btn" href="index.html" target="_blank" data-i18n="common.moreGames">🎮 更多游戏</a>
       </div>
     </div>
 
@@ -359,8 +360,8 @@
   </div>
 
   <div class="controls-hint">
-    <span>💻 <kbd>← →</kbd> 移动 <kbd>空格</kbd> 发射</span>
-    <span>📱 <span>滑动移动 · 点击发射</span></span>
+    <span data-i18n="brick.ctrlDesktop">💻 <kbd>← →</kbd> 移动 <kbd>空格</kbd> 发射</span>
+    <span data-i18n="brick.ctrlMobile">📱 <span>滑动移动 · 点击发射</span></span>
   </div>
 </div>
 
@@ -381,10 +382,11 @@
   var wordEn = document.getElementById('wordEn');
   var wordCn = document.getElementById('wordCn');
   var listenBtn = document.getElementById('listenBtn');
+  var _lastFinal = null, _lastWin = null;
 
   var VOCAB_TOPICS = [
     {
-      name: '动物', words: [
+      name: '动物', en: 'Animals', words: [
         { en: 'cat', zh: '猫' }, { en: 'dog', zh: '狗' }, { en: 'fish', zh: '鱼' },
         { en: 'bird', zh: '鸟' }, { en: 'bear', zh: '熊' }, { en: 'frog', zh: '青蛙' },
         { en: 'duck', zh: '鸭子' }, { en: 'cow', zh: '奶牛' }, { en: 'pig', zh: '猪' },
@@ -398,7 +400,7 @@
       ]
     },
     {
-      name: '食物', words: [
+      name: '食物', en: 'Food', words: [
         { en: 'apple', zh: '苹果' }, { en: 'bread', zh: '面包' }, { en: 'milk', zh: '牛奶' },
         { en: 'egg', zh: '鸡蛋' }, { en: 'rice', zh: '米饭' }, { en: 'meat', zh: '肉' },
         { en: 'soup', zh: '汤' }, { en: 'cake', zh: '蛋糕' }, { en: 'juice', zh: '果汁' },
@@ -412,7 +414,7 @@
       ]
     },
     {
-      name: '身体', words: [
+      name: '身体', en: 'Body', words: [
         { en: 'eye', zh: '眼睛' }, { en: 'ear', zh: '耳朵' }, { en: 'arm', zh: '手臂' },
         { en: 'leg', zh: '腿' }, { en: 'lip', zh: '嘴唇' }, { en: 'nose', zh: '鼻子' },
         { en: 'hand', zh: '手' }, { en: 'foot', zh: '脚' }, { en: 'head', zh: '头' },
@@ -426,7 +428,7 @@
       ]
     },
     {
-      name: '自然', words: [
+      name: '自然', en: 'Nature', words: [
         { en: 'sun', zh: '太阳' }, { en: 'moon', zh: '月亮' }, { en: 'star', zh: '星星' },
         { en: 'sky', zh: '天空' }, { en: 'sea', zh: '大海' }, { en: 'tree', zh: '树' },
         { en: 'rock', zh: '岩石' }, { en: 'sand', zh: '沙子' }, { en: 'wave', zh: '波浪' },
@@ -440,7 +442,7 @@
       ]
     },
     {
-      name: '颜色与形状', words: [
+      name: '颜色与形状', en: 'Colors & Shapes', words: [
         { en: 'red', zh: '红色' }, { en: 'blue', zh: '蓝色' }, { en: 'gold', zh: '金色' },
         { en: 'pink', zh: '粉色' }, { en: 'gray', zh: '灰色' }, { en: 'black', zh: '黑色' },
         { en: 'white', zh: '白色' }, { en: 'green', zh: '绿色' }, { en: 'brown', zh: '棕色' },
@@ -450,7 +452,7 @@
       ]
     },
     {
-      name: '动作', words: [
+      name: '动作', en: 'Actions', words: [
         { en: 'run', zh: '跑' }, { en: 'jump', zh: '跳' }, { en: 'swim', zh: '游泳' },
         { en: 'fly', zh: '飞' }, { en: 'eat', zh: '吃' }, { en: 'read', zh: '阅读' },
         { en: 'sing', zh: '唱歌' }, { en: 'dance', zh: '跳舞' }, { en: 'draw', zh: '画画' },
@@ -464,7 +466,7 @@
       ]
     },
     {
-      name: '学校', words: [
+      name: '学校', en: 'School', words: [
         { en: 'book', zh: '书' }, { en: 'pen', zh: '钢笔' }, { en: 'desk', zh: '书桌' },
         { en: 'ruler', zh: '尺子' }, { en: 'paper', zh: '纸' }, { en: 'pencil', zh: '铅笔' },
         { en: 'eraser', zh: '橡皮' }, { en: 'school', zh: '学校' }, { en: 'teacher', zh: '老师' },
@@ -477,7 +479,7 @@
       ]
     },
     {
-      name: '日用品', words: [
+      name: '日用品', en: 'Daily Items', words: [
         { en: 'cup', zh: '杯子' }, { en: 'plate', zh: '盘子' }, { en: 'bowl', zh: '碗' },
         { en: 'knife', zh: '刀' }, { en: 'spoon', zh: '勺子' }, { en: 'table', zh: '桌子' },
         { en: 'door', zh: '门' }, { en: 'window', zh: '窗户' }, { en: 'lamp', zh: '台灯' },
@@ -726,7 +728,7 @@
     for(var i=floatingTexts.length-1;i>=0;i--){var ft=floatingTexts[i];ft.y+=ft.vy;ft.life-=0.025;if(ft.life<=0){floatingTexts.splice(i,1);continue;}ctx.globalAlpha=ft.life;ctx.fillStyle='#ffd700';ctx.font='bold 15px "Courier New", monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ffd700';ctx.shadowBlur=15;ctx.fillText(ft.text,ft.x,ft.y);ctx.shadowBlur=0;ctx.globalAlpha=1.0;}
   }
 
-  function drawPauseOverlay() { if(!paused)return;ctx.fillStyle='rgba(10,10,26,0.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#00f0ff';ctx.font='18px "PingFang SC", "Microsoft YaHei", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('暂停',W/2,H/2-10);ctx.fillStyle='#505070';ctx.font='10px monospace';ctx.fillText('点击继续',W/2,H/2+20); }
+  function drawPauseOverlay() { if(!paused)return;ctx.fillStyle='rgba(10,10,26,0.6)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#00f0ff';ctx.font='18px "PingFang SC", "Microsoft YaHei", sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(_t('brick.paused'),W/2,H/2-10);ctx.fillStyle='#505070';ctx.font='10px monospace';ctx.fillText(_t('brick.tapContinue'),W/2,H/2+20); }
 
   function updateBall() {
     if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;return;}
@@ -736,7 +738,7 @@
     if(ball.x-ball.r<=0){ball.x=ball.r;ball.dx=-ball.dx;}
     if(ball.x+ball.r>=W){ball.x=W-ball.r;ball.dx=-ball.dx;}
     if(ball.y-ball.r<=0){ball.y=ball.r;ball.dy=-ball.dy;}
-    if(ball.y+ball.r>H){lives--;updateUI();if(lives<=0){gameRunning=false;stopBgMusic();document.getElementById('pauseBtn').style.display='none';finalScore.textContent='最终得分: '+score;gameOverOverlay.classList.remove('hidden');return;}resetBall();return;}
+    if(ball.y+ball.r>H){lives--;updateUI();if(lives<=0){gameRunning=false;stopBgMusic();document.getElementById('pauseBtn').style.display='none';_lastFinal={score:score};finalScore.textContent=_t('brick.finalScore',_lastFinal);gameOverOverlay.classList.remove('hidden');return;}resetBall();return;}
     if(ball.dy>0&&ball.y+ball.r>=paddle.y&&ball.y+ball.r<=paddle.y+paddle.h+5&&ball.x>=paddle.x-ball.r&&ball.x<=paddle.x+paddle.w+ball.r){
       var hit=(ball.x-paddle.x)/paddle.w;var angle=(hit-0.5)*1.2;var speed=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);ball.dx=Math.sin(angle)*speed;ball.dy=-Math.cos(angle)*speed;ball.y=paddle.y-ball.r;if(Math.abs(ball.dy)<speed*0.3)ball.dy=-speed*0.3;var spd=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(spd>7){ball.dx=(ball.dx/spd)*7;ball.dy=(ball.dy/spd)*7;}
     }
@@ -745,7 +747,7 @@
         var overlapX=ball.r-Math.abs(distX);var overlapY=ball.r-Math.abs(distY);if(overlapX<overlapY){ball.dx=-ball.dx;ball.x+=(distX>0?overlapX:-overlapX);}else{ball.dy=-ball.dy;ball.y+=(distY>0?overlapY:-overlapY);}break;}
     }
     var allDead=true;for(var i=0;i<bricks.length;i++){if(bricks[i].alive){allDead=false;break;}}
-    if(allDead){gameRunning=false;stopBgMusic();document.getElementById('pauseBtn').style.display='none';var tn=VOCAB_TOPICS[(level-1)%VOCAB_TOPICS.length].name;winScore.textContent='得分: '+score+' | 学了 '+(BRICK_COLS*BRICK_ROWS)+' 个'+tn+'单词!';winOverlay.classList.remove('hidden');}
+    if(allDead){gameRunning=false;stopBgMusic();document.getElementById('pauseBtn').style.display='none';var tn=VOCAB_TOPICS[(level-1)%VOCAB_TOPICS.length];var topicLabel=(window.I18N&&I18N.lang()==='en')?tn.en:tn.name;_lastWin={score:score,n:BRICK_COLS*BRICK_ROWS,topic:topicLabel};winScore.textContent=_t('brick.winMsg',_lastWin);winOverlay.classList.remove('hidden');}
     var cs=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(cs>7){ball.dx=(ball.dx/cs)*7;ball.dy=(ball.dy/cs)*7;}
   }
 
@@ -816,9 +818,9 @@
 
   function shareGame() {
     var url = 'https://www.axureshow.com/project/bVqND9kG/英语打砖块.html';
-    var text = '🎮 小学英语打砖块 · 200+单词自动朗读！免费在线玩，一起来学英语吧！';
+    var text = _t('brick.shareText');
     if (navigator.share) {
-      navigator.share({ title: '小学英语打砖块', text: text, url: url }).catch(function(){});
+      navigator.share({ title: _t('brick.shareTitle'), text: text, url: url }).catch(function(){});
     } else {
       var ta = document.createElement('textarea');
       ta.value = text + ' ' + url;
@@ -827,11 +829,23 @@
       document.execCommand('copy'); document.body.removeChild(ta);
       var el = event.target;
       var orig = el.textContent;
-      el.textContent = '✅ 已复制链接！';
+      el.textContent = _t('brick.copied');
       el.style.color = '#0f0'; el.style.borderColor = '#0f0';
       setTimeout(function(){ el.textContent = orig; el.style.color = ''; el.style.borderColor = ''; }, 2000);
     }
   }
+
+  // 语言切换时，重绘开着的结束/胜利遮罩文案
+  if (window.I18N) I18N.onLangChange(function() {
+    if (!gameOverOverlay.classList.contains('hidden') && _lastFinal) {
+      finalScore.textContent = _t('brick.finalScore', _lastFinal);
+    }
+    if (!winOverlay.classList.contains('hidden') && _lastWin) {
+      var tn = VOCAB_TOPICS[(level - 1) % VOCAB_TOPICS.length];
+      _lastWin.topic = (I18N.lang() === 'en') ? tn.en : tn.name;
+      winScore.textContent = _t('brick.winMsg', _lastWin);
+    }
+  });
 </script>
 <style>
 .game-info { max-width: 700px; margin: 20px auto 40px; padding: 24px 28px; background: #13131f; border: 1px solid #1e1e30; border-radius: 14px; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; color: #aaa; font-size: 0.9em; line-height: 1.9; }
@@ -845,25 +859,25 @@
 @media (max-width: 600px) { .game-info { margin: 16px 12px 30px; padding: 18px 16px; } }
 </style>
 <div class="game-info">
-  <h2>📚 英语打砖块 · 学单词神器</h2>
-  <p>将<strong>小学英语单词</strong>和经典打砖块玩法巧妙结合，让孩子在游戏中不知不觉记住单词！</p>
-  <h3>🎯 核心特色</h3>
+  <h2 data-i18n="brick.infoTitle">📚 英语打砖块 · 学单词神器</h2>
+  <p data-i18n="brick.infoDesc">将<strong>小学英语单词</strong>和经典打砖块玩法巧妙结合，让孩子在游戏中不知不觉记住单词！</p>
+  <h3 data-i18n="brick.featuresTitle">🎯 核心特色</h3>
   <ul>
-    <li><strong>8 大主题</strong>：动物、食物、颜色、数字、家庭成员、身体部位、学校用品、日常用品</li>
-    <li><strong>200+ 核心词汇</strong>：覆盖小学阶段常用英语单词，每个砖块都是英文 + 中文翻译</li>
-    <li><strong>真人发音</strong>：打碎砖块时自动朗读英语发音，帮助建立正确的语音印象</li>
-    <li><strong>分数激励</strong>：打碎砖块获得分数，每关结束展示成绩，激励不断挑战</li>
+    <li data-i18n="brick.feature1"><strong>8 大主题</strong>：动物、食物、颜色、数字、家庭成员、身体部位、学校用品、日常用品</li>
+    <li data-i18n="brick.feature2"><strong>200+ 核心词汇</strong>：覆盖小学阶段常用英语单词，每个砖块都是英文 + 中文翻译</li>
+    <li data-i18n="brick.feature3"><strong>真人发音</strong>：打碎砖块时自动朗读英语发音，帮助建立正确的语音印象</li>
+    <li data-i18n="brick.feature4"><strong>分数激励</strong>：打碎砖块获得分数，每关结束展示成绩，激励不断挑战</li>
   </ul>
-  <h3>🕹 玩法说明</h3>
+  <h3 data-i18n="brick.howTitle">🕹 玩法说明</h3>
   <ul>
-    <li><strong>电脑端</strong>：← → 方向键移动挡板，空格键发射小球</li>
-    <li><strong>手机端</strong>：左右滑动移动挡板，点击屏幕发射小球</li>
-    <li>用挡板接住小球，让小球击碎砖块。每块砖都是一张单词卡！</li>
-    <li>3 条生命，小球掉落即失去一条命。清空所有砖块进入下一关</li>
+    <li data-i18n="brick.how1"><strong>电脑端</strong>：← → 方向键移动挡板，空格键发射小球</li>
+    <li data-i18n="brick.how2"><strong>手机端</strong>：左右滑动移动挡板，点击屏幕发射小球</li>
+    <li data-i18n="brick.how3">用挡板接住小球，让小球击碎砖块。每块砖都是一张单词卡！</li>
+    <li data-i18n="brick.how4">3 条生命，小球掉落即失去一条命。清空所有砖块进入下一关</li>
   </ul>
-  <h3>👶 适合人群</h3>
-  <p>小学生、英语初学者、想通过趣味方式复习单词的任何年龄段学习者。</p>
-  <a class="back-link" href="index.html">← 返回首页 · 更多游戏</a>
+  <h3 data-i18n="brick.audienceTitle">👶 适合人群</h3>
+  <p data-i18n="brick.audience">小学生、英语初学者、想通过趣味方式复习单词的任何年龄段学习者。</p>
+  <a class="back-link" href="index.html" data-i18n="common.backHome">← 返回首页 · 更多游戏</a>
 </div>
 </body>
 </html>
