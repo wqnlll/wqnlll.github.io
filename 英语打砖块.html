@@ -330,7 +330,7 @@
       <button class="btn" id="restartBtn">再来一局</button>
       <div class="share-row">
         <button class="share-btn" onclick="shareGame()">📤 分享给朋友</button>
-        <a class="share-btn" href="https://wqnlll.github.io" target="_blank">🎮 更多游戏</a>
+        <a class="share-btn" href="index.html" target="_blank">🎮 更多游戏</a>
       </div>
     </div>
 
@@ -340,7 +340,7 @@
       <button class="btn" id="nextBtn">下一关</button>
       <div class="share-row">
         <button class="share-btn" onclick="shareGame()">📤 分享战绩</button>
-        <a class="share-btn" href="https://wqnlll.github.io" target="_blank">🎮 更多游戏</a>
+        <a class="share-btn" href="index.html" target="_blank">🎮 更多游戏</a>
       </div>
     </div>
 
@@ -546,6 +546,7 @@
     if (englishVoice) return englishVoice;
     if (!window.speechSynthesis) return null;
     var voices = window.speechSynthesis.getVoices();
+    var fallback = null;
     // 优先找原生英语语音
     for (var i = 0; i < voices.length; i++) {
       var v = voices[i];
@@ -553,7 +554,9 @@
       if (v.lang === 'en-US' && v.localService && !englishVoice) englishVoice = v;
       if (v.lang.startsWith('en-') && v.localService && !englishVoice) englishVoice = v;
       if (v.lang.startsWith('en-') && !englishVoice) englishVoice = v;
+      if (!fallback) fallback = v;
     }
+    if (!englishVoice) englishVoice = fallback;
     return englishVoice;
   }
   // 预加载语音列表（异步）
@@ -566,8 +569,7 @@
   // 手机：播放本地预生成的 MP3（audio/word.mp3），AudioContext 管线，必定能响
   // 电脑：继续用 speechSynthesis，已经验证完美工作
 
-  var _isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) ||
-                  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var _isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var _pendingWord = null;
 
   function unlockSpeech() {}
@@ -577,25 +579,40 @@
     _pendingWord = word;
   }
 
+  // 手机 MP3 播放：复用预缓存的 Audio 元素（已 load 过，避免新元素没加载完 play() 静默失败）
+  var _audioCache = {};
+  function playMp3(word) {
+    try {
+      var a = _audioCache[word];
+      if (!a) {
+        a = new Audio();
+        a.preload = 'auto';
+        a.src = 'audio/' + encodeURIComponent(word) + '.mp3';
+        a.load();
+        _audioCache[word] = a;
+      }
+      a.volume = 1;
+      a.currentTime = 0;
+      a.play().catch(function(){});
+    } catch(e) {}
+  }
+
   function flushSpeech() {
     if (!_pendingWord) return;
     var word = _pendingWord;
     _pendingWord = null;
 
     if (_isMobile) {
-      // 手机：播放本地 MP3 文件
-      try {
-        var a = new Audio();
-        a.volume = 1;
-        a.src = 'audio/' + encodeURIComponent(word) + '.mp3';
-        a.play().catch(function(){});
-      } catch(e) {}
+      // 手机：播放本地 MP3 文件（复用已加载元素，确保能响）
+      playMp3(word);
     } else {
-      // 电脑：speechSynthesis（已验证完美）
+      // 电脑：speechSynthesis，显式指定本地语音（避免走谷歌网络语音、被代理挡住而静音）
       if (window.speechSynthesis) {
         try {
           var u = new SpeechSynthesisUtterance(String(word));
           u.lang = 'en-US'; u.rate = 0.8; u.pitch = 1.0; u.volume = 1;
+          var voice = getEnglishVoice();
+          if (voice) u.voice = voice;
           window.speechSynthesis.speak(u);
         } catch(e) {}
       }
@@ -603,14 +620,16 @@
   }
 
   function preCacheLevelWords(words) {
-    // 手机：预加载本关 MP3 到浏览器缓存
+    // 手机：预加载本关 MP3 到 _audioCache（playMp3 复用这些已加载元素）
     if (_isMobile) {
       for (var i = 0; i < words.length; i++) {
+        if (_audioCache[words[i]]) continue;
         try {
           var a = new Audio();
           a.preload = 'auto';
           a.src = 'audio/' + encodeURIComponent(words[i]) + '.mp3';
           a.load();
+          _audioCache[words[i]] = a;
         } catch(e) {}
       }
     }
@@ -722,7 +741,7 @@
       var hit=(ball.x-paddle.x)/paddle.w;var angle=(hit-0.5)*1.2;var speed=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);ball.dx=Math.sin(angle)*speed;ball.dy=-Math.cos(angle)*speed;ball.y=paddle.y-ball.r;if(Math.abs(ball.dy)<speed*0.3)ball.dy=-speed*0.3;var spd=Math.sqrt(ball.dx*ball.dx+ball.dy*ball.dy);if(spd>7){ball.dx=(ball.dx/spd)*7;ball.dy=(ball.dy/spd)*7;}
     }
     for(var i=0;i<bricks.length;i++){var b=bricks[i];if(!b.alive)continue;var bx=Math.max(b.x,Math.min(ball.x,b.x+b.w));var by=Math.max(b.y,Math.min(ball.y,b.y+b.h));var distX=ball.x-bx;var distY=ball.y-by;var dist=Math.sqrt(distX*distX+distY*distY);
-      if(dist<ball.r){b.hp--;var destroyed=b.hp<=0;if(destroyed){b.alive=false;showWord(b.en,b.zh);speakWord(b.en);if(!_isMobile)flushSpeech();addFloatingText(b.x+b.w/2,b.y+b.h/2-4,b.en);score+=10*level;}else{score+=5;}updateUI();
+      if(dist<ball.r){b.hp--;var destroyed=b.hp<=0;if(destroyed){b.alive=false;showWord(b.en,b.zh);speakWord(b.en);flushSpeech();addFloatingText(b.x+b.w/2,b.y+b.h/2-4,b.en);score+=10*level;}else{score+=5;}updateUI();
         var overlapX=ball.r-Math.abs(distX);var overlapY=ball.r-Math.abs(distY);if(overlapX<overlapY){ball.dx=-ball.dx;ball.x+=(distX>0?overlapX:-overlapX);}else{ball.dy=-ball.dy;ball.y+=(distY>0?overlapY:-overlapY);}break;}
     }
     var allDead=true;for(var i=0;i<bricks.length;i++){if(bricks[i].alive){allDead=false;break;}}
@@ -796,7 +815,7 @@
   initGame();gameLoop();
 
   function shareGame() {
-    var url = 'https://wqnlll.github.io/英语打砖块.html';
+    var url = 'https://www.axureshow.com/project/bVqND9kG/英语打砖块.html';
     var text = '🎮 小学英语打砖块 · 200+单词自动朗读！免费在线玩，一起来学英语吧！';
     if (navigator.share) {
       navigator.share({ title: '小学英语打砖块', text: text, url: url }).catch(function(){});
