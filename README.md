@@ -1,8 +1,8 @@
 # 🎮 wqnlll Game Center · Free Online Browser Games
 
 [![GitHub Pages](https://img.shields.io/badge/Play%20Now-Online-green?style=for-the-badge&logo=github)](https://wqnlll.github.io)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wqnlll/wqnlll.github.io/blob/main/README.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/wqnlll/wqnlll.github.io/issues)
 
 > 🕹️ **Free browser games** — no download, no signup, just play! Play English word games, brick breaker, and classic tank games right in your browser on PC, phone or tablet.
 
