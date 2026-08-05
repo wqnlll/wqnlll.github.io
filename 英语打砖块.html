@@ -726,8 +726,8 @@
   var paddle = { w: 100, h: 14, x: 0, y: H - 32, speed: 7 };
   paddle.x = (W - paddle.w) / 2;
   var ball = { x: 0, y: 0, r: 10, dx: 4, dy: -4, speed: 4.5, stuck: true };
-  // 手机端：球向上飞时减速系数（0.7 = 慢三成；电脑端不受影响，恒为 1）
-  var MOBILE_UP_SLOW = 0.7;
+  // 手机端：球全程匀速减速系数（0.7 = 慢三成，全程一个速度，不会"上慢下快/手摸滑板突然变快"；电脑端不受影响，恒为 1）
+  var MOBILE_SLOW = 0.7;
   var trail = [];
   var BRICK_COLS = 10, BRICK_ROWS = 5, BRICK_W = 62, BRICK_H = 32, BRICK_PAD = 6, BRICK_TOP = 50;
   var BRICK_LEFT = (W - (BRICK_COLS * (BRICK_W + BRICK_PAD) - BRICK_PAD)) / 2;
@@ -825,8 +825,8 @@
     if(ball.stuck){ball.x=paddle.x+paddle.w/2;ball.y=paddle.y-ball.r;return;}
     if(paused||!gameRunning)return;
     trail.push({x:ball.x,y:ball.y});if(trail.length>10)trail.shift();
-    // 手机端：球向上飞时整体减速，方便看清砖块/单词；向下回弹恢复原速（电脑端不变）
-    if (_isMobile && ball.dy < 0) { ball.x += ball.dx * MOBILE_UP_SLOW; ball.y += ball.dy * MOBILE_UP_SLOW; }
+    // 手机端：球全程匀速减速（飞上去/落下来/碰滑板后都是一个速度，不会突然变快；电脑端不变）
+    if (_isMobile) { ball.x += ball.dx * MOBILE_SLOW; ball.y += ball.dy * MOBILE_SLOW; }
     else { ball.x += ball.dx; ball.y += ball.dy; }
     if(ball.x-ball.r<=0){ball.x=ball.r;ball.dx=-ball.dx;}
     if(ball.x+ball.r>=W){ball.x=W-ball.r;ball.dx=-ball.dx;}
