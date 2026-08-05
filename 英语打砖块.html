@@ -727,7 +727,7 @@
   paddle.x = (W - paddle.w) / 2;
   var ball = { x: 0, y: 0, r: 10, dx: 4, dy: -4, speed: 4.5, stuck: true };
   // 手机端：球的固定匀速速度——每帧都归一化到它，飞上去/落下来/碰滑板后始终一个速度，绝不忽快忽慢（电脑端走原版逻辑）
-  var MOBILE_BALL_SPEED = 3.5;
+  var MOBILE_BALL_SPEED = 3;
   var trail = [];
   var BRICK_COLS = 10, BRICK_ROWS = 5, BRICK_W = 62, BRICK_H = 32, BRICK_PAD = 6, BRICK_TOP = 50;
   var BRICK_LEFT = (W - (BRICK_COLS * (BRICK_W + BRICK_PAD) - BRICK_PAD)) / 2;
