@@ -5,6 +5,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9748302823213677" crossorigin="anonymous"></script>
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <script src="i18n.js"></script>
+<script src="sentences.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="小学英语打砖块 · 200+单词 8大主题 · 自动朗读发音 · 手机电脑都能玩！免费在线学英语单词。English Brick Breaker — learn English words while playing!" data-i18n="brick.desc">
 <meta name="keywords" content="英语学习,打砖块,小学英语,英语单词,在线游戏,教育游戏,English learning,brick breaker,educational game,小学生英语,背单词">
@@ -178,6 +179,30 @@
     font-size: clamp(13px, 3vw, 15px);
     color: var(--warm);
     font-weight: 400;
+  }
+
+  .word-sentence {
+    font-family: 'Courier New', monospace;
+    font-size: clamp(11px, 2.4vw, 13px);
+    font-weight: 600;
+    color: var(--cyan);
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    line-height: 1.3;
+  }
+
+  .word-sentence-zh {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: clamp(10px, 2vw, 12px);
+    color: var(--dim);
+    line-height: 1.2;
+  }
+
+  .sent-label {
+    color: var(--dim);
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-size: clamp(9px, 1.8vw, 11px);
+    font-weight: 400;
+    margin-right: 4px;
   }
 
   .listen-btn {
@@ -354,6 +379,8 @@
       <div class="word-text-group" id="wordGroup">
         <span class="word-en" id="wordEn">cat</span>
         <span class="word-cn" id="wordCn">猫</span>
+        <span class="word-sentence"><span class="sent-label" data-i18n="brick.sentence">例句</span><span id="wordSentEn"></span></span>
+        <span class="word-sentence-zh" id="wordSentZh"></span>
       </div>
     </div>
     <button class="listen-btn" id="listenBtn">🔊</button>
@@ -382,6 +409,8 @@
   var wordGroup = document.getElementById('wordGroup');
   var wordEn = document.getElementById('wordEn');
   var wordCn = document.getElementById('wordCn');
+  var wordSentEn = document.getElementById('wordSentEn');
+  var wordSentZh = document.getElementById('wordSentZh');
   var listenBtn = document.getElementById('listenBtn');
   var _lastFinal = null, _lastWin = null;
 
@@ -574,17 +603,19 @@
 
   var _isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var _pendingWord = null;
+  var _pendingSentence = null;
 
   function unlockSpeech() {}
 
   function speakWord(word) {
     if (!word) return;
     _pendingWord = word;
+    _pendingSentence = (window.WORD_SENTENCES&&WORD_SENTENCES[word])?WORD_SENTENCES[word].en:null;
   }
 
   // 手机 MP3 播放：复用预缓存的 Audio 元素（已 load 过，避免新元素没加载完 play() 静默失败）
   var _audioCache = {};
-  function playMp3(word) {
+  function playMp3(word, onend) {
     try {
       var a = _audioCache[word];
       if (!a) {
@@ -594,6 +625,28 @@
         a.load();
         _audioCache[word] = a;
       }
+      if (onend) a.onended = onend;
+      a.volume = 1;
+      a.currentTime = 0;
+      a.play().catch(function(){});
+    } catch(e) {}
+  }
+
+  // 例句 MP3（audio/s/<word>.mp3）：单词播完链式播放；新词打断时暂停上一个例句
+  var _sentAudioCache = {};
+  var _lastSentAudio = null;
+  function playMp3Sentence(word) {
+    try {
+      if (_lastSentAudio) { try { _lastSentAudio.pause(); } catch(e){} _lastSentAudio = null; }
+      var a = _sentAudioCache[word];
+      if (!a) {
+        a = new Audio();
+        a.preload = 'auto';
+        a.src = 'audio/s/' + encodeURIComponent(word) + '.mp3';
+        a.load();
+        _sentAudioCache[word] = a;
+      }
+      _lastSentAudio = a;
       a.volume = 1;
       a.currentTime = 0;
       a.play().catch(function(){});
@@ -603,11 +656,15 @@
   function flushSpeech() {
     if (!_pendingWord) return;
     var word = _pendingWord;
+    var sentence = _pendingSentence || null;
     _pendingWord = null;
+    _pendingSentence = null;
 
     if (_isMobile) {
-      // 手机：播放本地 MP3 文件（复用已加载元素，确保能响）
-      playMp3(word);
+      // 手机：播放单词 MP3 → 播完再链式播例句 MP3（复用已加载元素，确保能响）
+      playMp3(word, function() {
+        if (sentence) playMp3Sentence(word);
+      });
     } else {
       // 电脑：speechSynthesis，显式指定本地语音（避免走谷歌网络语音、被代理挡住而静音）
       if (window.speechSynthesis) {
@@ -617,23 +674,40 @@
           var voice = getEnglishVoice();
           if (voice) u.voice = voice;
           window.speechSynthesis.speak(u);
+          if (sentence) {
+            var su = new SpeechSynthesisUtterance(String(sentence));
+            su.lang = 'en-US'; su.rate = 0.85; su.pitch = 1.0; su.volume = 1;
+            if (voice) su.voice = voice;
+            window.speechSynthesis.speak(su);
+          }
         } catch(e) {}
       }
     }
   }
 
   function preCacheLevelWords(words) {
-    // 手机：预加载本关 MP3 到 _audioCache（playMp3 复用这些已加载元素）
+    // 手机：预加载本关单词 + 例句 MP3（playMp3/playMp3Sentence 复用这些已加载元素）
     if (_isMobile) {
       for (var i = 0; i < words.length; i++) {
-        if (_audioCache[words[i]]) continue;
-        try {
-          var a = new Audio();
-          a.preload = 'auto';
-          a.src = 'audio/' + encodeURIComponent(words[i]) + '.mp3';
-          a.load();
-          _audioCache[words[i]] = a;
-        } catch(e) {}
+        var w = words[i];
+        if (!_audioCache[w]) {
+          try {
+            var a = new Audio();
+            a.preload = 'auto';
+            a.src = 'audio/' + encodeURIComponent(w) + '.mp3';
+            a.load();
+            _audioCache[w] = a;
+          } catch(e) {}
+        }
+        if (!_sentAudioCache[w] && window.WORD_SENTENCES && WORD_SENTENCES[w]) {
+          try {
+            var sa = new Audio();
+            sa.preload = 'auto';
+            sa.src = 'audio/s/' + encodeURIComponent(w) + '.mp3';
+            sa.load();
+            _sentAudioCache[w] = sa;
+          } catch(e) {}
+        }
       }
     }
   }
@@ -684,7 +758,14 @@
 
   function updateUI() { scoreDisplay.textContent=String(score);levelDisplay.textContent=String(level);var h='';for(var i=0;i<Math.max(0,lives);i++)h+='♥';livesDisplay.textContent=h; }
 
-  function showWord(en,zh) { wordEn.textContent=en;wordCn.textContent=zh;wordGroup.className='word-text-group show';listenBtn.className='listen-btn show';listenBtn.onclick=function(){speakWord(en);flushSpeech();}; }
+  function showWord(en,zh) {
+    wordEn.textContent=en;wordCn.textContent=zh;
+    var s=(window.WORD_SENTENCES&&WORD_SENTENCES[en])||null;
+    wordSentEn.textContent=s?s.en:'';
+    wordSentZh.textContent=s?s.zh:'';
+    wordGroup.className='word-text-group show';listenBtn.className='listen-btn show';
+    listenBtn.onclick=function(){speakWord(en);flushSpeech();};
+  }
 
   function hideWordDisplay() { wordGroup.className='word-text-group';listenBtn.className='listen-btn'; }
 
