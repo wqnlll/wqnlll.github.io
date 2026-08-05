@@ -615,8 +615,12 @@
 
   // 手机 MP3 播放：复用预缓存的 Audio 元素（已 load 过，避免新元素没加载完 play() 静默失败）
   var _audioCache = {};
+  var _lastWordAudio = null;
   function playMp3(word, onend) {
     try {
+      // 连续打中多个砖块：停掉正在读的上一个单词/例句，只读最新这条（跳过=跳过，不堆积）
+      if (_lastWordAudio) { try { _lastWordAudio.pause(); _lastWordAudio.currentTime = 0; } catch(e){} _lastWordAudio = null; }
+      if (_lastSentAudio) { try { _lastSentAudio.pause(); _lastSentAudio.currentTime = 0; } catch(e){} _lastSentAudio = null; }
       var a = _audioCache[word];
       if (!a) {
         a = new Audio();
@@ -626,6 +630,7 @@
         _audioCache[word] = a;
       }
       if (onend) a.onended = onend;
+      _lastWordAudio = a;
       a.volume = 1;
       a.currentTime = 0;
       a.play().catch(function(){});
@@ -669,6 +674,8 @@
       // 电脑：speechSynthesis，显式指定本地语音（避免走谷歌网络语音、被代理挡住而静音）
       if (window.speechSynthesis) {
         try {
+          // 连续打中多个砖块：取消上一条没读完的，只读最新这条（跳过=跳过，不堆积）
+          window.speechSynthesis.cancel();
           var u = new SpeechSynthesisUtterance(String(word));
           u.lang = 'en-US'; u.rate = 0.8; u.pitch = 1.0; u.volume = 1;
           var voice = getEnglishVoice();
