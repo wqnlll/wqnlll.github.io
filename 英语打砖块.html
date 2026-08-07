@@ -323,6 +323,33 @@
   .btn:hover { background: var(--cyan); color: var(--bg); box-shadow: 0 0 30px rgba(0, 240, 255, 0.3); }
   .btn:active { background: var(--cyan); color: var(--bg); }
 
+  /* 学习模式 · 闪卡复习 */
+  .overlay-btns { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .learn-mode-btn { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.06); font-size: 12px; padding: 8px 22px; }
+  .learn-mode-btn:hover { background: var(--gold); color: var(--bg); box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+  .learn-progress { color: var(--dim); font-size: 11px; letter-spacing: 2px; }
+  .learn-card { position: relative; width: min(420px, 88vw); min-height: 230px; perspective: 1100px; cursor: pointer; }
+  .learn-card-inner { position: relative; width: 100%; min-height: 230px; transition: transform 0.5s; transform-style: preserve-3d; }
+  .learn-card.flipped .learn-card-inner { transform: rotateY(180deg); }
+  .learn-card-face {
+    position: absolute; inset: 0; min-height: 230px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    padding: 24px 18px; border-radius: 14px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border: 1px solid rgba(0,240,255,0.25); background: rgba(19,19,31,0.92);
+    box-shadow: 0 0 30px rgba(0,240,255,0.08);
+  }
+  .learn-card-back { transform: rotateY(180deg); border-color: rgba(255,215,0,0.3); }
+  .learn-card-en { font-family:'Courier New',monospace; font-size: clamp(36px,9vw,50px); font-weight:900; color:var(--gold); text-shadow:0 0 30px rgba(255,215,0,0.5); }
+  .learn-card-cn { font-family:'PingFang SC','Microsoft YaHei',sans-serif; font-size: clamp(18px,5vw,26px); color:var(--warm); font-weight:700; }
+  .learn-card-sent { font-family:'Courier New',monospace; font-size: clamp(13px,3.4vw,16px); color:var(--cyan); text-align:center; line-height:1.4; }
+  .learn-card-sent-zh { font-family:'PingFang SC','Microsoft YaHei',sans-serif; font-size: clamp(12px,3vw,14px); color:var(--dim); text-align:center; }
+  .learn-speak { font-size: 20px; background:rgba(0,229,255,0.12); border:1.5px solid #00e5ff; color:#00e5ff; border-radius:50%; width:50px; height:50px; cursor:pointer; line-height:1; }
+  .learn-speak:active { background:#00e5ff; color:#000; }
+  .learn-tip { color: var(--dim); font-size: 10px; letter-spacing: 1px; }
+  .learn-nav { display:flex; gap:10px; align-items:center; }
+  .learn-nav-btn { padding: 8px 16px; font-size: 12px; }
+
   @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 </style>
 </head>
@@ -348,7 +375,10 @@
         每个砖块都有 <span class="highlight">英文 + 中文翻译</span><br>
         打碎时自动朗读发音！
       </div>
-      <button class="btn" id="startBtn" data-i18n="brick.startBtn">开始学习</button>
+      <div class="overlay-btns">
+        <button class="btn" id="startBtn" data-i18n="brick.startBtn">开始学习</button>
+        <button class="btn learn-mode-btn" id="learnModeBtn" data-i18n="brick.learnMode">🔤 先学单词</button>
+      </div>
     </div>
 
     <div class="overlay hidden" id="gameOverOverlay">
@@ -368,6 +398,30 @@
       <div class="share-row">
         <button class="share-btn" onclick="shareGame()" data-i18n="brick.shareScore">📤 分享战绩</button>
         <a class="share-btn" href="index.html" target="_blank" data-i18n="common.moreGames">🎮 更多游戏</a>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="learnOverlay">
+      <div class="overlay-title" data-i18n="brick.learnTitle">学习本关单词</div>
+      <div class="learn-progress" id="learnProgress">1 / 1</div>
+      <div class="learn-card" id="learnCard">
+        <div class="learn-card-inner">
+          <div class="learn-card-face">
+            <div class="learn-card-en" id="learnCardEn">cat</div>
+            <button class="learn-speak" id="learnSpeakBtn">🔊</button>
+            <div class="learn-tip" data-i18n="brick.learnTip">点卡片翻面看释义 · 点喇叭听发音</div>
+          </div>
+          <div class="learn-card-face learn-card-back">
+            <div class="learn-card-cn" id="learnCardCn">猫</div>
+            <div class="learn-card-sent" id="learnCardSent"></div>
+            <div class="learn-card-sent-zh" id="learnCardSentZh"></div>
+          </div>
+        </div>
+      </div>
+      <div class="learn-nav">
+        <button class="btn learn-nav-btn" id="learnPrev" data-i18n="brick.learnPrev">← 上一个</button>
+        <button class="btn learn-nav-btn" id="learnStartBtn" data-i18n="brick.learnStart">开始游戏 ▶</button>
+        <button class="btn learn-nav-btn" id="learnNext" data-i18n="brick.learnNext">下一个 →</button>
       </div>
     </div>
 
@@ -861,8 +915,7 @@
   setInterval(updatePaddle,16);
 
   var _gameJustStarted = false;
-  var startHandler = function(e) {
-    e.preventDefault(); e.stopPropagation();
+  function launchGame() {
     unlockSpeech();
     startGameMusic(); startOverlay.classList.add('hidden');
     gameRunning = true; ball.stuck = false;
@@ -871,7 +924,8 @@
     // AudioContext 已通过 startGameMusic 激活，现在预缓存本关音频
     setTimeout(function() { preCacheLevelWords(getCurrentLevelWords()); }, 200);
     setTimeout(function() { _gameJustStarted = false; }, 400);
-  };
+  }
+  var startHandler = function(e) { e.preventDefault(); e.stopPropagation(); launchGame(); };
   // touchstart 提前解锁语音（iOS 对 touchend/click 的语音授权更严格）
   document.getElementById('startBtn').addEventListener('touchstart', function(e) { unlockSpeech(); }, {passive: true});
   document.getElementById('startBtn').addEventListener('touchend', startHandler);
@@ -909,6 +963,62 @@
     if (paused) { stopBgMusic(); pauseBtn.textContent = '▶'; pauseBtn.style.color = '#00e5ff'; pauseBtn.style.borderColor = '#00e5ff'; pauseBtn.style.background = 'rgba(0,229,255,0.12)'; }
     else { startBgMusic(); pauseBtn.textContent = '⏸'; pauseBtn.style.color = '#ffaa00'; pauseBtn.style.borderColor = '#ffaa00'; pauseBtn.style.background = 'rgba(255,170,0,0.1)'; }
   }
+
+  // ========== 学习模式 · 闪卡复习 ==========
+  var learnOverlay = document.getElementById('learnOverlay');
+  var learnCard = document.getElementById('learnCard');
+  var learnCardEn = document.getElementById('learnCardEn');
+  var learnCardCn = document.getElementById('learnCardCn');
+  var learnCardSent = document.getElementById('learnCardSent');
+  var learnCardSentZh = document.getElementById('learnCardSentZh');
+  var learnProgress = document.getElementById('learnProgress');
+  var learnSpeakBtn = document.getElementById('learnSpeakBtn');
+  var learnWords = [], learnIdx = 0;
+
+  function findWordObj(en) {
+    for (var i = 0; i < VOCAB_TOPICS.length; i++) {
+      var ws = VOCAB_TOPICS[i].words;
+      for (var j = 0; j < ws.length; j++) { if (ws[j].en === en) return ws[j]; }
+    }
+    return null;
+  }
+
+  function renderLearnCard() {
+    if (!learnWords.length) return;
+    var w = learnWords[learnIdx];
+    var obj = findWordObj(w);
+    var s = (window.WORD_SENTENCES && WORD_SENTENCES[w]) || null;
+    learnCardEn.textContent = w;
+    learnCardCn.textContent = obj ? obj.zh : '';
+    learnCardSent.textContent = s ? s.en : '';
+    learnCardSentZh.textContent = s ? s.zh : '';
+    learnProgress.textContent = (learnIdx + 1) + ' / ' + learnWords.length;
+    learnCard.classList.remove('flipped');
+    // 切卡自动朗读（手机 MP3 / 电脑 speechSynthesis，走同一管线）
+    speakWord(w); flushSpeech();
+  }
+
+  function openLearnMode() {
+    learnWords = getCurrentLevelWords();
+    learnIdx = 0;
+    startOverlay.classList.add('hidden');
+    renderLearnCard();
+    learnOverlay.classList.remove('hidden');
+  }
+
+  var learnModeBtn = document.getElementById('learnModeBtn');
+  learnModeBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); openLearnMode(); });
+  learnModeBtn.addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); openLearnMode(); });
+
+  learnCard.addEventListener('click', function() { learnCard.classList.toggle('flipped'); });
+  learnSpeakBtn.addEventListener('click', function(e) { e.stopPropagation(); speakWord(learnWords[learnIdx]); flushSpeech(); });
+  learnSpeakBtn.addEventListener('touchend', function(e) { e.stopPropagation(); speakWord(learnWords[learnIdx]); flushSpeech(); });
+
+  document.getElementById('learnPrev').addEventListener('click', function(e) { e.stopPropagation(); if (learnIdx > 0) { learnIdx--; renderLearnCard(); } });
+  document.getElementById('learnNext').addEventListener('click', function(e) { e.stopPropagation(); if (learnIdx < learnWords.length - 1) { learnIdx++; renderLearnCard(); } });
+
+  document.getElementById('learnStartBtn').addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); learnOverlay.classList.add('hidden'); launchGame(); });
+  document.getElementById('learnStartBtn').addEventListener('touchend', function(e) { e.preventDefault(); e.stopPropagation(); learnOverlay.classList.add('hidden'); launchGame(); });
 
   initGame();gameLoop();
 
@@ -963,6 +1073,7 @@
     <li data-i18n="brick.feature2"><strong>200+ 核心词汇</strong>：覆盖小学阶段常用英语单词，每个砖块都是英文 + 中文翻译</li>
     <li data-i18n="brick.feature3"><strong>真人发音</strong>：打碎砖块时自动朗读英语发音，帮助建立正确的语音印象</li>
     <li data-i18n="brick.feature4"><strong>分数激励</strong>：打碎砖块获得分数，每关结束展示成绩，激励不断挑战</li>
+    <li data-i18n="brick.feature5"><strong>学习模式</strong>：开打前先用闪卡预习本关单词，边听边记，学完再上阵</li>
   </ul>
   <h3 data-i18n="brick.howTitle">🕹 玩法说明</h3>
   <ul>
