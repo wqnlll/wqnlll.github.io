@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta name="robots" content="noindex,nofollow">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#4f46e5">
-<title>三年级数学闯关</title>
+<title>三年级数学闯关 · Grade 3 Math</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font:16px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
@@ -90,8 +90,9 @@ header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text
 <body>
 <div class="wrap">
   <header>
-    <button class="back" id="btnBack" onclick="goHome()" style="visibility:hidden">‹ 返回</button>
+    <button class="back" id="btnBack" onclick="goHome()" style="visibility:hidden" data-i18n="back">‹ 返回</button>
     <h1 id="title">三年级数学闯关</h1>
+    <button class="back" id="btnLang" onclick="toggleLang()">🌐 EN</button>
     <button class="back" id="btnSound" onclick="toggleSound()">🔊</button>
     <button class="back" id="btnMusic" onclick="toggleMusic()">🎵</button>
   </header>
@@ -99,14 +100,14 @@ header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text
   <!-- 首页 -->
   <section class="view on" id="view-home">
     <div class="card">
-      <h2>🎯 闯关模式</h2>
-      <p>完成口算挑战，收集星星，解锁更多关卡！</p>
-      <button class="btn" onclick="openLevels()">开始闯关</button>
+      <h2 data-i18n="mode1">🎯 闯关模式</h2>
+      <p data-i18n="mode1desc">完成口算挑战，收集星星，解锁更多关卡！</p>
+      <button class="btn" onclick="openLevels()" data-i18n="startAdventure">开始闯关</button>
     </div>
     <div class="card">
-      <h2>⚔️ 联机对战</h2>
-      <p>和同学实时 PK 口算速度（需要电脑运行服务器）</p>
-      <button class="btn ghost" onclick="openMP()">联机对战</button>
+      <h2 data-i18n="mode2">⚔️ 联机对战</h2>
+      <p data-i18n="mode2desc">和同学实时 PK 口算速度（需要电脑运行服务器）</p>
+      <button class="btn ghost" onclick="openMP()" data-i18n="startMP">联机对战</button>
     </div>
     <div class="card">
       <h3 id="progressInfo">已解锁 1/7 关</h3>
@@ -134,7 +135,7 @@ header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text
       <div class="ansbox" id="ansG">&nbsp;</div>
     </div>
     <div class="pad" id="padG"></div>
-    <div class="submit"><button class="btn" onclick="submitG()">提交答案</button></div>
+    <div class="submit"><button class="btn" onclick="submitG()" data-i18n="submit">提交答案</button></div>
   </section>
 
   <!-- 单机结果 -->
@@ -146,33 +147,33 @@ header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text
     </div>
     <div class="row">
       <button class="btn gray" id="btnRetry" onclick=""></button>
-      <button class="btn" id="btnNext" onclick="" style="display:none">下一关 ➡️</button>
+      <button class="btn" id="btnNext" onclick="" style="display:none" data-i18n="next">下一关 ➡️</button>
     </div>
-    <button class="btn ghost" style="margin-top:10px" onclick="openLevels()">关卡列表</button>
+    <button class="btn ghost" style="margin-top:10px" onclick="openLevels()" data-i18n="levelList">关卡列表</button>
   </section>
 
   <!-- 联机对战 -->
   <section class="view" id="view-mp">
     <div id="mpMenu">
       <div class="card">
-        <h3>⚙️ 联机设置</h3>
-        <input class="inp" id="mpName" placeholder="你的昵称（默认：玩家）" maxlength="10">
-        <input class="inp" id="mpServer" placeholder="服务器地址">
-        <p style="font-size:12px;color:#9ca3af;margin:0 0 10px">电脑需先双击“启动联机服务器.bat”；手机与电脑连同一 Wi-Fi，地址形如 ws://192.168.1.5:8090</p>
+        <h3 data-i18n="mpSettings">⚙️ 联机设置</h3>
+        <input class="inp" id="mpName" placeholder="你的昵称（默认：玩家）" maxlength="10" data-i18n-ph="namePh">
+        <input class="inp" id="mpServer" placeholder="服务器地址" data-i18n-ph="serverPh">
+        <p style="font-size:12px;color:#9ca3af;margin:0 0 10px" data-i18n="mpHowto">电脑需先双击“启动联机服务器.bat”；手机与电脑连同一 Wi-Fi，地址形如 ws://192.168.1.5:8090</p>
         <div class="row">
-          <button class="btn" onclick="createRoom()">创建房间</button>
-          <button class="btn ghost" onclick="joinRoom()">加入房间</button>
+          <button class="btn" onclick="createRoom()" data-i18n="createRoom">创建房间</button>
+          <button class="btn ghost" onclick="joinRoom()" data-i18n="joinRoom">加入房间</button>
         </div>
-        <input class="inp" id="mpCode" placeholder="输入 4 位房间号（加入时）" maxlength="4" style="margin-top:10px">
+        <input class="inp" id="mpCode" placeholder="输入 4 位房间号（加入时）" maxlength="4" style="margin-top:10px" data-i18n-ph="codePh">
         <p class="errmsg" id="mpMenuMsg"></p>
       </div>
     </div>
     <div id="mpRoom" style="display:none">
       <div class="card" style="text-align:center">
-        <h3>房间已创建，等对手加入</h3>
+        <h3 data-i18n="roomWaiting">房间已创建，等对手加入</h3>
         <div class="code-big" id="roomCode"></div>
-        <p id="mpStatus" style="color:#9ca3af">把房间号告诉你的同学</p>
-        <button class="btn gray" onclick="copyCode()">复制房间号</button>
+        <p id="mpStatus" style="color:#9ca3af" data-i18n="tellCode">把房间号告诉你的同学</p>
+        <button class="btn gray" onclick="copyCode()" data-i18n="copyCode">复制房间号</button>
       </div>
     </div>
     <div id="mpBattle" style="display:none">
@@ -188,14 +189,14 @@ header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text
         <div class="ansbox" id="ansM">&nbsp;</div>
       </div>
       <div class="pad" id="padM"></div>
-      <div class="submit"><button class="btn" onclick="submitM()">提交答案</button></div>
+      <div class="submit"><button class="btn" onclick="submitM()" data-i18n="submit">提交答案</button></div>
     </div>
     <div class="overlay" id="mpOverlay">
       <div class="box">
         <div id="mpOverlayBody"></div>
         <div class="row" style="margin-top:16px">
-          <button class="btn" onclick="rematch()">再来一局</button>
-          <button class="btn gray" onclick="mpExit()">返回大厅</button>
+          <button class="btn" onclick="rematch()" data-i18n="rematch">再来一局</button>
+          <button class="btn gray" onclick="mpExit()" data-i18n="exit">返回大厅</button>
         </div>
       </div>
     </div>
@@ -210,6 +211,105 @@ const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const heartsHTML=n=>'❤️'.repeat(Math.max(0,n))+'🖤'.repeat(Math.max(0,3-n));
 const vibrate=ms=>{try{if(navigator.vibrate)navigator.vibrate(ms)}catch(e){}};
+
+/* ================= 中英双语 ================= */
+const LS_LANG='wqnlll_lang';
+let LANG='zh'; try{ if(localStorage.getItem(LS_LANG)==='en') LANG='en'; }catch(e){}
+const _d=(zh,en)=>({zh,en});
+const D={
+  back:_d('‹ 返回','‹ Back'),
+  titleHome:_d('三年级数学闯关','Grade 3 Math Challenge'),
+  titleLevels:_d('选择关卡','Choose a Level'),
+  titleResult:_d('闯关结果','Level Result'),
+  titleMP:_d('联机对战','PvP Battle'),
+  mode1:_d('🎯 闯关模式','🎯 Adventure Mode'),
+  mode1desc:_d('完成口算挑战，收集星星，解锁更多关卡！','Beat mental-math challenges, collect stars and unlock more levels!'),
+  startAdventure:_d('开始闯关','Start Adventure'),
+  mode2:_d('⚔️ 联机对战','⚔️ PvP Battle'),
+  mode2desc:_d('和同学实时 PK 口算速度（需要电脑运行服务器）','Race your friends on mental math in real time (needs a PC running the server)'),
+  startMP:_d('联机对战','PvP Battle'),
+  progressInfo:_d('已解锁 {n}/{total} 关','Unlocked {n}/{total} levels'),
+  progressDetail:_d('星星 {s}/{max}　第 7 关（应用题）可直接玩，其他关卡需逐关解锁','Stars {s}/{max} · Level 7 (word problems) is open; unlock the others one by one'),
+  submit:_d('提交答案','Submit'),
+  next:_d('下一关 ➡️','Next ➡️'),
+  levelList:_d('关卡列表','Level List'),
+  score:_d('{n} 分','{n} pts'),
+  timeUp:_d('⏰ 时间到','⏰ Time’s up'),
+  meTimeUp:_d('时间到！','Time’s up!'),
+  oppThinking:_d('对方作答中…','Opponent answering…'),
+  noAnswer:_d('未作答','No answer'),
+  ansRight:_d('答案：{a}','Answer: {a}'),
+  titleGreat:_d('🌟 太棒了！','🌟 Amazing!'),
+  titleWin:_d('🎉 通关成功！','🎉 Level Cleared!'),
+  titleTry:_d('💪 再接再厉！','💪 Keep Going!'),
+  resStats:_d('答对 <b>{c}/{t}</b>　最高连击 <b>{cc}</b>　得分 <b>{s}</b>','Correct <b>{c}/{t}</b> · Best combo <b>{cc}</b> · Score <b>{s}</b>'),
+  retryWin:_d('再玩一次','Play Again'),
+  retryLose:_d('重新挑战','Retry'),
+  mpSettings:_d('⚙️ 联机设置','⚙️ Battle Settings'),
+  namePh:_d('你的昵称（默认：玩家）','Your nickname (default: Player)'),
+  defaultName:_d('玩家','Player'),
+  serverPh:_d('服务器地址','Server address'),
+  mpHowto:_d('电脑需先双击“启动联机服务器.bat”；手机与电脑连同一 Wi-Fi，地址形如 ws://192.168.1.5:8090','On the PC run “启动联机服务器.bat” first; phone and PC on the same Wi-Fi, address like ws://192.168.1.5:8090'),
+  createRoom:_d('创建房间','Create Room'),
+  joinRoom:_d('加入房间','Join Room'),
+  codePh:_d('输入 4 位房间号（加入时）','Enter the 4-digit room code (to join)'),
+  roomWaiting:_d('房间已创建，等对手加入','Room created — waiting for an opponent'),
+  tellCode:_d('把房间号告诉你的同学','Share the room code with your friend'),
+  copyCode:_d('复制房间号','Copy Room Code'),
+  copiedCode:_d('已复制房间号：{c}','Room code copied: {c}'),
+  codeStatus:_d('房间号：{c}　等同学输入后加入','Room {c} — waiting for a friend to join'),
+  connecting:_d('连接中…','Connecting…'),
+  needCode:_d('请输入 4 位房间号','Please enter the 4-digit room code'),
+  connFail:_d('无法连接服务器：请先双击运行“启动联机服务器.bat”','Cannot reach the server — run “启动联机服务器.bat” on the PC first'),
+  connFail2:_d('无法连接服务器：请先双击运行“启动联机服务器.bat”，或检查服务器地址','Cannot reach the server — check the server is running and the address is correct'),
+  connLost:_d('与服务器的连接已断开','Connection to the server was lost'),
+  oppLeft:_d('对方离开了房间','The opponent left the room'),
+  opFail:_d('操作失败','Action failed'),
+  round:_d('第 {n}/{total} 题','Q{n}/{total}'),
+  plusPts:_d('+{n} 分 ✓','+{n} pts ✓'),
+  wrong:_d('答错了','Wrong'),
+  waitingOpp:_d('⏳ 等待对方…','⏳ Waiting for opponent…'),
+  submitted:_d('已提交，等待对方…','Submitted — waiting…'),
+  youWin:_d('你赢了！','You win!'),
+  youLose:_d('你输了，继续加油！','You lost — keep going!'),
+  you:_d('（你）',' (you)'),
+  rematch:_d('再来一局','Rematch'),
+  exit:_d('返回大厅','Back to Lobby'),
+  mpScore:_d('{n} 分','{n} pts'),
+  lv1n:_d('10以内加减','Add & Subtract within 10'),
+  lv1d:_d('10以内的加法与减法','Addition and subtraction within 10'),
+  lv2n:_d('20以内加减','Add & Subtract within 20'),
+  lv2d:_d('进位加法与退位减法','Carrying and borrowing'),
+  lv3n:_d('100以内加减','Add & Subtract within 100'),
+  lv3d:_d('两位数加减法','Two-digit addition and subtraction'),
+  lv4n:_d('乘法口诀','Times Tables'),
+  lv4d:_d('2–9 的乘法口诀','Times tables from 2 to 9'),
+  lv5n:_d('除法入门','Intro to Division'),
+  lv5d:_d('用乘法口诀求商','Find quotients using times tables'),
+  lv6n:_d('混合运算','Mixed Operations'),
+  lv6d:_d('加减乘除随机混合','Random mix of + − × ÷'),
+  lv7n:_d('趣味应用题','Word Problems'),
+  lv7d:_d('生活中的数学问题','Real-life math problems'),
+  w1:_d('书架上有 {a} 本书，又放进去 {b} 本，现在一共有多少本？','There are {a} books on the shelf and {b} more are added. How many books are there now?'),
+  w2:_d('停车场有 {a} 辆车，开走了 {b} 辆，还剩多少辆？','There are {a} cars in the lot and {b} drive away. How many cars are left?'),
+  w3:_d('每个盒子装 {a} 个苹果，{b} 个盒子一共能装多少个苹果？','Each box holds {a} apples. How many apples are in {b} boxes?'),
+  w4:_d('{c} 块饼干平均分给 {a} 个小朋友，每人分到几块？','{c} cookies are shared equally among {a} kids. How many does each kid get?'),
+  w5:_d('一支铅笔 {a} 角，买 {b} 支一共需要多少角？','One pencil costs {a} cents. How many cents do {b} pencils cost?'),
+  w6:_d('小明有 {a} 颗星星，小红比小明多 {b} 颗，小红有多少颗？','Ming has {a} stars. Hong has {b} more than Ming. How many does Hong have?'),
+  w7:_d('商店里有 {a} 颗糖果，卖出了 {b} 颗，还剩多少颗？','The shop has {a} candies and {b} are sold. How many are left?'),
+  w8:_d('教室里每排坐 {a} 人，一共 {b} 排，教室里有多少人？','Each row in the classroom seats {a} people. There are {b} rows. How many people are there?'),
+  w9:_d('小红跳了 {a} 下绳，小明比小红少跳 {b} 下，小明跳了多少下？','Hong jumped {a} times. Ming jumped {b} fewer. How many did Ming jump?'),
+  w10:_d('一箱香蕉有 {a} 根，吃掉了 {b} 根，还剩多少根？','A box has {a} bananas and {b} are eaten. How many are left?'),
+  w11:_d('一本故事书 {a} 元，买 {b} 本一共需要多少元？','One storybook costs {a} yuan. How much do {b} books cost?'),
+  w12:_d('{c} 个苹果平均分给 {a} 个小朋友，每人分到几个？','{c} apples are shared equally among {a} kids. How many does each get?'),
+};
+function _t(k,v){ const e=D[k]; if(!e)return k; let s=e[LANG]||e.zh;
+  if(v) s=s.replace(/\{(\w+)\}/g,(m,n)=>(n in v)?String(v[n]):m); return s; }
+function toggleLang(){
+  LANG=(LANG==='zh')?'en':'zh';
+  try{localStorage.setItem(LS_LANG,LANG);}catch(e){}
+  applyI18n(); sndClick();
+}
 
 /* ================= 音效 ================= */
 let AC=null,muted=localStorage.getItem('g3m_muted')==='1';
@@ -226,7 +326,7 @@ const sndBad=()=>tone(180,.25,'sawtooth',.12);
 const sndWin=()=>[523,659,784,1047].forEach((f,i)=>tone(f,.18,'sine',.12,i*.13));
 const sndLose=()=>[392,330,262].forEach((f,i)=>tone(f,.22,'sine',.12,i*.15));
 const sndGo=()=>tone(520,.1,'sine',.1);
-﻿/* ================= 背景音乐（轻快八音盒风格，循环播放） ================= */
+/* ================= 背景音乐（轻快八音盒风格，循环播放） ================= */
 const MUS={on:localStorage.getItem('g3m_music')==='1',started:false,timer:null,gain:null,
            bpm:90,line:0,ni:0,next:0};
 const NOTE_SEMI={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
@@ -316,13 +416,13 @@ const maxUnlocked=()=>{for(let i=1;i<=LEVELS.length;i++){if((prog.stars[i]||0)<=
 
 /* ================= 关卡 ================= */
 const LEVELS=[
- {id:1,name:'10以内加减',icon:'🔢',desc:'10以内的加法与减法',time:15},
- {id:2,name:'20以内加减',icon:'🧮',desc:'进位加法与退位减法',time:15},
- {id:3,name:'100以内加减',icon:'➕',desc:'两位数加减法',time:18},
- {id:4,name:'乘法口诀',icon:'✖️',desc:'2–9 的乘法口诀',time:15},
- {id:5,name:'除法入门',icon:'➗',desc:'用乘法口诀求商',time:15},
- {id:6,name:'混合运算',icon:'🎲',desc:'加减乘除随机混合',time:20},
- {id:7,name:'趣味应用题',icon:'📖',desc:'生活中的数学问题',time:25},
+ {id:1,name:'lv1n',icon:'🔢',desc:'lv1d',time:15},
+ {id:2,name:'lv2n',icon:'🧮',desc:'lv2d',time:15},
+ {id:3,name:'lv3n',icon:'➕',desc:'lv3d',time:18},
+ {id:4,name:'lv4n',icon:'✖️',desc:'lv4d',time:15},
+ {id:5,name:'lv5n',icon:'➗',desc:'lv5d',time:15},
+ {id:6,name:'lv6n',icon:'🎲',desc:'lv6d',time:20},
+ {id:7,name:'lv7n',icon:'📖',desc:'lv7d',time:25},
 ];
 const GEN=[
  () => {if(Math.random()<.5){const a=rand(1,9),b=rand(1,10-a);return {text:a+' + '+b+' = ?',answer:a+b};}
@@ -341,39 +441,66 @@ const GEN=[
         const a=rand(21,99),b=rand(11,a-11);return {text:a+' - '+b+' = ?',answer:a-b};},
  () => {const t=rand(1,12);
    switch(t){
-    case 1:{const a=rand(10,60),b=rand(10,99-a);return {text:'书架上有 '+a+' 本书，又放进去 '+b+' 本，现在一共有多少本？',answer:a+b};}
-    case 2:{const a=rand(20,60),b=rand(5,a-10);return {text:'停车场有 '+a+' 辆车，开走了 '+b+' 辆，还剩多少辆？',answer:a-b};}
-    case 3:{const a=rand(2,9),b=rand(2,9);return {text:'每个盒子装 '+a+' 个苹果，'+b+' 个盒子一共能装多少个苹果？',answer:a*b};}
-    case 4:{const a=rand(2,9),b=rand(2,9),c=a*b;return {text:c+' 块饼干平均分给 '+a+' 个小朋友，每人分到几块？',answer:b};}
-    case 5:{const a=rand(2,9),b=rand(2,9);return {text:'一支铅笔 '+a+' 角，买 '+b+' 支一共需要多少角？',answer:a*b};}
-    case 6:{const a=rand(10,50),b=rand(10,99-a);return {text:'小明有 '+a+' 颗星星，小红比小明多 '+b+' 颗，小红有多少颗？',answer:a+b};}
-    case 7:{const a=rand(20,80),b=rand(5,a-10);return {text:'商店里有 '+a+' 颗糖果，卖出了 '+b+' 颗，还剩多少颗？',answer:a-b};}
-    case 8:{const a=rand(2,9),b=rand(2,9);return {text:'教室里每排坐 '+a+' 人，一共 '+b+' 排，教室里有多少人？',answer:a*b};}
-    case 9:{const a=rand(20,80),b=rand(5,a-10);return {text:'小红跳了 '+a+' 下绳，小明比小红少跳 '+b+' 下，小明跳了多少下？',answer:a-b};}
-    case 10:{const a=rand(20,80),b=rand(5,a-10);return {text:'一箱香蕉有 '+a+' 根，吃掉了 '+b+' 根，还剩多少根？',answer:a-b};}
-    case 11:{const a=rand(2,9),b=rand(2,9);return {text:'一本故事书 '+a+' 元，买 '+b+' 本一共需要多少元？',answer:a*b};}
-    default:{const a=rand(2,9),b=rand(2,9),c=a*b;return {text:c+' 个苹果平均分给 '+a+' 个小朋友，每人分到几个？',answer:b};}
+    case 1:{const a=rand(10,60),b=rand(10,99-a);return {text:_t('w1',{a,b}),answer:a+b};}
+    case 2:{const a=rand(20,60),b=rand(5,a-10);return {text:_t('w2',{a,b}),answer:a-b};}
+    case 3:{const a=rand(2,9),b=rand(2,9);return {text:_t('w3',{a,b}),answer:a*b};}
+    case 4:{const a=rand(2,9),b=rand(2,9),c=a*b;return {text:_t('w4',{a,b,c}),answer:b};}
+    case 5:{const a=rand(2,9),b=rand(2,9);return {text:_t('w5',{a,b}),answer:a*b};}
+    case 6:{const a=rand(10,50),b=rand(10,99-a);return {text:_t('w6',{a,b}),answer:a+b};}
+    case 7:{const a=rand(20,80),b=rand(5,a-10);return {text:_t('w7',{a,b}),answer:a-b};}
+    case 8:{const a=rand(2,9),b=rand(2,9);return {text:_t('w8',{a,b}),answer:a*b};}
+    case 9:{const a=rand(20,80),b=rand(5,a-10);return {text:_t('w9',{a,b}),answer:a-b};}
+    case 10:{const a=rand(20,80),b=rand(5,a-10);return {text:_t('w10',{a,b}),answer:a-b};}
+    case 11:{const a=rand(2,9),b=rand(2,9);return {text:_t('w11',{a,b}),answer:a*b};}
+    default:{const a=rand(2,9),b=rand(2,9),c=a*b;return {text:_t('w12',{a,b,c}),answer:b};}
    }},
 ];
 
 LEVELS.forEach((l,i)=>{l.gen=GEN[i];});
 /* ================= 视图切换 ================= */
-const TITLES={home:'三年级数学闯关',levels:'选择关卡',game:'',result:'闯关结果',mp:'联机对战'};
+let curView='home';
+const TITLES={home:'titleHome',levels:'titleLevels',game:'',result:'titleResult',mp:'titleMP'};
+function refreshTitle(){
+  let t='';
+  if(curView==='home')t=_t('titleHome');
+  else if(curView==='levels')t=_t('titleLevels');
+  else if(curView==='game')t=G.level?_t(G.level.name):'';
+  else if(curView==='result')t=_t('titleResult');
+  else if(curView==='mp')t=_t('titleMP');
+  $('title').textContent=t;
+  $('btnBack').style.visibility=(curView==='home')?'hidden':'visible';
+}
 function showView(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   $('view-'+id).classList.add('on');
-  $('title').textContent=TITLES[id]||'';
-  $('btnBack').style.visibility=(id==='home')?'hidden':'visible';
+  curView=id;refreshTitle();
   window.scrollTo(0,0);
 }
 function goHome(){closeWS();stopTimer('g');stopTimer('m');showView('home');}
+
+/* ================= 语言重渲染 ================= */
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n'); if(!D[k])return;
+    el.innerHTML=D[k][LANG]||D[k].zh;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-ph'); if(D[k])el.setAttribute('placeholder',D[k][LANG]||D[k].zh);
+  });
+  document.documentElement.setAttribute('lang',LANG==='en'?'en':'zh-CN');
+  $('btnLang').textContent=LANG==='zh'?'🌐 EN':'🌐 中';
+  if(curView==='home')renderHomeStats();
+  else if(curView==='levels')renderLevels();
+  else if(curView==='game')updateHUD();
+  refreshTitle();
+}
 
 /* ================= 首页 / 关卡 ================= */
 function renderHomeStats(){
   const totalStars=LEVELS.reduce((s,l)=>s+(prog.stars[l.id]||0),0);
   const mu=maxUnlocked();
-  $('progressInfo').textContent='已解锁 '+mu+'/'+LEVELS.length+' 关';
-  $('progressDetail').textContent='星星 '+totalStars+' / '+(LEVELS.length*3)+'　第 7 关（应用题）可直接玩，其他关卡需逐关解锁';
+  $('progressInfo').textContent=_t('progressInfo',{n:mu,total:LEVELS.length});
+  $('progressDetail').textContent=_t('progressDetail',{s:totalStars,max:LEVELS.length*3});
 }
 function renderLevels(){
   const mu=maxUnlocked();
@@ -381,8 +508,8 @@ function renderLevels(){
     const un=(l.id<=mu)||l.id===7,st=prog.stars[l.id]||0;
     return '<button class="lvl'+(un?'':' locked')+'" onclick="startLevel('+l.id+')" '+(un?'':'disabled')+'>'+
       '<div class="ico">'+(un?l.icon:'🔒')+'</div>'+
-      '<div class="lname">'+l.name+'</div>'+
-      '<div class="ldesc">'+l.desc+'</div>'+
+      '<div class="lname">'+_t(l.name)+'</div>'+
+      '<div class="ldesc">'+_t(l.desc)+'</div>'+
       '<div class="lstars">'+'★'.repeat(st)+'☆'.repeat(3-st)+'</div></button>';
   }).join('');
 }
@@ -393,13 +520,13 @@ const G={level:null,lives:3,score:0,combo:0,maxCombo:0,idx:0,total:10,correct:0,
          timer:null,tLeft:15,qTime:15,buffer:'',locked:false,q:null};
 function startLevel(lid){
   G.level=LEVELS[lid-1];G.lives=3;G.score=0;G.combo=0;G.maxCombo=0;G.idx=0;G.correct=0;G.buffer='';G.locked=false;
-  showView('game');$('title').textContent=G.level.name;
+  showView('game');$('title').textContent=_t(G.level.name);
   updateHUD();nextQ();
 }
 function updateHUD(){
   $('hearts').textContent=heartsHTML(G.lives);
   $('qPos').textContent=(Math.min(G.idx,G.total-1)+1)+'/'+G.total;
-  $('score').textContent=G.score+' 分';
+  $('score').textContent=_t('score',{n:G.score});
   $('combo').textContent=G.combo>=2?'🔥×'+G.combo:'';
 }
 function nextQ(){
@@ -429,8 +556,8 @@ function tick(mode){
 function timeout(mode){
   if(mode==='g'){if(G.locked)return;G.buffer='';submitG();}
   else{if(MP.locked)return;MP.locked=true;stopTimer('m');
-    $('ansM').textContent='⏰ 时间到';$('ansM').className='ansbox bad';
-    setMeStatus('时间到！');setOppStatus('对方作答中…');}
+    $('ansM').textContent=_t('timeUp');$('ansM').className='ansbox bad';
+    setMeStatus(_t('meTimeUp'));setOppStatus(_t('oppThinking'));}
 }
 function submitG(){
   if(G.locked)return;
@@ -446,7 +573,7 @@ function submitG(){
     if(G.combo>=3&&G.combo%3===0){sndCombo();vibrate(20);}else sndOk();vibrate(15);
   }else{
     G.lives--;G.combo=0;
-    $('ansG').textContent=(val==null?'未作答':'✗ '+val)+'　答案：'+G.q.answer;$('ansG').className='ansbox bad';
+    $('ansG').textContent=(val==null?_t('noAnswer'):'✗ '+val)+'　'+_t('ansRight',{a:G.q.answer});$('ansG').className='ansbox bad';
     sndBad();vibrate(80);
   }
   updateHUD();
@@ -460,11 +587,11 @@ function endGame(win){
     prog.best[lv]=Math.max(prog.best[lv]||0,G.score);
     saveProg();sndWin();
   }else sndLose();
-  $('resTitle').textContent=win?(G.correct>=9?'🌟 太棒了！':'🎉 通关成功！'):'💪 再接再厉！';
+  $('resTitle').textContent=win?(G.correct>=9?_t('titleGreat'):_t('titleWin')):_t('titleTry');
   $('resStars').textContent=win?'★'.repeat(prog.stars[lv])+'☆'.repeat(3-prog.stars[lv]):'☆☆☆';
-  $('resStats').innerHTML='答对 <b>'+G.correct+'/'+G.total+'</b>　最高连击 <b>'+G.maxCombo+'</b>　得分 <b>'+G.score+'</b>';
+  $('resStats').innerHTML=_t('resStats',{c:G.correct,t:G.total,cc:G.maxCombo,s:G.score});
   $('btnNext').style.display=(win&&lv<LEVELS.length)?'':'none';
-  $('btnRetry').textContent=win?'再玩一次':'重新挑战';
+  $('btnRetry').textContent=win?_t('retryWin'):_t('retryLose');
   $('btnRetry').onclick=()=>startLevel(lv);
   $('btnNext').onclick=()=>startLevel(lv+1);
   renderHomeStats();
@@ -531,40 +658,40 @@ function connectMP(onopen){
     return;
   }
   MP.wsFailed=false;
-  try{MP.ws=new WebSocket(url);}catch(e){mpError('无法连接服务器：请先双击运行“启动联机服务器.bat”');return;}
+  try{MP.ws=new WebSocket(url);}catch(e){mpError(_t('connFail'));return;}
   MP.ws.onopen=onopen;
   MP.ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(err){return;}onMP(m);};
-  MP.ws.onclose=()=>{MP.ws=null;if(MP.me&&!MP.over){mpError('与服务器的连接已断开');MP.me=null;MP.opp=null;}else if(!MP.me&&MP.wsFailed&&!MP.over){mpError('无法连接服务器：请先双击运行“启动联机服务器.bat”，或检查服务器地址');}};
+  MP.ws.onclose=()=>{MP.ws=null;if(MP.me&&!MP.over){mpError(_t('connLost'));MP.me=null;MP.opp=null;}else if(!MP.me&&MP.wsFailed&&!MP.over){mpError(_t('connFail2'));}};
   MP.ws.onerror=()=>{MP.wsFailed=true;};
 }
 function closeWS(){if(MP.ws){try{MP.ws.close();}catch(e){}}MP.ws=null;MP.me=null;MP.opp=null;MP.over=false;MP.room='';}
 function sendMP(o){if(MP.ws&&MP.ws.readyState===1)MP.ws.send(JSON.stringify(o));}
 function mpError(t){showMPMenu();$('mpMenuMsg').textContent=t;sndBad();}
 function createRoom(){
-  MP.name=$('mpName').value.trim()||'玩家';
+  MP.name=$('mpName').value.trim()||_t('defaultName');
   connectMP(()=>{MP.room='';sendMP({type:'create',name:MP.name});});
-  $('mpMenuMsg').textContent='连接中…';
+  $('mpMenuMsg').textContent=_t('connecting');
 }
 function joinRoom(){
   const code=$('mpCode').value.trim().toUpperCase();
-  if(code.length!==4){$('mpMenuMsg').textContent='请输入 4 位房间号';return;}
-  MP.name=$('mpName').value.trim()||'玩家';MP.room=code;
+  if(code.length!==4){$('mpMenuMsg').textContent=_t('needCode');return;}
+  MP.name=$('mpName').value.trim()||_t('defaultName');MP.room=code;
   connectMP(()=>sendMP({type:'join',code,name:MP.name}));
-  $('mpMenuMsg').textContent='连接中…';
+  $('mpMenuMsg').textContent=_t('connecting');
 }
 function rematch(){closeWS();createRoom();}
 function mpExit(){closeWS();showMPMenu();}
 function copyCode(){
   const c=$('roomCode').textContent;
-  if(navigator.clipboard){navigator.clipboard.writeText(c).then(()=>{$('mpStatus').textContent='已复制房间号：'+c;}).catch(()=>{});}
-  $('mpStatus').textContent='房间号：'+c+'　等同学输入后加入';
+  if(navigator.clipboard){navigator.clipboard.writeText(c).then(()=>{$('mpStatus').textContent=_t('copiedCode',{c});}).catch(()=>{});}
+  $('mpStatus').textContent=_t('codeStatus',{c});
 }
 function onMP(m){
   switch(m.type){
     case 'created':
       MP.room=m.code;
       $('mpMenu').style.display='none';$('mpRoom').style.display='';
-      $('roomCode').textContent=m.code;$('mpStatus').textContent='把房间号告诉你的同学';
+      $('roomCode').textContent=m.code;$('mpStatus').textContent=_t('tellCode');
       break;
     case 'start':
       MP.me=m.players.find(p=>p.pid===m.you);
@@ -581,7 +708,7 @@ function onMP(m){
       MP.tLeft=m.time;MP.qTime=m.time;
       $('mpQtext').textContent=m.text;
       $('ansM').textContent='?';$('ansM').className='ansbox';
-      $('mpRound').textContent='第 '+m.seq+'/'+MP.total+' 题';
+      $('mpRound').textContent=_t('round',{n:m.seq,total:MP.total});
       const bar=$('timebarM');bar.style.width='100%';bar.className='';
       setMeStatus('');setOppStatus('');
       startTimer('m');
@@ -592,10 +719,10 @@ function onMP(m){
       const or=m.results.find(r=>r.pid===MP.opp.pid);
       MP.me.score=mr.score;MP.me.lives=mr.lives;
       MP.opp.score=or.score;MP.opp.lives=or.lives;
-      MP.meStatus=mr.ok?('+'+mr.gained+' 分 ✓'):'答错了';
-      MP.oppStatus=or.ok?('✓ '+or.answer):('✗ 答案：'+m.answer);
+      MP.meStatus=mr.ok?_t('plusPts',{n:mr.gained}):_t('wrong');
+      MP.oppStatus=or.ok?('✓ '+or.answer):('✗ '+_t('ansRight',{a:m.answer}));
       if(mr.ok){$('ansM').textContent='✓ '+mr.answer;$('ansM').className='ansbox ok';sndOk();}
-      else{$('ansM').textContent='✗　答案：'+m.answer;$('ansM').className='ansbox bad';sndBad();}
+      else{$('ansM').textContent='✗　'+_t('ansRight',{a:m.answer});$('ansM').className='ansbox bad';sndBad();}
       renderPanels();
       break;
     }
@@ -605,10 +732,10 @@ function onMP(m){
       break;
     case 'opponent-left':
       MP.over=true;stopTimer('m');
-      closeWS();showMPMenu();$('mpMenuMsg').textContent='对方离开了房间';
+      closeWS();showMPMenu();$('mpMenuMsg').textContent=_t('oppLeft');
       break;
     case 'error':
-      mpError(m.msg||'操作失败');break;
+      mpError(m.msg||_t('opFail'));break;
   }
 }
 function renderPanels(){
@@ -616,9 +743,9 @@ function renderPanels(){
   $('mpOppPanel').innerHTML=panelHTML(MP.opp,false);
 }
 function panelHTML(p,isMe){
-  return '<div class="pname">'+esc(p.name)+(isMe?'（你）':'')+'</div>'+
+  return '<div class="pname">'+esc(p.name)+(isMe?_t('you'):'')+'</div>'+
     '<div class="phearts">'+heartsHTML(p.lives)+'</div>'+
-    '<div class="pscore">'+p.score+' 分</div>'+
+    '<div class="pscore">'+_t('mpScore',{n:p.score})+'</div>'+
     '<div class="pstatus">'+esc(isMe?MP.meStatus:MP.oppStatus)+'</div>';
 }
 function setMeStatus(s){MP.meStatus=s;if(MP.me){const el=$('mpMePanel').querySelector('.pstatus');if(el)el.textContent=s;}}
@@ -628,18 +755,18 @@ function submitM(){
   MP.locked=true;stopTimer('m');
   const val=MP.buffer===''?null:parseInt(MP.buffer,10);
   sendMP({type:'answer',val:val});
-  $('ansM').textContent='⏳ 等待对方…';$('ansM').className='ansbox';
-  setMeStatus('已提交，等待对方…');
-  setOppStatus('对方作答中…');
+  $('ansM').textContent=_t('waitingOpp');$('ansM').className='ansbox';
+  setMeStatus(_t('submitted'));
+  setOppStatus(_t('oppThinking'));
 }
 function renderOverlay(ranking){
   const mePid=MP.me?MP.me.pid:null;
   const winner=ranking[0];
   const win=winner.pid===mePid;
   let h='<div style="font-size:44px">'+(win?'🏆':'🥈')+'</div>';
-  h+='<h2 style="margin:8px 0">'+(win?'你赢了！':'你输了，继续加油！')+'</h2>';
+  h+='<h2 style="margin:8px 0">'+(win?_t('youWin'):_t('youLose'))+'</h2>';
   h+=ranking.map((r,i)=>
-    '<div class="rankline">'+(i+1)+'. '+esc(r.name)+(r.pid===mePid?'（你）':'')+' — '+r.score+' 分</div>').join('');
+    '<div class="rankline">'+(i+1)+'. '+esc(r.name)+(r.pid===mePid?_t('you'):'')+' — '+_t('mpScore',{n:r.score})+'</div>').join('');
   $('mpOverlayBody').innerHTML=h;
   $('mpOverlay').classList.add('on');
 }
@@ -649,7 +776,9 @@ loadProg();renderHomeStats();renderPads();
 $('btnSound').textContent=muted?'🔇':'🔊';
 $('btnMusic').classList.toggle('mute',!MUS.on);
 $('mpServer').value=defaultWS();
+applyI18n();
+/* 站点切换语言时，iframe 内游戏同步切换（同源 storage 事件） */
+window.addEventListener('storage',e=>{ if(e.key===LS_LANG && e.newValue){ const nv=(e.newValue==='en')?'en':'zh'; if(nv!==LANG){ LANG=nv; applyI18n(); } } });
 </script>
 </body>
 </html>
-

@@ -113,7 +113,9 @@ button[data-tip]:hover::after {
   content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
   background:rgba(8,12,20,0.95); border:1px solid var(--c-panel-border); color:#c8d6e6;
   font-size:11px; padding:4px 8px; border-radius:4px; white-space:nowrap; pointer-events:none; z-index:100; font-family:monospace;
-}
+
+#rtsLang{margin-left:auto;pointer-events:auto;background:var(--c-btn-bg);color:var(--c-panel-text);border:1px solid var(--c-btn-border);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:monospace}
+#rtsLang:hover{border-color:#5a8aaa}
 </style>
 </head>
 <body>
@@ -122,9 +124,9 @@ button[data-tip]:hover::after {
   <div class="unit-side" id="upSide">—</div>
   <div class="hp-bar-outer"><div class="hp-bar-inner" id="upHpBar" style="width:100%"></div></div>
   <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value" id="upHp">—</span></div>
-  <div class="stat-row"><span class="stat-label">攻击</span><span class="stat-value dmg" id="upDmg">—</span></div>
-  <div class="stat-row"><span class="stat-label">速度</span><span class="stat-value spd" id="upSpd">—</span></div>
-  <div class="stat-row"><span class="stat-label">射程</span><span class="stat-value" id="upRng">—</span></div>
+  <div class="stat-row"><span class="stat-label" data-i18n="atk">攻击</span><span class="stat-value dmg" id="upDmg">—</span></div>
+  <div class="stat-row"><span class="stat-label" data-i18n="spd">速度</span><span class="stat-value spd" id="upSpd">—</span></div>
+  <div class="stat-row"><span class="stat-label" data-i18n="rng">射程</span><span class="stat-value" id="upRng">—</span></div>
 </div>
 <canvas id="c"></canvas>
 <div id="ui">
@@ -133,31 +135,32 @@ button[data-tip]:hover::after {
   <span id="cnt">●</span>
   <span id="fps">--</span>
   <span id="chk">#0</span>
-  <span id="net">单机</span>
+  <span id="net" data-i18n="netSingle">单机</span>
+  <button id="rtsLang" onclick="toggleRtsLang()">🌐 EN</button>
 </div>
-<div id="hint">左键/拖框=选择 · 右键=移动或攻击 · A+点击=强制攻击 · 滚轮=缩放 · 方向键=平移</div>
+<div id="hint" data-i18n="hintMain">左键/拖框=选择 · 右键=移动或攻击 · A+点击=强制攻击 · 滚轮=缩放 · 方向键=平移</div>
 <div id="bar">
-  <button id="b0">采矿车 $700</button>
-  <button id="b1">轻坦 $600</button>
-  <button id="b2">重坦 $900</button>
-  <button id="b3">电厂 $300</button>
-  <button id="b4">矿场 $2000</button>
+  <button id="b0" data-i18n="btn0">采矿车 $700</button>
+  <button id="b1" data-i18n="btn1">轻坦 $600</button>
+  <button id="b2" data-i18n="btn2">重坦 $900</button>
+  <button id="b3" data-i18n="btn3">电厂 $300</button>
+  <button id="b4" data-i18n="btn4">矿场 $2000</button>
   <button id="b5">光棱坦克 $1000</button>
   <button id="b6">超时空传送仪 $2500</button>
   <button id="b7">幻影坦克 $750</button>
   <button id="b8">超时空军团兵 $500</button>
   <button id="b9">入侵者战机 $400</button>
   <button id="bS">超武</button>
-  <button id="bA">A 强制</button>
-  <button id="bC" style="display:none">⚔命令</button>
+  <button id="bA" data-i18n="bA">A 强制</button>
+  <button id="bC" style="display:none" data-i18n="bC">⚔命令</button>
   <button id="bAI">🤖看AI打</button>
-  <button id="bR">重开</button>
+  <button id="bR" data-i18n="bR">重开</button>
 </div>
 <div id="lobby" style="display:none;position:fixed;inset:0;background:#0e1116;z-index:99;padding:20px;box-sizing:border-box;overflow:auto;font-family:monospace;color:#ddd">
-  <h2 style="margin:0 0 6px">房间列表</h2>
+  <h2 style="margin:0 0 6px" data-i18n="lobbyTitle">房间列表</h2>
   <p id="lobbyUrl" style="color:#888;font-size:12px;margin:0 0 10px"></p>
   <div id="lobbyList"></div>
-  <button id="lobbyNew" style="margin-top:12px;padding:10px 14px;background:#2a3a4a;color:#ddd;border:1px solid #4a6a8a;border-radius:4px;cursor:pointer;font-family:monospace">＋新建房间</button>
+  <button id="lobbyNew" style="margin-top:12px;padding:10px 14px;background:#2a3a4a;color:#ddd;border:1px solid #4a6a8a;border-radius:4px;cursor:pointer;font-family:monospace" data-i18n="lobbyNew">＋新建房间</button>
 </div>
 <script>
 'use strict';
@@ -866,7 +869,7 @@ function pick(wx,wy){
 /* ---- 指令 ---- */
 function canCommand(){ return net.spec ? false : (!net.connected || net.live); }
 function doCommand(wx,wy){
-  if(!canCommand()){ hint('等待对手连接…'); return; }
+  if(!canCommand()){ hint(_t('waitOpp')); return; }
   const target=pick(wx,wy);
   const ids=[...sel]; if(!ids.length) return;
   let k='move', x=SIM.fi(wx), y=SIM.fi(wy), t=0;
@@ -878,7 +881,7 @@ function doCommand(wx,wy){
   sfx.order();
 }
 function doBuild(wx,wy){
-  if(!canCommand()){ hint('等待对手连接…'); return; }
+  if(!canCommand()){ hint(_t('waitOpp')); return; }
   const c=SIM.queueCmd('build',mySide,[],SIM.fi(wx),SIM.fi(wy),buildType);
   netSend({t:'cmd',c});
   buildType=-1;
@@ -893,16 +896,16 @@ function superCharged(){
   return b && b.charge>=SIM.DEF[myBld()].cm;
 }
 function doSuper(wx,wy){
-  if(!canCommand()){ hint('等待对手连接…'); return; }
+  if(!canCommand()){ hint(_t('waitOpp')); return; }
   let ids=[];
   if(superType===SIM.T_CHRONO){
     ids=[...sel];
-    if(!ids.length){ hint('超时空传送：先选中要传送的单位'); return; }
+    if(!ids.length){ hint(_t('chronoSelect')); return; }
   }
   const c=SIM.queueCmd('super',mySide,ids,SIM.fi(wx),SIM.fi(wy),superType);
   netSend({t:'cmd',c});
   superType=-1;
-  hint('超武已发动');
+  hint(_t('superFired'));
   sfx.super();
 }
 function canPlace(x,y){
@@ -1054,15 +1057,15 @@ const btnTypes=[SIM.T_HARV,SIM.T_LTANK,SIM.T_HTANK,SIM.T_POWER,SIM.T_REFIN,
   $('b'+i).onclick=()=>{ buildType=buildType===btnTypes[i]?-1:btnTypes[i]; attackMode=false; superType=-1; };
 }
 $('bS').onclick=()=>{
-  if(!canCommand()){ hint('等待对手连接…'); return; }
+  if(!canCommand()){ hint(_t('waitOpp')); return; }
   superType=superType===myBld()?-1:myBld();
   buildType=-1; attackMode=false;
-  if(superType===SIM.T_CHRONO) hint('超时空传送：先选中单位，再点击目标位置');
-  if(superType===SIM.T_CURTAIN) hint('铁幕：点击要加无敌的区域');
+  if(superType===SIM.T_CHRONO) hint(_t('chronoSelect2'));
+  if(superType===SIM.T_CURTAIN) hint(_t('curtainClick'));
 };
 $('bA').onclick=()=>{ attackMode=!attackMode; buildType=-1; superType=-1; commandMode=false; };
 $('bC').onclick=()=>{ commandMode=!commandMode; buildType=-1; superType=-1; attackMode=false; };
-$('bAI').onclick=()=>{ aiMode=!aiMode; startGame(); hint(aiMode?'AI 对战中，点「👤我接管」切回自己玩':'单人模式，点「🤖看AI打」看 AI 对战'); };
+$('bAI').onclick=()=>{ aiMode=!aiMode; startGame(); hint(aiMode?_t('hintAI'):_t('hintSolo')); };
 $('bR').onclick=startGame;
 
 /* ---- 联机（roomsync 驱动：中途加克/ 掉线 AI 接管 / 快照恢复 / desync 自愈＋---- */
@@ -1072,7 +1075,7 @@ function connectSpectate(url){ net.spec=true; net.serverUrl=url; net.room=roomPa
 let specTimer=null;
 function openNet(){
   try{ net.ws=new WebSocket(net.serverUrl+(net.room?'?r='+net.room:'')); }
-  catch(e){ elNet.textContent='联机失败'; return; }
+  catch(e){ elNet.textContent=_t('netFail'); return; }
   net.connected=false; net.live=false; net.side=-1;
   net.hostTick=-1; net.pace=-1; net.humans=[];
   if(specTimer) clearInterval(specTimer); specTimer=null;
@@ -1084,8 +1087,8 @@ function openNet(){
     if(m.t==='welcome'){
       net.connected=true;
       if(m.room) net.room=m.room;
-      if(m.spec){ net.side=-1; mySide=-1; elNet.textContent='观战'; }
-      else { net.side=m.side; mySide=m.side; SIM.setAISide(net.side,false); elNet.textContent='联机-连接中…'; }
+      if(m.spec){ net.side=-1; mySide=-1; elNet.textContent=_t('netSpectate'); }
+      else { net.side=m.side; mySide=m.side; SIM.setAISide(net.side,false); elNet.textContent=_t('netConnecting'); }
     }
     else if(m.t==='roomsync'){ onRoomSync(m); }
     else if(m.t==='cmd'){ SIM.injectCmd(m.c); }
@@ -1093,20 +1096,20 @@ function openNet(){
     else if(m.t==='chk'){ onPeerChk(m.n,m.c); }
     else if(m.t==='reqsnap'){ if(net.live) netSend({t:'snap', s:SIM.serialize()}); }
     else if(m.t==='snap'){ onSnap(m.s); }
-    else if(m.t==='full'){ elNet.textContent='房间已满'; }
+    else if(m.t==='full'){ elNet.textContent=_t('netFull'); }
   };
   net.ws.onclose=()=>{
     if(specTimer) clearInterval(specTimer); specTimer=null;
     if(net.spec){
       net.connected=false; net.live=false;
-      elNet.textContent='观战断开·点重连';
+      elNet.textContent=_t('netLeft');
     } else if(net.connected){
       net.connected=false; net.live=false;
       SIM.setAISide(0,true); SIM.setAISide(1,true);   // 断线后本机AI 对打，画面不冻结
-      elNet.textContent='断线·点重连';
+      elNet.textContent=_t('netDisconnected');
       sel.clear();
     } else {
-      elNet.textContent='连接失败·点重连';
+      elNet.textContent=_t('netConnFail');
     }
   };
 }
@@ -1116,12 +1119,13 @@ function onNetClick(){ if(!net.connected && net.serverUrl) openNet(); }
 let lobbyWs=null;
 function enterLobby(url){
   $('lobby').style.display='block';
-  $('lobbyUrl').textContent='服务器：'+url+'（自动刷新）';
+  lobbyServerUrl=url;
+  $('lobbyUrl').textContent=_t('lobbyServer')+url+_t('autoRefresh');
   const open=()=>{
-    try{ lobbyWs=new WebSocket(url+'?l=1'); }catch(e){ $('lobbyList').innerHTML='<div style="color:#f66">连接失败</div>'; return; }
+    try{ lobbyWs=new WebSocket(url+'?l=1'); }catch(e){ $('lobbyList').innerHTML='<div style="color:#f66">'+_t('lobbyConnFail')+'</div>'; return; }
     lobbyWs.onopen=()=>{ try{ lobbyWs.send(JSON.stringify({t:'list'})); }catch(e){} };
     lobbyWs.onmessage=ev=>{ try{ const m=JSON.parse(ev.data); if(m.t==='rooms') renderLobby(m.rooms,url); }catch(e){} };
-    lobbyWs.onclose=()=>{ $('lobbyList').innerHTML='<div style="color:#888">连接断开，重试中…</div>'; setTimeout(open,2000); };
+    lobbyWs.onclose=()=>{ $('lobbyList').innerHTML='<div style="color:#888">'+_t('lobbyReconnect')+'</div>'; setTimeout(open,2000); };
     lobbyWs.onerror=()=>{ try{ lobbyWs.close(); }catch(e){} };
   };
   open();
@@ -1131,16 +1135,16 @@ function enterLobby(url){
 function renderLobby(rooms,url){
   const list=$('lobbyList');
   list.innerHTML='';
-  if(!rooms.length){ list.innerHTML='<div style="color:#666">暂无房间，点下方「＋ 新建房间」开一局</div>'; return; }
+  if(!rooms.length){ list.innerHTML='<div style="color:#666">'+_t('lobbyEmpty')+'</div>'; return; }
   for(const r of rooms){
     const row=document.createElement('div');
     row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin:6px 0;background:#1a2026;border:1px solid #2a3542;border-radius:6px';
     const info=document.createElement('span');
-    info.textContent='房间 '+r.code+' · 玩家 '+r.players+'/2'+(r.specs?' · 观战 '+r.specs:'');
+    info.textContent=_t('room')+' '+r.code+_t('roomPlayers')+r.players+'/2'+(r.specs?_t('roomSpecs')+r.specs:'');
     info.style.cssText='color:#ddd;font-size:14px';
     const b=document.createElement('button');
     const full=r.players>=2;
-    b.textContent=full?'观战':'加入';
+    b.textContent=full?_t('watch'):_t('join');
     b.style.cssText='padding:6px 12px;background:#2a3a4a;color:#ddd;border:1px solid #4a6a8a;border-radius:4px;cursor:pointer;font-family:monospace';
     b.onclick=()=>{ location.href=location.pathname+'?'+(full?'sp':'s')+'='+encodeURIComponent(url)+(r.code?'&r='+r.code:''); };
     row.appendChild(info); row.appendChild(b);
@@ -1159,7 +1163,7 @@ function onRoomSync(m){
   if(!net.live){
     if(peerHuman){
       // 房里有对手ↀ等快照接管（此时 sim 未开屢�，stepsOK 会拦住步进）
-      elNet.textContent='加入中…';
+      elNet.textContent=_t('netJoining');
       netSend({t:'reqsnap'});
     }else{
       // 我是唯一人类（或对手位空缺）ↀ本地弢�屢� vs AI
@@ -1168,7 +1172,7 @@ function onRoomSync(m){
       SIM.setAISide(peer,true);
       net.live=true;
       cam.cx=MAPW_PX/2; cam.cy=MAPW_PX/2; cam.s=fitScale();
-      elNet.textContent='联机-等待玩家加入';
+      elNet.textContent=_t('netWait');
     }
   }
 }
@@ -1179,7 +1183,7 @@ function onSnap(s){
   net.live=true;
   desync=false; resyncFails=0; chkHist.clear(); peerChk.clear();
   sel.clear();
-  elNet.textContent='联机-'+(net.side===0?'蓝方':'红方');
+  elNet.textContent=_t('netConn')+(net.side===0?_t('blue'):_t('red'));
 }
 // desync 检测 + 自动重同步：双方各自记录每 tick 校验和，凑齐同一 tick 才比对（异步错位也能命中）
 function checkDesync(n){
@@ -1189,7 +1193,7 @@ function checkDesync(n){
     // 只让跟随者向主时钟请求重同步（主时钟是权威源，避免互相污染）
     if(net.connected && net.live && net.pace!==net.side && resyncFails<3 && st.tick-lastResyncTick>=60){
       resyncFails++; lastResyncTick=st.tick;
-      elNet.textContent='不同步·重同步…';
+      elNet.textContent=_t('netDesync');
       netSend({t:'reqsnap'});
     }
   }
@@ -1810,7 +1814,7 @@ function draw(){
     ctx.beginPath(); ctx.moveTo(mouse.x-20,mouse.y); ctx.lineTo(mouse.x+20,mouse.y); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(mouse.x,mouse.y-20); ctx.lineTo(mouse.x,mouse.y+20); ctx.stroke();
     ctx.fillStyle=col; ctx.font='13px monospace'; ctx.textAlign='center';
-    ctx.fillText(superType===SIM.T_CHRONO?'超时空传送':'铁幕', mouse.x, mouse.y-28);
+    ctx.fillText(superType===SIM.T_CHRONO?_t('swChrono'):_t('swCurtain'), mouse.x, mouse.y-28);
   }
   // 子弹：更新 + 绘制（在实体之上）
   updateBullets();
@@ -1835,18 +1839,89 @@ function draw(){
   }
   // 胜利
   if(st.win>=0){
-    const txt=st.win===0?'蓝方胜':'红方胜';
+    const txt=st.win===0?_t('winBlue'):_t('winRed');
     ctx.fillStyle='#000a'; ctx.fillRect(0,cv.height/2-46,cv.width,92);
     ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='32px monospace';
     ctx.fillText(txt, cv.width/2, cv.height/2+6);
-    ctx.font='14px monospace'; ctx.fillStyle='#aaa'; ctx.fillText('按 R 重开', cv.width/2, cv.height/2+30);
+    ctx.font='14px monospace'; ctx.fillStyle='#aaa'; ctx.fillText(_t('pressR'), cv.width/2, cv.height/2+30);
     if(!net.connected && !net.spec){
       ctx.fillStyle= st.win===mySide ? '#ffd94a' : '#ff8570';
-      ctx.fillText(st.win===mySide ? '你赢了！下一局 AI 更强' : '输了，AI 难度不变', cv.width/2, cv.height/2+50);
+      ctx.fillText(st.win===mySide ? _t('youWin') : _t('youLose'), cv.width/2, cv.height/2+50);
     }
   }
   if(!miniOff) drawMini(st);   // M21 小地图（最上层）
 }
+/* ================= 中英双语 ================= */
+let rtsLang='zh'; try{ if(localStorage.getItem('wqnlll_lang')==='en') rtsLang='en'; }catch(e){}
+let lobbyServerUrl='';
+const _d=(zh,en)=>({zh,en});
+const T={
+  u0:_d('采矿车','Harvester'), u1:_d('轻坦','Light Tank'), u2:_d('重坦','Heavy Tank'),
+  u3:_d('电厂','Power Plant'), u4:_d('矿场','Refinery'), u5:_d('基地','Base'), u6:_d('矿石','Ore'),
+  u7:_d('光棱坦克','Prism Tank'), u8:_d('磁暴坦克','Tesla Tank'), u9:_d('超时空传送仪','Chronosphere'),
+  u10:_d('铁幕装置','Iron Curtain'), u11:_d('幻影坦克','Mirage Tank'), u12:_d('基洛夫空艇','Kirov Airship'),
+  u13:_d('入侵者战机','Harrier'), u14:_d('超时空军团兵','Chrono Legionnaire'), u15:_d('天启坦克','Apocalypse Tank'),
+  u16:_d('恐怖机器人','Terror Drone'),
+  swChrono:_d('超时空传送','Chronoshift'), swCurtain:_d('铁幕','Iron Curtain'),
+  atk:_d('攻击','ATK'), spd:_d('速度','SPD'), rng:_d('射程','RNG'),
+  sideBlue:_d('●蓝方 (盟军)','●Blue (Allied)'), sideRed:_d('●红方 (苏军)','●Red (Soviet)'),
+  netSingle:_d('单机','SOLO'), netSpectate:_d('观战','SPECTATE'),
+  netConnecting:_d('联机-连接中…','Net-connecting…'), netFail:_d('联机失败','Net failed'),
+  netFull:_d('房间已满','Room full'), netLeft:_d('观战断开·点重连','Spectate lost · reconnect'),
+  netDisconnected:_d('断线·点重连','Disconnected · reconnect'),
+  netConnFail:_d('连接失败·点重连','Failed · reconnect'),
+  netJoining:_d('加入中…','Joining…'), netWait:_d('联机-等待玩家加入','Net-waiting for player'),
+  netDesync:_d('不同步·重同步…','Desync · resyncing…'),
+  netConn:_d('联机-','Net-'), blue:_d('蓝方','Blue'), red:_d('红方','Red'),
+  soloAI:_d('单机·AI·难度','SOLO · AI diff'),
+  room:_d('房间','Room'), roomPlayers:_d(' · 玩家 ',' · players '), roomSpecs:_d(' · 观战 ',' · spec '),
+  join:_d('加入','Join'), watch:_d('观战','Watch'),
+  hintMain:_d('左键/拖框=选择 · 右键=移动或攻击 · A+点击=强制攻击 · 滚轮=缩放 · 方向键=平移','LMB/drag=select · RMB=move/attack · A+click=force · wheel=zoom · arrows=pan'),
+  hintSpectate:_d('观战中：滚轮缩放 · 方向键=平移','Spectating: wheel=zoom · arrows=pan'),
+  hintPlace:_d('左键放置 · 右键取消','LMB place · RMB cancel'),
+  hintChrono:_d('超时空传送：左键点击目标位置（需先选中单位）','Chronoshift: LMB target (select units first)'),
+  hintCurtain:_d('铁幕：左键点击目标区域','Iron Curtain: LMB target area'),
+  hintAttack:_d('A 强制攻击模式：右键指定目标/地点','A force-attack: RMB target/spot'),
+  hintAI:_d('AI 对战中，点「👤我接管」切回自己玩','AI is playing — click "👤Take Over"'),
+  hintSolo:_d('单人模式，点「🤖看AI打」看 AI 对战','Solo — click "🤖AI Play" to watch'),
+  bA:_d('A 强制','A Force'), bC:_d('⚔命令','⚔Cmd'), bAI:_d('🤖看AI打','🤖AI Play'), bAIoff:_d('👤我接管','👤Take Over'),
+  bR:_d('重开','Restart'),
+  btn0:_d('采矿车 $700','Harvester $700'), btn1:_d('轻坦 $600','Light Tank $600'),
+  btn2:_d('重坦 $900','Heavy Tank $900'), btn3:_d('电厂 $300','Power Plant $300'),
+  btn4:_d('矿场 $2000','Refinery $2000'),
+  lobbyTitle:_d('房间列表','Room List'), lobbyNew:_d('＋新建房间','＋New Room'),
+  lobbyServer:_d('服务器：','Server: '), autoRefresh:_d('（自动刷新）',' (auto-refresh)'),
+  lobbyConnFail:_d('连接失败','Connection failed'),
+  lobbyReconnect:_d('连接断开，重试中…','Lost connection, retrying…'),
+  lobbyEmpty:_d('暂无房间，点下方「＋ 新建房间」开一局','No rooms yet — click "＋ New Room" below'),
+  waitOpp:_d('等待对手连接…','Waiting for opponent…'),
+  chronoSelect:_d('超时空传送：先选中要传送的单位','Chronoshift: select the units to teleport'),
+  chronoSelect2:_d('超时空传送：先选中单位，再点击目标位置','Chronoshift: select units, then LMB the target'),
+  curtainClick:_d('铁幕：点击要加无敌的区域','Iron Curtain: click the area to shield'),
+  superFired:_d('超武已发动','Super weapon launched'),
+  winBlue:_d('蓝方胜','Blue wins'), winRed:_d('红方胜','Red wins'),
+  pressR:_d('按 R 重开','Press R to restart'),
+  youWin:_d('你赢了！下一局 AI 更强','You win! Next AI is tougher'),
+  youLose:_d('输了，AI 难度不变','You lost — AI stays the same'),
+};
+function _t(k){ const e=T[k]; return e ? (e[rtsLang] || e.zh) : k; }
+function _u(i){ return _t('u'+i); }
+function patchDefNames(){ try{ if(typeof SIM!=='undefined' && SIM.DEF){ for(let i=0;i<SIM.DEF.length;i++){ if(T['u'+i]) SIM.DEF[i].n = T['u'+i][rtsLang] || T['u'+i].zh; } } }catch(e){} }
+function applyRtsI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ const k=el.getAttribute('data-i18n'); if(T[k]) el.textContent=T[k][rtsLang]||T[k].zh; });
+  const lb=document.getElementById('rtsLang'); if(lb) lb.textContent=rtsLang==='zh'?'🌐 EN':'🌐 中';
+  document.documentElement.setAttribute('lang',rtsLang==='en'?'en':'zh-CN');
+  patchDefNames();
+  const lu=document.getElementById('lobbyUrl');
+  if(lu && lobbyServerUrl) lu.textContent=_t('lobbyServer')+lobbyServerUrl+_t('autoRefresh');
+  try{ if(typeof window.uiUpdate==='function') window.uiUpdate(); }catch(e){}
+}
+function toggleRtsLang(){
+  rtsLang=(rtsLang==='zh')?'en':'zh';
+  try{ localStorage.setItem('wqnlll_lang',rtsLang); }catch(e){}
+  applyRtsI18n();
+}
+
 function uiUpdate(){
   const st=SIM.getState();
   if(st.win>=0 && lastWin<0 && !net.spec){
@@ -1862,40 +1937,40 @@ function uiUpdate(){
   if(desync){ elChk.textContent='☠DESYNC@'+desyncTick; elChk.style.color='#f44'; }
   else { elChk.textContent='#'+st.checksum; elChk.style.color='#aaa'; }
   $('bar').style.display=(net.spec)?'none':'flex';
-  const rTag = net.room ? '房间'+net.room+'·' : '';
-  if(net.spec){ elNet.textContent=rTag+'观战'; }
+  const rTag = net.room ? _t('room')+net.room+'·' : '';
+  if(net.spec){ elNet.textContent=rTag+_t('netSpectate'); }
   else if(!net.connected){
-    elNet.textContent = net.serverUrl ? '断线·点重连' : ('单机·AI·难度'+(diff+1));
+    elNet.textContent = net.serverUrl ? _t('netDisconnected') : (_t('soloAI')+(diff+1));
   } else {
     const peer=net.side===0?1:0;
     const peerHuman=net.humans.indexOf(peer)>=0;
-    const who=net.side===0?'蓝方':'红方';
-    elNet.textContent = !net.live ? rTag+'联机-连接中…' : (peerHuman ? (rTag+'联机-'+who) : (rTag+'联机-'+who+' vs AI'));
+    const who=net.side===0?_t('blue'):_t('red');
+    elNet.textContent = !net.live ? rTag+_t('netConnecting') : (peerHuman ? (rTag+_t('netConn')+who) : (rTag+_t('netConn')+who+' vs AI'));
   }
   // 阵营专属按钮：类型重映射 + 标签＋~9 位每方专属单位，修复红方造不了磁暴铁幕的映射bug＋  btnTypes[5]=mySide===0?SIM.T_PRISM:SIM.T_TESLA;
   btnTypes[6]=mySide===0?SIM.T_CHRONO:SIM.T_CURTAIN;
   btnTypes[7]=mySide===0?SIM.T_MIRAGE:SIM.T_KIROV;
   btnTypes[8]=mySide===0?SIM.T_LEGION:SIM.T_APOC;
   btnTypes[9]=mySide===0?SIM.T_HARRIER:SIM.T_DRONE;
-  $('b5').textContent=(mySide===0?'光棱坦克':'磁暴坦克')+' $1050';
-  $('b6').textContent=(mySide===0?'超时空传送仪':'铁幕装置')+' $2500';
-  $('b7').textContent=(mySide===0?'幻影坦克':'基洛夫空艇')+' $'+(mySide===0?750:1800);
-  $('b8').textContent=(mySide===0?'超时空军团兵':'天启坦克')+' $'+(mySide===0?500:1500);
-  $('b9').textContent=(mySide===0?'入侵者战机':'恐怖机器人')+' $'+(mySide===0?400:500);
+  $('b5').textContent=(mySide===0?_t('u7'):_t('u8'))+' $1050';
+  $('b6').textContent=(mySide===0?_t('u9'):_t('u10'))+' $2500';
+  $('b7').textContent=(mySide===0?_t('u11'):_t('u12'))+' $'+(mySide===0?750:1800);
+  $('b8').textContent=(mySide===0?_t('u14'):_t('u15'))+' $'+(mySide===0?500:1500);
+  $('b9').textContent=(mySide===0?_t('u13'):_t('u16'))+' $'+(mySide===0?400:500);
   const charged=superCharged();
   $('bS').style.display=charged||superType>=0?'inline-block':'none';
-  $('bS').textContent=mySide===0?'超时空传送':'铁幕';
-  if(net.spec) elHint.textContent='观战中：滚轮缩放 · 方向键=平移';
-  else if(buildType>=0) elHint.textContent='左键放置 · 右键取消';
-  else if(superType>=0) elHint.textContent=superType===SIM.T_CHRONO?'超时空传送：左键点击目标位置（需先选中单位）':'铁幕：左键点击目标区域';
-  else if(attackMode) elHint.textContent='A 强制攻击模式：右键指定目标/地点';
-  else elHint.textContent='左键/拖框=选择 · 右键=移动或攻击 · A+点击=强制攻击 · 滚轮=缩放';
+  $('bS').textContent=mySide===0?_t('swChrono'):_t('swCurtain');
+  if(net.spec) elHint.textContent=_t('hintSpectate');
+  else if(buildType>=0) elHint.textContent=_t('hintPlace');
+  else if(superType>=0) elHint.textContent=superType===SIM.T_CHRONO?_t('hintChrono'):_t('hintCurtain');
+  else if(attackMode) elHint.textContent=_t('hintAttack');
+  else elHint.textContent=_t('hintMain');
   for(let i=0;i<10;i++) $('b'+i).style.background=buildType===btnTypes[i]?'#4a6a8a':'';
   $('bS').style.background=superType>=0?'#4a6a8a':'';
   $('bA').style.background=attackMode?'#4a6a8a':'';
   $('bC').style.display=isMobile()?'inline-block':'none';
   $('bC').style.background=commandMode?'#4a6a8a':'';
-  $('bAI').textContent = aiMode ? '👤我接管' : '🤖看AI打';
+  $('bAI').textContent = aiMode ? _t('bAIoff') : _t('bAI');
 }
 function loop(now){
   requestAnimationFrame(loop);
@@ -1920,7 +1995,7 @@ else if(q.get('sp')) connectSpectate(q.get('sp'));   // 观战
 else if(q.get('s')) connectNet(q.get('s'));     // 对战
 if(q.get('3d')!=null){                          // 3D 渲染层：仅换视觉，SIM/联机/回放不变
   R3D=true;
-  import('./three3d.js').then(m=>m.init3d()).catch(err=>{ console.error('3D init 失败:',err); R3D=false; });
+  import('./three3d.js').then(m=>m.init3d()).catch(err=>{ console.error('3D init failed:',err); R3D=false; });
 }
 if(q.get('fov')==='0') noFov=true;              // M15 调试弢�关：?fov=0 关闭迷雾（全图）
 if(q.get('mini')==='0') miniOff=true;           // M21 调试开关：?mini=0 关闭小地图
@@ -1929,6 +2004,7 @@ if(R3D){                                        // 3D 模式默认倾斜 35°(�
   if(isFinite(p)) setPitch(p);
 }
 
+applyRtsI18n();
 if(!q.get('lobby')){                            // 大厅模式只显示浮层，后面不跑游戏
   cam.s=fitScale();
   startGame();
@@ -1960,9 +2036,14 @@ if(!q.get('lobby')){                            // 大厅模式只显示浮层�
     // Net status colors
     if (elNet) {
       elNet.classList.remove('online','spectate');
-      const t = elNet.textContent;
-      if (t.includes('联机')) elNet.classList.add('online');
-      if (t.includes('观战')) elNet.classList.add('spectate');
+      if (typeof net !== 'undefined' && net) {
+        if (net.spec) elNet.classList.add('spectate');
+        else if (net.serverUrl || net.connected) elNet.classList.add('online');
+      } else {
+        const t = elNet.textContent;
+        if (t.indexOf('联机')>=0 || t.indexOf('Net-')>=0) elNet.classList.add('online');
+        if (t.indexOf('观战')>=0 || t.indexOf('SPECTATE')>=0) elNet.classList.add('spectate');
+      }
     }
     // Hint auto-hide: #hint is pointer-events:none, so bind hover to the
     // top/bottom bars where the mouse actually lands, else it hides forever.
@@ -2028,7 +2109,7 @@ if(!q.get('lobby')){                            // 大厅模式只显示浮层�
       if (!def) { panel.classList.remove('visible'); return; }
       
       elName.textContent = def.n + (ids.length > 1 ? '  ×' + ids.length : '');
-      elSide.textContent = ent.side === 0 ? '●蓝方 (盟军)' : '●红方 (苏军)';
+      elSide.textContent = ent.side === 0 ? _t('sideBlue') : _t('sideRed');
       
       const hpPct = Math.max(0, ent.hp / def.hp * 100);
       elHpBar.style.width = hpPct + '%';
