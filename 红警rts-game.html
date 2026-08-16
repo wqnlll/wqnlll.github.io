@@ -1,0 +1,2060 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>红警RTS · 网页版红色警戒</title>
+<style>
+  html,body{margin:0;height:100%;background:#1a1a1a;overflow:hidden;
+    font-family:monospace;color:#ddd;-webkit-user-select:none;user-select:none;touch-action:none;
+    -webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+  #c{position:fixed;top:0;left:0}
+  #ui{position:fixed;top:0;left:0;right:0;padding:6px 10px;padding-top:calc(6px + env(safe-area-inset-top));padding-left:calc(10px + env(safe-area-inset-left));padding-right:calc(10px + env(safe-area-inset-right));
+    display:flex;gap:14px;align-items:center;font-size:14px;pointer-events:none;flex-wrap:wrap}
+  #bar{position:fixed;bottom:0;left:0;right:0;padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom));padding-left:calc(8px + env(safe-area-inset-left));padding-right:calc(8px + env(safe-area-inset-right));
+    background:#000c;display:flex;gap:8px;flex-wrap:wrap}
+  button{background:#2a3a4a;color:#ddd;border:1px solid #4a6a8a;padding:10px 14px;
+    font-family:monospace;font-size:13px;cursor:pointer;border-radius:3px;touch-action:manipulation}
+  button:active{background:#4a6a8a}
+  button:disabled{opacity:.35}
+  #hint{position:fixed;top:34px;left:10px;right:10px;font-size:12px;color:#8a8;pointer-events:none}
+  #chk{color:#aaa}
+  /* 小屏（手机）适配 */
+  @media (max-width:720px){
+    button{padding:8px 11px;font-size:12px}
+    #bar{gap:6px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    #bar::-webkit-scrollbar{display:none}
+    #ui{font-size:12px;gap:8px}
+    #hint{font-size:10px}
+  }
+</style>
+
+<style id="rts-overlay-css">
+/* === RTS UI Overhaul === */
+:root {
+  --c-cred:#ffd94a; --c-pow-ok:#7fff7f; --c-pow-warn:#ffaa33; --c-pow-deny:#ff5555;
+  --c-cnt:#66ccff; --c-fps:#aaa; --c-chk:#888; --c-net:#aaa;
+  --c-btn-bg:#1e2d3d; --c-btn-border:#3a5a7a; --c-btn-hover:#2a4a6a;
+  --c-panel-bg:rgba(10,14,20,0.88); --c-panel-border:#3a5a7a; --c-panel-text:#c8d6e6;
+}
+#ui {
+  background:linear-gradient(to bottom,rgba(8,12,18,0.92) 0%,rgba(8,12,18,0) 100%);
+  padding-top:8px; padding-bottom:4px; border-bottom:1px solid rgba(74,106,138,0.3);
+}
+#ui span { text-shadow:0 0 8px currentColor; transition:color 0.3s; }
+#cred  { color:var(--c-cred); font-weight:bold; }
+#cnt   { color:var(--c-cnt); }
+#fps   { color:var(--c-fps); }
+#chk   { color:var(--c-chk); font-size:12px; }
+#pow   { color:var(--c-pow-ok); }
+#pow.pow-low       { color:var(--c-pow-warn); }
+#pow.pow-denied    { color:var(--c-pow-deny); }
+#net   { color:var(--c-net); }
+#net.online          { color:var(--c-cred); }
+#net.spectate        { color:#ff8570; }
+#hint {
+  font-size:11px; color:#8f8; opacity:0.85; top:32px;
+  text-shadow:0 0 6px rgba(0,255,0,0.3); transition:opacity 0.5s; pointer-events:none;
+}
+#hint.autohide { opacity:0; }
+#hint:hover { opacity:1!important; }
+#bar {
+  background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.5) 70%,transparent 100%);
+  padding-top:6px; padding-bottom:6px;
+}
+button {
+  background:var(--c-btn-bg); color:var(--c-panel-text);
+  border:1px solid var(--c-btn-border); border-radius:4px;
+  transition:background 0.15s,border-color 0.15s,transform 0.1s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05);
+}
+button:hover { background:var(--c-btn-hover); border-color:#5a8aaa; }
+button:active { transform:scale(0.97); }
+button.active { background:#2a4a6a; border-color:#6ab0ff; box-shadow:0 0 8px rgba(106,176,255,0.3); }
+#bS  { border-color:#8a6aff; background:#1e1a3a; }
+#bS:hover      { background:#2a2560; border-color:#aa8aff; }
+#bS.active     { border-color:#aa8aff; background:#3a3080; box-shadow:0 0 10px rgba(170,138,255,0.4); }
+#bAI { border-color:#5a8a5a; }
+#bAI:hover     { background:#1a3a1a; border-color:#7aaa7a; }
+#bR  { border-color:#8a4a4a; }
+#bR:hover      { background:#3a1a1a; border-color:#aa6a6a; }
+#unitPanel {
+  position:fixed; bottom:76px; left:8px; width:90px;
+  background:rgba(8,12,18,0.9); border:1px solid rgba(74,106,138,0.5);
+  border-radius:3px; padding:3px 5px;
+  font-family:monospace; font-size:9px; color:#c8d6e6;
+  pointer-events:none; opacity:0; transform:translateY(4px);
+  transition:opacity 0.1s; z-index:50;
+}
+#unitPanel.visible { opacity:1; transform:translateY(0); }
+#unitPanel .unit-name { font-size:10px; font-weight:bold; color:#fff; margin-bottom:2px; }
+#unitPanel .unit-side { font-size:8px; color:#5a8aaa; margin-bottom:2px; }
+#unitPanel .hp-bar-outer { width:100%; height:4px; background:#311; border-radius:2px; overflow:hidden; margin-bottom:2px; border:1px solid rgba(255,255,255,0.08); }
+#unitPanel .hp-bar-inner { height:100%; background:linear-gradient(to right,#3a3,#7f3,#5f5); border-radius:3px; transition:width 0.15s; }
+#unitPanel .hp-bar-inner.low  { background:linear-gradient(to right,#a33,#f55); }
+#unitPanel .hp-bar-inner.mid  { background:linear-gradient(to right,#a83,#fa5); }
+#unitPanel .stat-row { display:flex; justify-content:space-between; padding:0px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:8px; }
+#unitPanel .stat-row:last-child { border-bottom:none; }
+#unitPanel .stat-label { color:#7a8a9a; }
+#unitPanel .stat-value { color:#c8d6e6; }
+#unitPanel .stat-value.dmg { color:#ff8570; }
+#unitPanel .stat-value.spd { color:#66ccff; }
+@media(max-width:720px){
+  #ui { font-size:11px; gap:8px; padding:4px 8px; }
+  #cred,#pow,#cnt { font-size:13px; }
+  #bar { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  #bar::-webkit-scrollbar { display:none; }
+  button { padding:7px 9px; font-size:11px; }
+  #unitPanel { bottom:70px; left:5px; width:85px; padding:3px 5px; }
+  #unitPanel .unit-name { font-size:9px; }
+}
+button[data-tip]:hover::after {
+  content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:rgba(8,12,20,0.95); border:1px solid var(--c-panel-border); color:#c8d6e6;
+  font-size:11px; padding:4px 8px; border-radius:4px; white-space:nowrap; pointer-events:none; z-index:100; font-family:monospace;
+}
+</style>
+</head>
+<body>
+<div id="unitPanel">
+  <div class="unit-name" id="upName">—</div>
+  <div class="unit-side" id="upSide">—</div>
+  <div class="hp-bar-outer"><div class="hp-bar-inner" id="upHpBar" style="width:100%"></div></div>
+  <div class="stat-row"><span class="stat-label">HP</span><span class="stat-value" id="upHp">—</span></div>
+  <div class="stat-row"><span class="stat-label">攻击</span><span class="stat-value dmg" id="upDmg">—</span></div>
+  <div class="stat-row"><span class="stat-label">速度</span><span class="stat-value spd" id="upSpd">—</span></div>
+  <div class="stat-row"><span class="stat-label">射程</span><span class="stat-value" id="upRng">—</span></div>
+</div>
+<canvas id="c"></canvas>
+<div id="ui">
+  <span id="cred">$0</span>
+  <span id="pow">⚔/0</span>
+  <span id="cnt">●</span>
+  <span id="fps">--</span>
+  <span id="chk">#0</span>
+  <span id="net">单机</span>
+</div>
+<div id="hint">左键/拖框=选择 · 右键=移动或攻击 · A+点击=强制攻击 · 滚轮=缩放 · 方向键=平移</div>
+<div id="bar">
+  <button id="b0">采矿车 $700</button>
+  <button id="b1">轻坦 $600</button>
+  <button id="b2">重坦 $900</button>
+  <button id="b3">电厂 $300</button>
+  <button id="b4">矿场 $2000</button>
+  <button id="b5">光棱坦克 $1000</button>
+  <button id="b6">超时空传送仪 $2500</button>
+  <button id="b7">幻影坦克 $750</button>
+  <button id="b8">超时空军团兵 $500</button>
+  <button id="b9">入侵者战机 $400</button>
+  <button id="bS">超武</button>
+  <button id="bA">A 强制</button>
+  <button id="bC" style="display:none">⚔命令</button>
+  <button id="bAI">🤖看AI打</button>
+  <button id="bR">重开</button>
+</div>
+<div id="lobby" style="display:none;position:fixed;inset:0;background:#0e1116;z-index:99;padding:20px;box-sizing:border-box;overflow:auto;font-family:monospace;color:#ddd">
+  <h2 style="margin:0 0 6px">房间列表</h2>
+  <p id="lobbyUrl" style="color:#888;font-size:12px;margin:0 0 10px"></p>
+  <div id="lobbyList"></div>
+  <button id="lobbyNew" style="margin-top:12px;padding:10px 14px;background:#2a3a4a;color:#ddd;border:1px solid #4a6a8a;border-radius:4px;cursor:pointer;font-family:monospace">＋新建房间</button>
+</div>
+<script>
+'use strict';
+
+/* ==================================================================
+   SIM：确定��内核��这丢�段不含任位DOM/时间/浮点随机＋   可被 sim_check.js 无头提取运行。禁止在下面用Date/performance/Math.random「   ================================================================== */
+/* === SIM-START === */
+const SIM = (function(){
+'use strict';
+
+/* 1. 定点敌16.16 —��sim 层禁止浮点*/
+const SH=16, ONE=1<<16;
+const fi=n=>(n<<SH)|0;                 // int -> fx
+const tf=a=>a/ONE;                     // fx -> float（仅渲染/调试）
+const fn=n=>Math.round(n*ONE)|0;       // 字面量 -> fx（仅初始化常量）
+const ti=a=>a>>SH;                      // fx -> int（向下取整）
+// 乘法必须拆高低位：a*b 朢�大2^62 超出 double 精确整数范围 2^53，直接乘会静默丢精度
+function mul(a,b){
+  const ah=a>>16, al=a&0xffff, bh=b>>16, bl=b&0xffff;
+  return ((Math.imul(ah,bh)<<16)+Math.imul(ah,bl)+Math.imul(al,bh)+((al*bl)>>>16))|0;
+}
+function div(a,b){ return b===0 ? (a>=0?0x7fffffff:-0x80000000) : ((a*ONE)/b)|0; }
+// 整数平方根，基于 double 整数运算（2^53 精确），再 32 位截断
+function isqrt(n){
+  if(n<=0)return 0; if(n<2)return n;
+  let x=n, y=Math.floor((x+1)/2);
+  while(y<x){ x=y; y=Math.floor((x+Math.floor(n/x))/2); }
+  return x;
+}
+// 向量长度：先整体缩位避免 x²+y² 溢出 int32/double 精确范围。
+function flen(x,y){
+  let ax=x<0?-x:x, ay=y<0?-y:y;
+  if(ax===0)return ay; if(ay===0)return ax;
+  let s=0; const m=ax>ay?ax:ay;
+  while((m>>s)>=(1<<26))s++;
+  const sx=ax>>s, sy=ay>>s;
+  return (isqrt(sx*sx+sy*sy)<<s)|0;
+}
+
+/* 2. 确定性随机：xorshift32。sim 内唯丢�随机溅*/
+let rngS=0x9e3779b9;
+function rnd(){ let x=rngS; x^=x<<13;x|=0; x^=x>>>17; x^=x<<5;x|=0; rngS=x; return x>>>0; }
+function rndi(n){ return n<=0?0:rnd()%n; }
+
+/* 3. FNV-1a 校验和：每帧比对，不同步要能被发玩*/
+function hpush(h,v){ let x=v|0; for(let i=0;i<4;i++){ h^=(x&0xff); h=Math.imul(h,0x01000193); x>>>=8; } return h; }
+
+/* 4. 常量 */
+const TILE=32, MW=64, MH=64;              // 地图 64x64 格
+const MAPW=fi(MW*TILE), MAPH=fi(MH*TILE); // fx 单位
+const TICK_MS=50;                         // 逻辑 20fps
+const CMD_DELAY=3;                        // 指令延迟执行的 tick 数
+const T_HARV=0,T_LTANK=1,T_HTANK=2,T_POWER=3,T_REFIN=4,T_BASE=5,T_ORE=6;
+const T_PRISM=7,T_TESLA=8,T_CHRONO=9,T_CURTAIN=10;      // 光棱/磁暴/超时空传送仪/铁幕装置
+const T_MIRAGE=11,T_KIROV=12,T_HARRIER=13;              // 幻影(隐身)/基洛大飞行重甲)/入侵者丢�次��空被
+const T_LEGION=14,T_APOC=15,T_DRONE=16;                 // 超时空军团兵(抹建筑/天启(超重装/恐��机器人(快��群独
+const INVULN_TICKS=300, CHAIN_R=fi(28), CURTAIN_R=fi(120); // 铁幕无敌时长、磁暴链射程、铁幕半径
+const MIRAGE_HIDE_R=fi(60), BOMB_R=fi(60), BOMB_ARRIVE=fi(25), HARRIER_DMG=50; // 幻影隐身视野/空袭溅射半径/抵达判定/空袭伤害
+const ERASE_R=fi(15), ERASE_TICKS=90;                    // 军团兵抹除判定半径��施法时长// DEF: fac=0盟军/1苏军/2通用；cm=超武建筑蓄满扢�霢� tick(0=普��
+const DEF=[
+  {n:'采矿车',hp:600, spd:fn(2.75),rng:0,     dmg:0, cd:0,  cost:700, sz:11,b:0,fac:2,cm:0},
+  {n:'轻坦',  hp:400, spd:fn(3.75),rng:fi(110),dmg:22,cd:12, cost:600, sz:10,b:0,fac:2,cm:0},
+  {n:'重坦',  hp:900, spd:fn(2.375),rng:fi(130),dmg:48,cd:26, cost:900, sz:13,b:0,fac:2,cm:0},
+  {n:'电厂',  hp:800, spd:0,      rng:0,      dmg:0, cd:0,  cost:300, sz:26,b:1,fac:2,cm:0},
+  {n:'矿场',  hp:1400,spd:0,      rng:0,      dmg:0, cd:0,  cost:2000,sz:32,b:1,fac:2,cm:0},
+  {n:'基地',  hp:9000,spd:0,      rng:0,      dmg:0, cd:0,  cost:0,   sz:130,b:1,fac:2,cm:0},
+  {n:'矿石',  hp:1,   spd:0,      rng:0,      dmg:0, cd:0,  cost:99999,sz:0,b:1,fac:2,cm:0}, // 占位，T_ORE 不是 ent
+  {n:'光棱坦克',hp:340, spd:fn(3.25),rng:fi(155),dmg:52,cd:32,cost:1050,sz:10,b:0,fac:0,cm:0},
+  {n:'磁暴坦克',hp:520, spd:fn(3.0),rng:fi(130),dmg:40,cd:20,cost:1050,sz:11,b:0,fac:1,cm:0},
+  {n:'超时空传送仪',hp:1500,spd:0,rng:0,dmg:0,cd:0,cost:2500,sz:30,b:1,fac:0,cm:600},
+  {n:'铁幕装置',hp:1500,spd:0,rng:0,dmg:0,cd:0,cost:2500,sz:30,b:1,fac:1,cm:600},
+  {n:'幻影坦克',hp:320, spd:fn(3.75),rng:fi(140),dmg:35,cd:18,cost:750, sz:10,b:0,fac:0,cm:0},
+  {n:'基洛夫空艇',hp:1800,spd:fn(0.9),rng:fi(60),dmg:70,cd:60,cost:1800,sz:22,b:0,fac:1,cm:0,fly:1},
+  {n:'入侵者战机',hp:150, spd:fn(6.0),rng:0,     dmg:0, cd:0, cost:400, sz:8, b:0,fac:0,cm:0,fly:1},
+  {n:'超时空军团兵',hp:350, spd:fn(3.5),rng:0,    dmg:0, cd:0, cost:500, sz:8, b:0,fac:0,cm:0},
+  {n:'天启坦克',hp:1500,spd:fn(1.875),rng:fi(140),dmg:60,cd:32,cost:1500,sz:14,b:0,fac:1,cm:0},
+  {n:'恐怖机器人',hp:180, spd:fn(5.625),rng:fi(28),dmg:30,cd:15,cost:500, sz:7, b:0,fac:1,cm:0},
+];
+// 定点三角表：每12° 一个[cos,sin]；6.16 定点字面量，两端读到同一份，锁步确定，禁止用 Math.sin/cos 现算。
+const TRIG=[[65536,0],[64104,13626],[59870,26656],[53020,38521],[43852,48703],[32768,56756],[20252,62328],[6850,65177],[-6850,65177],[-20252,62328],[-32768,56756],[-43852,48703],[-53020,38521],[-59870,26656],[-64104,13626],[-65536,0],[-64104,-13626],[-59870,-26656],[-53020,-38521],[-43852,-48703],[-32768,-56756],[-20252,-62328],[-6850,-65177],[6850,-65177],[20252,-62328],[32768,-56756],[43852,-48703],[53020,-38521],[59870,-26656],[64104,-13626]];
+
+/* 5. 世界状��*/
+let ents=[], nextId=1, tick=0, checksum=0, win=-1;
+let cred=[5000,5000], powProd=[0,0], powUse=[0,0];
+let ore=[];                               // {x,y,amt}
+let cmdQ=new Map();                       // tick -> [cmd]
+let seq=0;
+let aiOn=[false,true];                     // 每侧是否用AI 控制（默认：蓝人线AI＋
+function ent(t,side,x,y){
+  const d=DEF[t];
+  return {id:nextId++,t,side,x,y,hp:d.hp,maxhp:d.hp,
+    tx:x,ty:y,tgt:0,cd:0,dead:false,
+    st:0,load:0,timer:0,                   // st/load/timer 采矿专用
+    invuln:0,charge:0,                     // 铁幕无敌剩余 tick、超武建筑充能
+    fx:0,fy:0};                            // 集火弧线编队偏移（相对 tgt 中心）
+}
+function findE(id){ for(const e of ents) if(e.id===id&&!e.dead) return e; return null; }
+
+function initWorld(seed, diff){
+  rngS=seed|0||0x9e3779b9; ents=[]; nextId=1; tick=0; checksum=0; win=-1;
+  aiOn=[false,true]; cmdQ.clear(); seq=0;
+  const d=diff|0;                             // AI 难度：每线+800 初始资金
+  cred=[5000,5000+d*800]; ore=[];
+  ents.push(ent(T_BASE,0,fi(300),fi(1500)));
+  ents.push(ent(T_HARV,0,fi(465),fi(1450)));
+  ents.push(ent(T_HARV,0,fi(420),fi(1650)));   // 双采矿车，保证经济能支撑大件
+  ents.push(ent(T_LTANK,0,fi(465),fi(1560)));
+  ents.push(ent(T_BASE,1,fi(1750),fi(400)));
+  ents.push(ent(T_HARV,1,fi(1585),fi(460)));
+  ents.push(ent(T_HARV,1,fi(1450),fi(350)));   // 双采矿车
+  ents.push(ent(T_LTANK,1,fi(1585),fi(350)));
+  // 矿区：4 片，确定性生成
+  const spots=[[600,1200],[1400,700],[700,600],[1350,1350]];
+  for(const[ox,oy]of spots)
+    for(let i=0;i<26;i++)
+      ore.push({x:fi(ox+rndi(200)-100), y:fi(oy+rndi(200)-100), amt:900});
+}
+
+/* 6. 指令队列（联机时经服务器广播，两端按 tick 排队执行＋*/
+function pushCmd(c){ if(!cmdQ.has(c.tick)) cmdQ.set(c.tick,[]); cmdQ.get(c.tick).push(c); }
+// 玩家指令：调度到 tick+CMD_DELAY，返回 c 以便联机时发给对端
+function queueCmd(k,side,ids,x,y,t){
+  const qids=ids.map(o=>o&&typeof o==='object'?o.id:o);   // 选中集可能存实体对象，统丢�车id
+  const c={tick:tick+CMD_DELAY, side, k, ids:qids.slice(), x:x|0, y:y|0, t:t|0, seq:seq++};
+  pushCmd(c); return c;
+}
+// 联机：对端发来的指令，直接用它的目标 tick 入队（不改延迟）
+function injectCmd(c){
+  pushCmd({tick:c.tick, side:c.side, k:c.k, ids:c.ids||[], x:c.x|0, y:c.y|0, t:c.t|0, seq:c.seq|0});
+}
+
+function rectOverlap(x,y,t){
+  const s1=DEF[t].sz;
+  for(const o of ents){ if(o.dead) continue; if(flen(x-o.x,y-o.y)<fi(s1+DEF[o.t].sz)) return true; }
+  return false;
+}
+// 放在指定位置（建筑用，鼠标点哪放哪）
+function spawnUnitAt(side,t,x,y){
+  const d=DEF[t];
+  if(cred[side]<d.cost) return false;
+  if(d.fac!==2 && d.fac!==side) return false;              // 阵营锁定
+  if(d.cm>0){                                              // 超武建筑每方限1 座
+    if(ents.some(o=>!o.dead&&o.side===side&&DEF[o.t].cm>0)) return false;
+  }
+  if(x<0||y<0||x>MAPW||y>MAPH) return false;
+  if(rectOverlap(x,y,t)) return false;
+  cred[side]-=d.cost; ents.push(ent(t,side,x,y)); return true;
+}
+// 放在基地附近空位（单位 AI 用）：7×17 网格扫描，覆盖 ±176px，确定性（基地 sz=130，需在碰撞圈外找空位）
+function spawnUnitNearBase(side,t){
+  const d=DEF[t]; if(cred[side]<d.cost) return false;
+  const base=ents.find(o=>!o.dead&&o.t===T_BASE&&o.side===side); if(!base) return false;
+  for(let g=-8;g<=8;g++) for(let h=-8;h<=8;h++){
+    if(spawnUnitAt(side,t,base.x+fi(g*22),base.y+fi(h*22))) return true;
+  }
+  return false;
+}
+
+function applyCmds(t){
+  const cs=cmdQ.get(t); if(!cs) return; cmdQ.delete(t);
+  // 同帧多条指令必须排序，保证两端执行顺序一致
+  cs.sort((a,b)=>a.side-b.side || a.seq-b.seq);
+  for(const c of cs){
+    if(c.k==='build'){
+      if(DEF[c.t].b) spawnUnitAt(c.side,c.t,c.x,c.y);
+      else spawnUnitNearBase(c.side,c.t);
+    }else if(c.k==='super'){
+      applySuper(c);
+    }else if(c.k==='atk' && c.t){
+      // 集火弧线编队：坦克沿目标周围弧线散开（确定性：定点数学 + 硬编码三角表）
+      const tgt=findE(c.t);
+      const valid=[];
+      for(const id of c.ids){ const e=findE(id); if(e&&e.side===c.side&&DEF[e.t].rng>0) valid.push(e); }
+      const n=valid.length;
+      if(tgt && n>0){
+        valid.sort((a,b)=>a.id-b.id);                    // 确定性槽位分配
+        let gx=0, gy=0;
+        for(const e of valid){ gx+=e.x; gy+=e.y; }
+        gx=div(gx,fi(n)); gy=div(gy,fi(n));
+        let dx=gx-tgt.x, dy=gy-tgt.y, len=flen(dx,dy);   // 冲锋方向（目标→质心）
+        if(len<=fi(1)){ dx=fi(1); dy=0; len=fi(1); }
+        const ux=div(dx,len), uy=div(dy,len);
+        const stepDeg=n>1?Math.min(24,144/(n-1)):0;      // 相邻坦克线24°，��跨度≀44°
+        for(let i=0;i<n;i++){
+          const e=valid[i], R=DEF[e.t].rng+fi(DEF[tgt.t].b?DEF[tgt.t].sz:0)-fi(4);   // 建筑加目标半径：普通整数需 fi 化，坦克站到建筑边缘开火
+          const offDeg=(i-(n-1)/2)*stepDeg;              // 槽位角度（可半整数）
+          let idx=Math.round(offDeg/12);                 // 就近落到 12° 三角表
+          idx=((idx%30)+30)%30;
+          const ct=TRIG[idx][0], st=TRIG[idx][1];        // cos/sin 定点
+          const rx=mul(ux,ct)-mul(uy,st);                // 旋转：弧线方向
+          const ry=mul(ux,st)+mul(uy,ct);
+          e.fx=mul(rx,R); e.fy=mul(ry,R);                // 相对 tgt 的站位偏移          e.tgt=c.t;
+        }
+      }
+      for(const id of c.ids){ const e=findE(id); if(e&&e.side===c.side) e.tgt=c.t; }  // 非战斗单位仍锁定
+    }else{
+      // 移动 / 攻击移动：编队展开——目标点沿「垂直于前进方向」的横排散布，避免挤成单列
+      const valid=[];
+      for(const id of c.ids){ const e=findE(id); if(e&&e.side===c.side) valid.push(e); }
+      const n=valid.length;
+      let gx=0, gy=0;                                   // 编队质心
+      for(const e of valid){ gx+=e.x; gy+=e.y; }
+      if(n>0){ gx=div(gx,fi(n)); gy=div(gy,fi(n)); }
+      let dx=c.x-gx, dy=c.y-gy, len=flen(dx,dy);
+      if(len<=fi(1)){ dx=fi(1); dy=0; len=fi(1); }       // 已到位时默认竖直展开
+      const px=div(-dy,len), py=div(dx,len);             // 垂直单位向量
+      valid.sort((a,b)=>{                                // 按垂直投影排序，就近占位防交叉
+        const pa=mul(px,a.x)+mul(py,a.y), pb=mul(px,b.x)+mul(py,b.y);
+        return (pa-pb)||(a.id-b.id);
+      });
+      for(let i=0;i<n;i++){
+        const e=valid[i], off=fi(Math.round((i-(n-1)/2)*30));
+        e.tgt=0; e.fx=0; e.fy=0; e.tx=c.x+mul(px,off); e.ty=c.y+mul(py,off);
+      }
+    }
+  }
+}
+
+/* 超武应用。c.t=超武建筑类型(T_CHRONO/T_CURTAIN)；应用前校验本方拥有且蓄满，否则两端丢�致丢弃��*/
+function applySuper(c){
+  const bld=ents.find(o=>!o.dead&&o.side===c.side&&o.t===c.t);
+  if(!bld||bld.charge<DEF[c.t].cm) return;
+  if(c.t===T_CHRONO){
+    // 把选中的己方可动单位传送到目标点附近（确定性：5x5 网格偏移，无浮点）
+    let k=0;
+    for(const id of c.ids){
+      const e=findE(id); if(!e||e.side!==c.side||DEF[e.t].b) continue;
+      const px=(k%5)-2, py=((k/5)|0)-2; k++;
+      e.x=c.x+fi(px*24); e.y=c.y+fi(py*24);
+      if(e.x<0)e.x=0; if(e.x>MAPW)e.x=MAPW; if(e.y<0)e.y=0; if(e.y>MAPH)e.y=MAPH;
+    }
+    bld.charge=0;
+  }else if(c.t===T_CURTAIN){
+    for(const e of ents){
+      if(e.dead||e.side!==c.side) continue;
+      if(flen(e.x-c.x,e.y-c.y)<CURTAIN_R) e.invuln=INVULN_TICKS;
+    }
+    bld.charge=0;
+  }
+}
+
+/* 7. 移动：朝目标点走，步长不超过速度 */
+function moveTo(e,tx,ty){
+  const dx=tx-e.x, dy=ty-e.y, dist=flen(dx,dy);
+  if(dist<=fi(2)) return true;
+  const sp=DEF[e.t].spd, s=dist<sp?dist:sp;
+  e.x+=mul(div(dx,dist),s);
+  e.y+=mul(div(dy,dist),s);
+  if(e.x<0)e.x=0; if(e.x>MAPW)e.x=MAPW;
+  if(e.y<0)e.y=0; if(e.y>MAPH)e.y=MAPH;
+  return false;
+}
+
+/* 8. 战斗 */
+function nearestOre(x,y){
+  let best=null, bd=0;
+  for(const o of ore){
+    if(o.amt<=0) continue;
+    const dist=flen(o.x-x,o.y-y);
+    if(!best||dist<bd){ best=o; bd=dist; }
+  }
+  return best;
+}
+// 采矿车选矿：优先最近且未被别的采矿车锁定的矿点，避免多车挤同一矿
+function oreForHarvest(e){
+  let best=null, bd=0;
+  for(const o of ore){
+    if(o.amt<=0) continue;
+    const dist=flen(o.x-e.x,o.y-e.y);
+    let taken=false;
+    for(const h of ents){
+      if(h.dead||h===e||h.t!==T_HARV) continue;
+      if(h.tx===o.x && h.ty===o.y){ taken=true; break; }
+    }
+    if(taken) continue;
+    if(!best||dist<bd){ best=o; bd=dist; }
+  }
+  return best || nearestOre(e.x,e.y);
+}
+function stepCombat(e){
+  const d=DEF[e.t];
+  if(e.cd>0) e.cd--;
+  if(e.tgt && !findE(e.tgt)) e.tgt=0;
+  if(!e.tgt){
+    // 索敌：视野=射程+40px，找最近敌人
+    const vr=d.rng+fi(40); let bd=0, bi=0;
+    for(const o of ents){
+      if(o.dead||o.t===T_ORE||o.side===e.side) continue;
+      const dist=flen(o.x-e.x,o.y-e.y);
+      if(o.t===T_MIRAGE && dist>MIRAGE_HIDE_R) continue;   // 幻影隐身：远距不可见/不可攻击
+      if(dist<=vr && (bi===0||dist<bd)){ bd=dist; bi=o.id; }
+    }
+    if(bi) e.tgt=bi;
+  }
+  if(e.tgt){
+    const t=findE(e.tgt);
+    if(t){
+      const dist=flen(t.x-e.x,t.y-e.y);
+      const effRng=d.rng+fi(DEF[t.t].b?DEF[t.t].sz:0);   // 大建筑：有效射程含目标半径 sz；普通整数需 fi 化，坦克站建筑边缘开火
+      if(dist<=effRng){
+        if(e.cd<=0){
+          if(t.invuln<=0){                       // 铁幕无敌不吃伤害
+            t.hp-=d.dmg;
+            if(e.t===T_TESLA){                   // 磁暴链式闪电：溅射主目标周围敌人半伤
+              for(const o of ents){
+                if(o.dead||o.side===e.side||o===t||o.invuln>0) continue;
+                if(flen(o.x-t.x,o.y-t.y)<CHAIN_R) o.hp-=d.dmg>>1;
+              }
+            }
+          }
+          e.cd=d.cd;
+        }
+      }
+      else if(e.fx||e.fy) moveTo(e,t.x+e.fx,t.y+e.fy);   // 集火编队：走向自己的弧线站位
+      else moveTo(e,t.x,t.y);
+    } else { e.tgt=0; e.fx=0; e.fy=0; }
+  }
+  if(!e.tgt) moveTo(e,e.tx,e.ty);        // 无目标时执行移动命令
+}
+
+/* 9. 采矿状��机＋间1去矿 2重3回程 4单*/
+function stepHarvest(e){
+  if(e.st===0) e.st=1;
+  if(e.st===1){
+    const o=oreForHarvest(e);                        // 选不被别人占的矿点
+    if(!o){ e.st=0; return; }
+    e.tx=o.x; e.ty=o.y;                              // 记住目标矿点（供别人避让）
+    if(moveTo(e,o.x,o.y)){ e.st=2; e.timer=30; }
+  }else if(e.st===2){
+    if(--e.timer<=0){
+      const o=nearestOre(e.x,e.y);
+      // 只采脚下矿点；脚下采空就图st=1 重新找矿（避免隔空采矿）
+      if(!o || flen(o.x-e.x,o.y-e.y)>fi(30)){ e.st=1; e.timer=0; return; }
+      o.amt-=60; e.load+=60; if(e.load>1000)e.load=1000;
+      if(e.load>=1000){                             // 采满才回程卸矿
+        const rf=ents.find(q=>!q.dead&&q.side===e.side&&(q.t===T_REFIN||q.t===T_BASE));
+        if(rf){ e.st=3; e.tx=rf.x+fi((e.id%5)*18-36); e.ty=rf.y+fi((e.id*7%5)*16-32); } else e.st=1;
+      } else e.timer=12;                            // 继续采
+    }
+  }else if(e.st===3){
+    if(moveTo(e,e.tx,e.ty)){ e.st=4; e.timer=30; }
+  }else if(e.st===4){
+    if(--e.timer<=0){ cred[e.side]+=e.load; e.load=0; e.st=1; }
+  }
+}
+
+/* 10. 轻量分离：可动单位互不叠叠（纯确定��i<j 顺序＋*/
+function separate(){
+  for(let i=0;i<ents.length;i++) for(let j=i+1;j<ents.length;j++){
+    const a=ents[i], b=ents[j];
+    if(a.dead||b.dead) continue;
+    const da=DEF[a.t], db=DEF[b.t];
+    if(da.spd===0||db.spd===0) continue;          // 建筑不动
+    if(da.fly||db.fly) continue;                  // 空中单位不参与地面分离
+    const dx=b.x-a.x, dy=b.y-a.y, dist=flen(dx,dy), min=fi(da.sz+db.sz);
+    if(dist>0 && dist<min){
+      const push=div(min-dist,fi(2));
+      const px=mul(div(dx,dist),push), py=mul(div(dy,dist),push);
+      a.x-=px; a.y-=py; b.x+=px; b.y+=py;
+      if(a.x<0)a.x=0; if(a.x>MAPW)a.x=MAPW; if(a.y<0)a.y=0; if(a.y>MAPH)a.y=MAPH;
+      if(b.x<0)b.x=0; if(b.x>MAPW)b.x=MAPW; if(b.y<0)b.y=0; if(b.y>MAPH)b.y=MAPH;
+    }
+  }
+}
+
+/* 11. 箢�单AI：按 aiOn 逐侧运行，定时补坦克并压向敌方基地��全程确定��，不使用rnd「*/
+// M22 AI 视野（fx 距离 = 渲染层FOVR 格数×32，SIM 内独立定义保证锁步确定��）
+const AIFOV=[fi(288),fi(320),fi(320),fi(320),fi(384),fi(512),0,fi(384),fi(352),fi(384),fi(384),fi(352),fi(448),fi(512),fi(320),fi(384),fi(288)];
+function aiCanSee(s,t){ for(const r of ents){ if(r.dead||r.side!==s) continue; if(flen(t.x-r.x,t.y-r.y)<=AIFOV[r.t]) return true; } return false; }
+function aiStep(){
+  for(let s=0;s<2;s++){
+    if(!aiOn[s]) continue;
+    const enemy=1-s;
+    const sBld=s===0?T_CHRONO:T_CURTAIN;             // 本方超武建筑类型
+    const hasSuper=ents.some(o=>!o.dead&&o.side===s&&DEF[o.t].cm>0);
+    const hasIdleHar=ents.some(o=>!o.dead&&o.side===s&&o.t===T_HARRIER&&o.tx===o.x&&o.ty===o.y);
+    const tanksNow=ents.filter(o=>!o.dead&&o.side===s&&DEF[o.t].rng>0).length;
+    // 大件目标：苏军基洛夫→天启；盟军军团克≀)；军队成型tanks≀)才为其预留，避免前期饿死
+    const hasKirov=ents.some(o=>!o.dead&&o.side===s&&o.t===T_KIROV);
+    const hasApoc=ents.some(o=>!o.dead&&o.side===s&&o.t===T_APOC);
+    const legionN=ents.filter(o=>!o.dead&&o.side===s&&o.t===T_LEGION).length;
+    let luxT=0;
+    if(s===1&&!hasKirov) luxT=T_KIROV;
+    else if(s===1&&!hasApoc) luxT=T_APOC;                    // 军团兵走机会性造兵，不进大件预留
+    const luxReserve=(luxT&&tanksNow>=4)?DEF[luxT].cost:0;   // 门槛降到坦克≥4（AI 大军常年 5~6 浮动）
+    const reserve=hasSuper?luxReserve:DEF[sBld].cost;
+    if(tick%60===0 && !hasSuper && cred[s]>=DEF[sBld].cost){
+      spawnUnitNearBase(s,sBld);                     // 有余钱就补超武建筑
+    }
+    if(tick%30===0){
+      const tanks=ents.filter(o=>!o.dead&&o.side===s&&DEF[o.t].rng>0).length;
+      const uniq=s===0?T_PRISM:T_TESLA;
+      const uniq2=s===0?T_MIRAGE:T_KIROV;
+      // 每次判定都用实时 cred 减预留；入侵者最优先；大件军队成型后优先
+      // 造兵：特色单位优先（盟军光棱/幻影、苏军磁暴），杂兵限量，坦克保底
+      if(s===0 && !hasIdleHar && cred[s]-reserve>=DEF[T_HARRIER].cost) spawnUnitNearBase(s,T_HARRIER);   // 入侵者
+      if(cred[s]-reserve>=DEF[uniq].cost) spawnUnitNearBase(s,uniq);
+      if(s===0 && cred[s]-reserve>=DEF[uniq2].cost) spawnUnitNearBase(s,uniq2);   // 幻影
+      if(luxT && tanksNow>=4 && cred[s]>=DEF[luxT].cost) spawnUnitNearBase(s,luxT);   // 大件：基洛夫/天启
+      if(s===0 && legionN<2 && hasSuper && cred[s]>=DEF[T_LEGION].cost) spawnUnitNearBase(s,T_LEGION);   // 军团兵
+      if(tanks<6 && cred[s]-reserve>=DEF[T_LTANK].cost) spawnUnitNearBase(s,T_LTANK);
+      if(tanks<6 && cred[s]-reserve>=DEF[T_LTANK].cost) spawnUnitNearBase(s,T_LTANK);
+      if(cred[s]-reserve>=DEF[T_HTANK].cost) spawnUnitNearBase(s,T_HTANK);
+      if(s===1 && tick%90===0 && ents.filter(o=>!o.dead&&o.side===s&&o.t===T_DRONE).length<2 && cred[s]>=DEF[T_DRONE].cost) spawnUnitNearBase(s,T_DRONE);
+    }
+    // 盟军 AI：有空闲入侵者就去空袭敌基地
+    if(s===0 && tick%150===0){
+      const har=ents.find(o=>!o.dead&&o.side===s&&o.t===T_HARRIER&&o.tx===o.x&&o.ty===o.y);
+      const base=ents.find(o=>!o.dead&&o.t===T_BASE&&o.side===enemy);
+      if(har&&base) pushCmd({tick:tick+1, side:s, k:'atk', ids:[har.id], x:base.x, y:base.y, t:0, seq:seq++});
+    }
+    if(tick%90===0){
+      // 派一半坦克出击（至少 1 辆），留一半守家
+      const tanks=ents.filter(o=>!o.dead&&o.side===s&&DEF[o.t].rng>0);
+      const ids=tanks.filter((_,i)=>i%2===0).map(o=>o.id);
+      if(ids.length>=1){
+        // M22 AI 迷雾：只攻击本方视野内目标；无可见目标则推进侦察（自动索敌在射程内接手）
+        let visTgt=null, visD=0;
+        for(const o of ents){
+          if(o.dead||o.side!==enemy||o.t===T_ORE) continue;
+          if(!aiCanSee(s,o)) continue;
+          let md=0;
+          for(const r of tanks){ const d=flen(o.x-r.x,o.y-r.y); if(!md||d<md) md=d; }
+          if(!visTgt||md<visD){ visTgt=o; visD=md; }
+        }
+        const base=ents.find(o=>!o.dead&&o.t===T_BASE&&o.side===enemy);
+        if(visTgt) pushCmd({tick:tick+1, side:s, k:'atk', ids, x:visTgt.x, y:visTgt.y, t:visTgt.id, seq:seq++});
+        else if(base) pushCmd({tick:tick+1, side:s, k:'move', ids, x:base.x, y:base.y, t:0, seq:seq++});
+      }
+    }
+    // 超武蓄满后使用：Chrono=把坦克群传��到敌基地旁；Curtain=给前压单位加无敌
+    if(tick%90===0){
+      const bld=ents.find(o=>!o.dead&&o.side===s&&o.t===sBld);
+      if(bld&&bld.charge>=DEF[sBld].cm){
+        const base=ents.find(o=>!o.dead&&o.t===T_BASE&&o.side===enemy);
+        if(base){
+          if(s===0){
+            const ids=ents.filter(o=>!o.dead&&o.side===s&&DEF[o.t].rng>0).map(o=>o.id);
+            if(ids.length) pushCmd({tick:tick+1, side:s, k:'super', ids, x:base.x, y:base.y, t:T_CHRONO, seq:seq++});
+          }else{
+            pushCmd({tick:tick+1, side:s, k:'super', ids:[], x:base.x, y:base.y, t:T_CURTAIN, seq:seq++});
+          }
+        }
+      }
+    }
+  }
+}
+
+/* 12. 主步迷*/
+/* 入侵者战机：丢�次��空袭����命令后高��飞向目标点/目标实体，抵达即自爆溅射 */
+function stepHarrier(e){
+  let tx=e.tx, ty=e.ty;
+  if(e.tgt){ const t=findE(e.tgt); if(t){ tx=t.x; ty=t.y; } else e.tgt=0; }
+  if(tx===e.x && ty===e.y) return;                  // 未下达命令（目标=出生点）ↀ悬停
+  if(moveTo(e,tx,ty)){                              // 抵达
+    for(const o of ents){
+      if(o.dead||o.side===e.side) continue;
+      if(o.invuln<=0 && flen(o.x-e.x,o.y-e.y)<BOMB_R) o.hp-=HARRIER_DMG;
+    }
+    e.hp=0; e.dead=true;
+  }
+}
+/* 超时空军团兵：自动走向最近敌方建筑，贴近后施法抹除（传��抹除，建筑直接 dead＋*/
+function stepChrono(e){
+  if(e.st===0){
+    // 找最近敌方建筑（优先非基地，避免偷家直接获胜；无其他建筑才抹基地）
+    let best=null, bd=0, bestBase=null, bdBase=0;
+    for(const o of ents){
+      if(o.dead||o.side===e.side||!DEF[o.t].b) continue;
+      const dist=flen(o.x-e.x,o.y-e.y);
+      if(o.t===T_BASE){ if(!bestBase||dist<bdBase){ bestBase=o; bdBase=dist; } }
+      else if(!best||dist<bd){ best=o; bd=dist; }
+    }
+    const tgt=best||bestBase;
+    if(tgt){ e.st=1; e.tx=tgt.x; e.ty=tgt.y; }
+    else { e.tx=e.x; e.ty=e.y; }                    // 无建筑可抹，原地待命
+  }else if(e.st===1){
+    if(moveTo(e,e.tx,e.ty)){ e.st=2; e.timer=ERASE_TICKS; }
+  }else if(e.st===2){
+    if(--e.timer<=0){
+      // 抹除 15px 内最近敌方建筑
+      let best=null, bd=0;
+      for(const o of ents){
+        if(o.dead||o.side===e.side||!DEF[o.t].b) continue;
+        const dist=flen(o.x-e.x,o.y-e.y);
+        if(dist<ERASE_R && (!best||dist<bd)){ best=o; bd=dist; }
+      }
+      if(best) best.dead=true;
+      e.st=0;
+    }
+  }
+}
+function stepEnt(e){
+  const d=DEF[e.t];
+  if(e.invuln>0) e.invuln--;                        // 无敌倒计时（对所有实体）
+  if(e.t===T_HARRIER){ stepHarrier(e); return; }
+  if(e.t===T_LEGION){ stepChrono(e); return; }
+  if(d.rng>0){ stepCombat(e); return; }
+  if(e.t===T_HARV){ stepHarvest(e); return; }
+  if(d.spd>0) moveTo(e,e.tx,e.ty);
+}
+function killDead(){ for(const e of ents) if(e.hp<=0&&!e.dead) e.dead=true; }
+function updatePower(){
+  powProd=[100,100]; powUse=[0,0];
+  for(const e of ents){
+    if(e.dead) continue;
+    if(e.t===T_POWER) powProd[e.side]+=100;
+    if(e.t===T_REFIN) powUse[e.side]+=60;
+  }
+}
+function checkWin(){
+  if(win>=0) return;
+  const a=ents.some(e=>!e.dead&&e.t===T_BASE&&e.side===0);
+  const b=ents.some(e=>!e.dead&&e.t===T_BASE&&e.side===1);
+  if(a&&!b) win=0; else if(!a&&b) win=1; else if(!a&&!b) win=-2;
+}
+function computeChecksum(){
+  let h=0x8badf00d|0;
+  h=hpush(h,tick); h=hpush(h,cred[0]); h=hpush(h,cred[1]);
+  h=hpush(h,aiOn[0]?1:0); h=hpush(h,aiOn[1]?1:0);
+  for(const e of ents){
+    h=hpush(h,e.id); h=hpush(h,e.t); h=hpush(h,e.side);
+    h=hpush(h,e.x); h=hpush(h,e.y); h=hpush(h,e.hp);
+    h=hpush(h,e.tx); h=hpush(h,e.ty); h=hpush(h,e.tgt);
+    h=hpush(h,e.fx); h=hpush(h,e.fy);
+    h=hpush(h,e.cd); h=hpush(h,e.st); h=hpush(h,e.load); h=hpush(h,e.timer);
+    h=hpush(h,e.invuln); h=hpush(h,e.charge);
+    h=hpush(h,e.dead?1:0);
+  }
+  for(const o of ore){ h=hpush(h,o.x); h=hpush(h,o.y); h=hpush(h,o.amt); }
+  return h|0;
+}
+
+/* 快照：序列化完整状��（含未应用的cmdQ），用于中��加克断线恢复「   cmdQ 不能漏����漏丢�条排队指令，对端未来就会分叉「*/
+function serialize(){
+  const cq={};
+  for(const [tk,arr] of cmdQ) cq[tk]=arr.map(c=>({tick:c.tick,side:c.side,k:c.k,ids:c.ids.slice(),x:c.x,y:c.y,t:c.t,seq:c.seq}));
+  return {
+    v:2, tick, nextId, seq, win, rngS,
+    aiOn:[!!aiOn[0],!!aiOn[1]],
+    cred:cred.slice(), powProd:powProd.slice(), powUse:powUse.slice(),
+    ents:ents.map(e=>[e.id,e.t,e.side,e.x,e.y,e.hp,e.maxhp,e.tx,e.ty,e.tgt,e.fx,e.fy,e.cd,e.dead?1:0,e.st,e.load,e.timer,e.invuln,e.charge]),
+    ore:ore.map(o=>[o.x,o.y,o.amt]),
+    cmdQ:cq
+  };
+}
+function deserialize(s){
+  tick=s.tick|0; nextId=s.nextId|0; seq=s.seq|0; win=s.win|0; rngS=s.rngS|0;
+  aiOn=[!!s.aiOn[0],!!s.aiOn[1]];
+  cred=s.cred.slice(); powProd=s.powProd.slice(); powUse=s.powUse.slice();
+  ents=s.ents.map(a=>({id:a[0],t:a[1],side:a[2],x:a[3],y:a[4],hp:a[5],maxhp:a[6],tx:a[7],ty:a[8],tgt:a[9],fx:a[10]||0,fy:a[11]||0,cd:a[12],dead:!!a[13],st:a[14],load:a[15],timer:a[16],invuln:a[17]||0,charge:a[18]||0}));
+  ore=s.ore.map(a=>({x:a[0],y:a[1],amt:a[2]}));
+  cmdQ=new Map();
+  for(const tk of Object.keys(s.cmdQ||{})){
+    for(const c of s.cmdQ[tk]) pushCmd({tick:c.tick,side:c.side,k:c.k,ids:(c.ids||[]).slice(),x:c.x,y:c.y,t:c.t,seq:c.seq});
+  }
+  checksum=computeChecksum();
+}
+
+function chargeSuper(){ for(const e of ents) if(!e.dead&&DEF[e.t].cm>0&&e.charge<DEF[e.t].cm) e.charge++; }
+function step(){
+  tick++;
+  applyCmds(tick);
+  for(const e of ents) if(!e.dead) stepEnt(e);
+  separate();
+  chargeSuper();
+  killDead(); updatePower(); checkWin(); aiStep();
+  checksum=computeChecksum();
+}
+
+return {
+  fi,tf,fn,ti,mul,div,isqrt,flen,rnd,rndi,hpush,
+  TILE,MW,MH,MAPW,MAPH,TICK_MS,CMD_DELAY,
+  T_HARV,T_LTANK,T_HTANK,T_POWER,T_REFIN,T_BASE,T_ORE,
+  T_PRISM,T_TESLA,T_CHRONO,T_CURTAIN,T_MIRAGE,T_KIROV,T_HARRIER,T_LEGION,T_APOC,T_DRONE,
+  INVULN_TICKS,CHAIN_R,CURTAIN_R,MIRAGE_HIDE_R,BOMB_R,BOMB_ARRIVE,HARRIER_DMG,ERASE_R,ERASE_TICKS,DEF,
+  initWorld,step,checksum,queueCmd,injectCmd,serialize,deserialize,
+  setAISide:function(s,v){ if(s===0||s===1) aiOn[s]=!!v; },
+  refreshChecksum:function(){ checksum=computeChecksum(); return checksum; },
+  getState:function(){ return {ents,ore,cred,powProd,powUse,tick,checksum,win,nextId,seq,aiOn:[!!aiOn[0],!!aiOn[1]]}; },
+  findE,rectOverlap,spawnUnitAt,spawnUnitNearBase
+};
+})();
+globalThis.__SIM__=SIM;
+/* === SIM-END === */
+
+/* === FOV-START === */
+// 战争迷雾（M15）：纯渲染/本地交互层，SIM 零改动。锁步要求 SIM 全知，迷雾只是视角过滤。
+// FOVR 按 SIM.T_* 索引，单位：格（1 格 = TILE = 32px）。不写进 SIM.DEF（SIM 数据保持纯净）。
+const FOVR=[9,10,10,10,12,16,0,12,11,12,12,11,14,16,10,12,9];
+// fovRecompute：清 vis ↀ指side 方单位点亮圆 ↀexpl |= vis（纯函数，fov_check.js 直接测）
+function fovRecompute(ents,side,vis,expl,FOVR,MW,MH,TILE,tf){
+  vis.fill(0);
+  for(const e of ents){
+    if(e.dead||e.side!==side) continue;
+    const R=FOVR[e.t]|0; if(R<=0) continue;
+    const cx=tf(e.x), cy=tf(e.y);
+    const gx0=(cx/TILE)|0, gy0=(cy/TILE)|0;
+    const x0=Math.max(0,gx0-R), x1=Math.min(MW-1,gx0+R);
+    const y0=Math.max(0,gy0-R), y1=Math.min(MH-1,gy0+R);
+    const r2=R*R*TILE*TILE;
+    for(let gy=y0;gy<=y1;gy++){ const dy=gy*TILE+TILE/2-cy;
+      for(let gx=x0;gx<=x1;gx++){
+        const dx=gx*TILE+TILE/2-cx;
+        if(dx*dx+dy*dy<=r2) vis[gy*MW+gx]=1;
+      }
+    }
+  }
+  for(let i=0;i<vis.length;i++) if(vis[i]) expl[i]=1;
+}
+function isTileVis(vis,gx,gy,MW){ return gx<0||gy<0||gx>=MW||gy>=MW||!!vis[gy*MW+gx]; }
+function isEntVis(vis,e,fovSide,fovFull,MW,TILE,tf){
+  if(fovFull||e.side===fovSide) return true;
+  const gx=(tf(e.x)/TILE)|0, gy=(tf(e.y)/TILE)|0;
+  return isTileVis(vis,gx,gy,MW);
+}
+// M20 遮蔽度平滑：vis→1 / expl→0.55 / else→0。3x3 box blur（边界 clamp）——黑雾边缘柔和
+function fovSoft(vis,expl,MW,MH,out){
+  for(let i=0;i<vis.length;i++) out[i]=vis[i]?0:(expl[i]?0.55:1);
+  for(let pass=0;pass<2;pass++){
+    const tmp=new Float32Array(out.length);
+    for(let gy=0;gy<MH;gy++) for(let gx=0;gx<MW;gx++){
+      let s=0;
+      for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){
+        const yy=Math.max(0,Math.min(MH-1,gy+dy)), xx=Math.max(0,Math.min(MW-1,gx+dx));
+        s+=out[yy*MW+xx];
+      }
+      tmp[gy*MW+gx]=s/25;
+    }
+    out.set(tmp);
+  }
+}
+/* === FOV-END === */
+
+/* ==================================================================
+   渲染 / 输入 / 主循玩/ 锁步联机客户端（以下可用浮点/DOM/时间＋   ================================================================== */
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+function resize(){ cv.width=innerWidth; cv.height=innerHeight; }
+addEventListener('resize',resize); resize();
+
+const MAPW_PX=SIM.MW*SIM.TILE;
+const cam={cx:MAPW_PX/2, cy:MAPW_PX/2, s:0, pitch:0, cosP:1, sinP:0};
+function fitScale(){ return Math.min(cv.width,cv.height)/MAPW_PX; }
+const isMobile=()=>innerWidth<720 || ('ontouchstart' in window);
+// 倾斜正交（红警等距视角）：pitch=相机倾角(度，相对竖直,0=正俯视)，仅 3D 模式生效。
+// 地面(z=0)仍是仿射映射 → 2D 点击/框选/滚轮/拖拽无需 raycaster；高度经 -z*sinP 抬升。
+function setPitch(deg){ cam.pitch=deg||0; const r=(R3D?cam.pitch:0)*Math.PI/180; cam.cosP=Math.cos(r); cam.sinP=Math.sin(r); }
+function clampCam(){
+  if(cam.s<0.15)cam.s=0.15; if(cam.s>6)cam.s=6;   // 下限 0.2→0.15：手机竖屏宽度适配(fitScale≈0.19)不被夹高，否则地图比屏宽看不到
+  const hw=cv.width/(2*cam.s), hh=cv.height/(2*cam.s*cam.cosP);
+  cam.cx=Math.max(hw,Math.min(MAPW_PX-hw,cam.cx));
+  cam.cy=Math.max(hh,Math.min(MAPW_PX-hh,cam.cy));
+}
+function w2sx(wx){ return (wx-cam.cx)*cam.s+cv.width/2; }
+function w2sy(wy,wz){ return ((wy-cam.cy)*cam.cosP-(wz||0)*cam.sinP)*cam.s+cv.height/2; }
+function s2wx(sx){ return (sx-cv.width/2)/cam.s+cam.cx; }
+function s2wy(sy){ return (sy-cv.height/2)/(cam.s*cam.cosP)+cam.cy; }
+
+let R3D=false;         // ?3d=1 时切换 Three.js 渲染层（仅渲染，SIM 不动）
+let mySide=0;
+// M15 迷雾视角：fovSide=本地阵营，fovFull=true 时全图（观战/AI演示/?fov=0）
+let fovSide=0, fovFull=false, noFov=false;
+const fovVis=new Uint8Array(SIM.MW*SIM.MH), fovExpl=new Uint8Array(SIM.MW*SIM.MH);
+const fovSoftBuf=new Float32Array(SIM.MW*SIM.MH);   // M20 遮蔽度平滑缓冲（迷雾边缘渐变）
+function updateFov(){
+  fovSide=mySide; fovFull=aiMode||net.spec||noFov;
+  if(fovFull){ fovVis.fill(0); fovExpl.fill(0); }
+  else {
+    fovRecompute(SIM.getState().ents, fovSide, fovVis, fovExpl, FOVR, SIM.MW, SIM.MH, SIM.TILE, SIM.tf);
+    fovSoft(fovVis, fovExpl, SIM.MW, SIM.MH, fovSoftBuf);   // M20 平滑遮蔽度（绘制用）
+  }
+  // M21 小地图底图：expl 变化才重渲
+  if(!miniExplChk){ miniExplChk=new Uint8Array(fovExpl.length); }
+  let md=false;
+  for(let i=0;i<fovExpl.length;i++) if(miniExplChk[i]!==fovExpl[i]){ md=true; miniExplChk[i]=fovExpl[i]; }
+  if(md) rebuildMini();
+}
+let sel=new Set();
+let attackMode=false;
+let commandMode=isMobile();   // 手机默认命令模式：单击自己选中、单击别处下令（单点即动，省去双击）
+let aiMode=false;        // AI 对打演示：蓝方也交给 AI
+let buildType=-1;
+let superType=-1;      // 超武目标模式＋1 无，T_CHRONO/T_CURTAIN
+let selBox=null;
+let mouse={x:0,y:0};
+let net={connected:false, side:-1, ws:null, hostTick:-1, pace:-1, humans:[], live:false, serverUrl:'', spec:false, room:''};
+let desync=false, desyncTick=-1, resyncFails=0, lastResyncTick=-99, lastWin=-1;
+let diff=0; try{ diff=parseInt(localStorage.getItem('rts_diff')||'0',10)|0; }catch(e){ diff=0; }  // 单机 AI 难度，赢丢�屢� +1，存本地
+function newSeed(){ return ((Math.random()*0x7fffffff)|0)||1; }                                 // 每局随机地图种子
+const chkHist=new Map(), peerChk=new Map();   // 我方/对端 每tick 校验和（独立记录，凑齐同 tick 才比对）
+
+/* ---- 命中测试 ---- */
+function pick(wx,wy){
+  let best=null, bd=0;
+  for(const e of SIM.getState().ents){
+    if(e.dead) continue;
+    if(e.side!==mySide && !isEntVis(fovVis,e,mySide,fovFull,SIM.MW,SIM.TILE,SIM.tf)) continue;  // M15 迷雾：不可见敌方不可点��攻击
+    const d=SIM.DEF[e.t];
+    const dist=SIM.flen(SIM.fi(wx)-e.x, SIM.fi(wy)-e.y);
+    if(dist<SIM.fi(d.sz+4) && (!best||dist<bd)){ best=e; bd=dist; }
+  }
+  return best;
+}
+
+/* ---- 指令 ---- */
+function canCommand(){ return net.spec ? false : (!net.connected || net.live); }
+function doCommand(wx,wy){
+  if(!canCommand()){ hint('等待对手连接…'); return; }
+  const target=pick(wx,wy);
+  const ids=[...sel]; if(!ids.length) return;
+  let k='move', x=SIM.fi(wx), y=SIM.fi(wy), t=0;
+  if(target && target.side!==mySide){ k='atk'; t=target.id; }
+  else if(attackMode){ k='atk'; t=0; }
+  const c=SIM.queueCmd(k,mySide,ids,x,y,t);
+  netSend({t:'cmd',c});
+  attackMode=false;
+  sfx.order();
+}
+function doBuild(wx,wy){
+  if(!canCommand()){ hint('等待对手连接…'); return; }
+  const c=SIM.queueCmd('build',mySide,[],SIM.fi(wx),SIM.fi(wy),buildType);
+  netSend({t:'cmd',c});
+  buildType=-1;
+  sfx.build();
+}
+// 本方阵营的辅助兵种
+function myUnit(){ return mySide===0?SIM.T_PRISM:SIM.T_TESLA; }
+function myBld(){ return mySide===0?SIM.T_CHRONO:SIM.T_CURTAIN; }
+function superCharged(){
+  const st=SIM.getState();
+  const b=st.ents.find(e=>!e.dead&&e.side===mySide&&e.t===myBld());
+  return b && b.charge>=SIM.DEF[myBld()].cm;
+}
+function doSuper(wx,wy){
+  if(!canCommand()){ hint('等待对手连接…'); return; }
+  let ids=[];
+  if(superType===SIM.T_CHRONO){
+    ids=[...sel];
+    if(!ids.length){ hint('超时空传送：先选中要传送的单位'); return; }
+  }
+  const c=SIM.queueCmd('super',mySide,ids,SIM.fi(wx),SIM.fi(wy),superType);
+  netSend({t:'cmd',c});
+  superType=-1;
+  hint('超武已发动');
+  sfx.super();
+}
+function canPlace(x,y){
+  const st=SIM.getState(); const d=SIM.DEF[buildType];
+  return st.cred[mySide]>=d.cost && x>=0&&y>=0&&x<=MAPW_PX&&y<=MAPW_PX &&
+    !SIM.rectOverlap(SIM.fi(x),SIM.fi(y),buildType);
+}
+
+/* ---- 鼠标 ---- */
+let dragStart=null;
+cv.addEventListener('mousedown',ev=>{
+  if(miniHit(ev.clientX,ev.clientY)){ jumpMini(ev.clientX,ev.clientY); return; }   // M21 小地图点击跳转
+  if(ev.button===0){ dragStart={x:ev.clientX,y:ev.clientY}; selBox={x0:ev.clientX,y0:ev.clientY,x1:ev.clientX,y1:ev.clientY}; }
+});
+addEventListener('mousemove',ev=>{
+  mouse.x=ev.clientX; mouse.y=ev.clientY;
+  if(selBox){ selBox.x1=ev.clientX; selBox.y1=ev.clientY; }
+});
+addEventListener('mouseup',ev=>{
+  if(ev.button!==0||!selBox) return;
+  const bx=Math.min(selBox.x0,selBox.x1), by=Math.min(selBox.y0,selBox.y1);
+  const bw=Math.abs(selBox.x1-selBox.x0), bh=Math.abs(selBox.y1-selBox.y0);
+  selBox=null; dragStart=null;
+  if(net.spec){ sel.clear(); return; }        // 观战者不可��择/下令
+  const wx=s2wx(mouse.x), wy=s2wy(mouse.y);
+  if(superType>=0){ doSuper(wx,wy); return; }
+  if(buildType>=0){ doBuild(wx,wy); return; }
+  if(bw<5&&bh<5){
+    const id=pick(wx,wy);
+    sel = id ? new Set([id]) : new Set();
+    if(id) sfx.select();
+  }else{
+    const ns=new Set();
+    const wx0=s2wx(bx), wy0=s2wy(by), wx1=s2wx(bx+bw), wy1=s2wy(by+bh);
+    for(const e of SIM.getState().ents){
+      if(e.dead||e.side!==mySide) continue;
+      const px=SIM.tf(e.x), py=SIM.tf(e.y);
+      if(px>=Math.min(wx0,wx1)&&px<=Math.max(wx0,wx1)&&py>=Math.min(wy0,wy1)&&py<=Math.max(wy0,wy1)) ns.add(e.id);
+    }
+    sel=ns.size?ns:new Set();
+  }
+});
+cv.addEventListener('contextmenu',ev=>{
+  ev.preventDefault(); ev.stopPropagation();
+  if(net.spec) return;
+  if(superType>=0){ superType=-1; return; }
+  if(buildType>=0){ buildType=-1; return; }
+  doCommand(s2wx(ev.clientX),s2wy(ev.clientY));
+});
+cv.addEventListener('wheel',ev=>{
+  ev.preventDefault();
+  const f=ev.deltaY<0?1.15:1/1.15;
+  const wx=s2wx(ev.clientX), wy=s2wy(ev.clientY);
+  cam.s*=f; clampCam();
+  cam.cx=wx-(ev.clientX-cv.width/2)/cam.s;
+  cam.cy=wy-(ev.clientY-cv.height/2)/(cam.s*cam.cosP);
+  clampCam();
+},{passive:false});
+
+/* ---- 键盘 ---- */
+addEventListener('keydown',ev=>{
+  if(ev.key==='m'||ev.key==='M') sfx.on=!sfx.on;   // 静音
+  if(net.spec){                                      // 观战只允许镜大静音
+    if(ev.key==='ArrowLeft'){ cam.cx-=30/cam.s; ev.preventDefault(); }
+    if(ev.key==='ArrowRight'){ cam.cx+=30/cam.s; ev.preventDefault(); }
+    if(ev.key==='ArrowUp'){ cam.cy-=30/cam.s; ev.preventDefault(); }
+    if(ev.key==='ArrowDown'){ cam.cy+=30/cam.s; ev.preventDefault(); }
+    return;
+  }
+  if(ev.key.toLowerCase()==='a'){ attackMode=!attackMode; buildType=-1; }
+  if(ev.key==='Escape'){ buildType=-1; attackMode=false; sel.clear(); }
+  if(ev.key==='ArrowLeft'){ cam.cx-=30/cam.s; ev.preventDefault(); }
+  if(ev.key==='ArrowRight'){ cam.cx+=30/cam.s; ev.preventDefault(); }
+  if(ev.key==='ArrowUp'){ cam.cy-=30/cam.s; ev.preventDefault(); }
+  if(ev.key==='ArrowDown'){ cam.cy+=30/cam.s; ev.preventDefault(); }
+  if(ev.key==='r'||ev.key==='R') startGame();
+});
+
+/* ---- 触摸 ---- */
+let touchN=0, touchT=0, pinchD=0, pinchMid=null, lastTap=0;
+cv.addEventListener('touchstart',ev=>{
+  ev.preventDefault();
+  const t=ev.touches;
+  if(t.length===1 && miniHit(t[0].clientX,t[0].clientY)){ jumpMini(t[0].clientX,t[0].clientY); return; }   // M21 小地图点击跳转
+  if(t.length===1){ touchN=1; touchT=Date.now(); pinchD=0; pinchMid=null; }
+  else if(t.length===2){
+    touchN=2;
+    pinchD=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+    pinchMid={x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2};
+  }
+},{passive:false});
+cv.addEventListener('touchmove',ev=>{
+  ev.preventDefault();
+  const t=ev.touches;
+  if(t.length===2){
+    const mx=(t[0].clientX+t[1].clientX)/2, my=(t[0].clientY+t[1].clientY)/2;
+    const d=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+    if(pinchMid&&pinchD){
+      // 旧中点下的世界点：让它在新的中点和缩放比例下保持跟随 ↀ同时实现平移+捏合缩放
+      const wx=s2wx(pinchMid.x), wy=s2wy(pinchMid.y);
+      const f=d/pinchD;
+      cam.s*=f; clampCam();
+      cam.cx=wx-(mx-cv.width/2)/cam.s;
+      cam.cy=wy-(my-cv.height/2)/(cam.s*cam.cosP);
+      clampCam();
+    }
+    pinchMid={x:mx,y:my}; pinchD=d;
+  }
+},{passive:false});
+cv.addEventListener('touchend',ev=>{
+  ev.preventDefault();
+  if(touchN===1 && Date.now()-touchT<400){
+    const t0=ev.changedTouches[0];
+    const wx=s2wx(t0.clientX), wy=s2wy(t0.clientY);
+    const now=Date.now();
+    if(net.spec){ sel.clear(); return; }
+    if(superType>=0){ doSuper(wx,wy); }
+    else if(buildType>=0){ doBuild(wx,wy); }
+    else if(commandMode){                            // 命令模式：点己方单位=加减/取消选中，点别处=下令（编队一起动）
+      const tgt=pick(wx,wy);
+      if(tgt&&tgt.side===mySide){
+        if(sel.has(tgt.id)){ sel.delete(tgt.id); }   // 再点已��中单位=取消选中
+        else{ sel.add(tgt.id); sfx.select(); }        // 点其他己方单位追加选中（不再顶掉上丢�个）
+      }
+      else if(sel.size===0){
+        // 无脑派兵：没选中时点空地/敌人 → 自动派最近的 3 个己方战斗单位（小队一起动，编队移动自动散开）
+        const stt=SIM.getState();
+        const fx=SIM.fi(wx), fy=SIM.fi(wy), cand=[];
+        for(const e of stt.ents){
+          if(e.dead||e.side!==mySide||!SIM.DEF[e.t].rng) continue;
+          cand.push({id:e.id, d:SIM.flen(fx-e.x, fy-e.y)});
+        }
+        cand.sort((a,b)=>a.d-b.d);
+        const ids=cand.slice(0,3).map(c=>c.id);
+        if(ids.length){ sel=new Set(ids); sfx.select(); doCommand(wx,wy); }
+      }
+      else doCommand(wx,wy);
+    }
+    else if(now-lastTap<350){ doCommand(wx,wy); lastTap=0; }
+    else{ const id=pick(wx,wy); sel=id?new Set([id]):new Set(); if(id) sfx.select(); lastTap=now; }
+  }
+  touchN=0;
+},{passive:false});
+
+/* ---- 按钮 ---- */
+const btnTypes=[SIM.T_HARV,SIM.T_LTANK,SIM.T_HTANK,SIM.T_POWER,SIM.T_REFIN,
+  SIM.T_PRISM,SIM.T_CHRONO,SIM.T_MIRAGE,SIM.T_LEGION,SIM.T_HARRIER];   // 5~9 位阵营专属，uiUpdate 按 mySide 重映射
+  for(let i=0;i<10;i++){
+  $('b'+i).onclick=()=>{ buildType=buildType===btnTypes[i]?-1:btnTypes[i]; attackMode=false; superType=-1; };
+}
+$('bS').onclick=()=>{
+  if(!canCommand()){ hint('等待对手连接…'); return; }
+  superType=superType===myBld()?-1:myBld();
+  buildType=-1; attackMode=false;
+  if(superType===SIM.T_CHRONO) hint('超时空传送：先选中单位，再点击目标位置');
+  if(superType===SIM.T_CURTAIN) hint('铁幕：点击要加无敌的区域');
+};
+$('bA').onclick=()=>{ attackMode=!attackMode; buildType=-1; superType=-1; commandMode=false; };
+$('bC').onclick=()=>{ commandMode=!commandMode; buildType=-1; superType=-1; attackMode=false; };
+$('bAI').onclick=()=>{ aiMode=!aiMode; startGame(); hint(aiMode?'AI 对战中，点「👤我接管」切回自己玩':'单人模式，点「🤖看AI打」看 AI 对战'); };
+$('bR').onclick=startGame;
+
+/* ---- 联机（roomsync 驱动：中途加克/ 掉线 AI 接管 / 快照恢复 / desync 自愈＋---- */
+function netSend(o){ if(net.ws&&net.ws.readyState===1) net.ws.send(JSON.stringify(o)); }
+function connectNet(url){ net.spec=false; net.serverUrl=url; net.room=roomParam; openNet(); }
+function connectSpectate(url){ net.spec=true; net.serverUrl=url; net.room=roomParam; openNet(); }
+let specTimer=null;
+function openNet(){
+  try{ net.ws=new WebSocket(net.serverUrl+(net.room?'?r='+net.room:'')); }
+  catch(e){ elNet.textContent='联机失败'; return; }
+  net.connected=false; net.live=false; net.side=-1;
+  net.hostTick=-1; net.pace=-1; net.humans=[];
+  if(specTimer) clearInterval(specTimer); specTimer=null;
+  if(net.spec){                              // 观战者：周期要快照
+    specTimer=setInterval(()=>{ if(net.connected&&net.ws&&net.ws.readyState===1) netSend({t:'reqsnap'}); },400);
+  }
+  net.ws.onmessage=ev=>{
+    let m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+    if(m.t==='welcome'){
+      net.connected=true;
+      if(m.room) net.room=m.room;
+      if(m.spec){ net.side=-1; mySide=-1; elNet.textContent='观战'; }
+      else { net.side=m.side; mySide=m.side; SIM.setAISide(net.side,false); elNet.textContent='联机-连接中…'; }
+    }
+    else if(m.t==='roomsync'){ onRoomSync(m); }
+    else if(m.t==='cmd'){ SIM.injectCmd(m.c); }
+    else if(m.t==='tk'){ net.hostTick=m.n; }
+    else if(m.t==='chk'){ onPeerChk(m.n,m.c); }
+    else if(m.t==='reqsnap'){ if(net.live) netSend({t:'snap', s:SIM.serialize()}); }
+    else if(m.t==='snap'){ onSnap(m.s); }
+    else if(m.t==='full'){ elNet.textContent='房间已满'; }
+  };
+  net.ws.onclose=()=>{
+    if(specTimer) clearInterval(specTimer); specTimer=null;
+    if(net.spec){
+      net.connected=false; net.live=false;
+      elNet.textContent='观战断开·点重连';
+    } else if(net.connected){
+      net.connected=false; net.live=false;
+      SIM.setAISide(0,true); SIM.setAISide(1,true);   // 断线后本机AI 对打，画面不冻结
+      elNet.textContent='断线·点重连';
+      sel.clear();
+    } else {
+      elNet.textContent='连接失败·点重连';
+    }
+  };
+}
+function onNetClick(){ if(!net.connected && net.serverUrl) openNet(); }
+
+/* ---- 大厅＋lobby=ws://... 独立模式，不占槽不进房） ---- */
+let lobbyWs=null;
+function enterLobby(url){
+  $('lobby').style.display='block';
+  $('lobbyUrl').textContent='服务器：'+url+'（自动刷新）';
+  const open=()=>{
+    try{ lobbyWs=new WebSocket(url+'?l=1'); }catch(e){ $('lobbyList').innerHTML='<div style="color:#f66">连接失败</div>'; return; }
+    lobbyWs.onopen=()=>{ try{ lobbyWs.send(JSON.stringify({t:'list'})); }catch(e){} };
+    lobbyWs.onmessage=ev=>{ try{ const m=JSON.parse(ev.data); if(m.t==='rooms') renderLobby(m.rooms,url); }catch(e){} };
+    lobbyWs.onclose=()=>{ $('lobbyList').innerHTML='<div style="color:#888">连接断开，重试中…</div>'; setTimeout(open,2000); };
+    lobbyWs.onerror=()=>{ try{ lobbyWs.close(); }catch(e){} };
+  };
+  open();
+  setInterval(()=>{ if(lobbyWs&&lobbyWs.readyState===1) lobbyWs.send(JSON.stringify({t:'list'})); },2000);
+  $('lobbyNew').onclick=()=>{ location.href=location.pathname+'?s='+encodeURIComponent(url); };
+}
+function renderLobby(rooms,url){
+  const list=$('lobbyList');
+  list.innerHTML='';
+  if(!rooms.length){ list.innerHTML='<div style="color:#666">暂无房间，点下方「＋ 新建房间」开一局</div>'; return; }
+  for(const r of rooms){
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 12px;margin:6px 0;background:#1a2026;border:1px solid #2a3542;border-radius:6px';
+    const info=document.createElement('span');
+    info.textContent='房间 '+r.code+' · 玩家 '+r.players+'/2'+(r.specs?' · 观战 '+r.specs:'');
+    info.style.cssText='color:#ddd;font-size:14px';
+    const b=document.createElement('button');
+    const full=r.players>=2;
+    b.textContent=full?'观战':'加入';
+    b.style.cssText='padding:6px 12px;background:#2a3a4a;color:#ddd;border:1px solid #4a6a8a;border-radius:4px;cursor:pointer;font-family:monospace';
+    b.onclick=()=>{ location.href=location.pathname+'?'+(full?'sp':'s')+'='+encodeURIComponent(url)+(r.code?'&r='+r.code:''); };
+    row.appendChild(info); row.appendChild(b);
+    list.appendChild(row);
+  }
+}
+// roomsync：更新成命主时钟，处理 AI 交接/接管；首次收到时决定"弢�屢� or 请求快照"
+function onRoomSync(m){
+  net.humans=m.humans||[];
+  net.pace=m.pace;
+  if(net.side<0) return;
+  const peer=net.side===0?1:0;
+  const peerHuman=net.humans.indexOf(peer)>=0;
+  SIM.setAISide(net.side,false);
+  SIM.setAISide(peer,!peerHuman);
+  if(!net.live){
+    if(peerHuman){
+      // 房里有对手ↀ等快照接管（此时 sim 未开屢�，stepsOK 会拦住步进）
+      elNet.textContent='加入中…';
+      netSend({t:'reqsnap'});
+    }else{
+      // 我是唯一人类（或对手位空缺）ↀ本地弢�屢� vs AI
+      SIM.initWorld(newSeed(), 0);
+      SIM.setAISide(net.side,false);
+      SIM.setAISide(peer,true);
+      net.live=true;
+      cam.cx=MAPW_PX/2; cam.cy=MAPW_PX/2; cam.s=fitScale();
+      elNet.textContent='联机-等待玩家加入';
+    }
+  }
+}
+// 加载对端快照，接管对应阵营
+function onSnap(s){
+  SIM.deserialize(s);
+  SIM.setAISide(net.side,false);
+  net.live=true;
+  desync=false; resyncFails=0; chkHist.clear(); peerChk.clear();
+  sel.clear();
+  elNet.textContent='联机-'+(net.side===0?'蓝方':'红方');
+}
+// desync 检测 + 自动重同步：双方各自记录每 tick 校验和，凑齐同一 tick 才比对（异步错位也能命中）
+function checkDesync(n){
+  if(chkHist.has(n)&&peerChk.has(n)&&chkHist.get(n)!==peerChk.get(n)){
+    desync=true; desyncTick=n;
+    const st=SIM.getState();
+    // 只让跟随者向主时钟请求重同步（主时钟是权威源，避免互相污染）
+    if(net.connected && net.live && net.pace!==net.side && resyncFails<3 && st.tick-lastResyncTick>=60){
+      resyncFails++; lastResyncTick=st.tick;
+      elNet.textContent='不同步·重同步…';
+      netSend({t:'reqsnap'});
+    }
+  }
+}
+function onPeerChk(n,c){
+  peerChk.set(n,c);
+  checkDesync(n);
+}
+function afterStep(){
+  if(!net.connected||!net.live) return;
+  const st=SIM.getState();
+  chkHist.set(st.tick,st.checksum);
+  checkDesync(st.tick);
+  if(st.tick%120===0){                              // 修剪历史，防无限增长
+    for(const k of [...chkHist.keys()]) if(k<st.tick-240) chkHist.delete(k);
+    for(const k of [...peerChk.keys()]) if(k<st.tick-240) peerChk.delete(k);
+  }
+  if(net.pace===net.side) netSend({t:'tk',n:st.tick});
+  netSend({t:'chk',n:st.tick,c:st.checksum});
+}
+function stepsOK(){
+  const st=SIM.getState();
+  if(net.spec) return false;            // 观战者不步进，只渲染最新快照
+  if(st.win>=0) return false;
+  if(!net.connected) return true;       // 单机/断线后本机继续
+  if(!net.live) return false;           // 还没开局/没拿到快照
+  if(net.pace===net.side) return true;  // 我是主时钟，自由步进
+  return net.hostTick>=st.tick+1;       // 跟随主时钟
+}
+
+/* ---- 主循玩---- */
+let last=performance.now(), acc=0;
+let fpsN=0, fpsT=performance.now(), fps=0;
+const elCred=$('cred'),elPow=$('pow'),elCnt=$('cnt'),elFps=$('fps'),elChk=$('chk'),elNet=$('net'),elHint=$('hint');
+elNet.onclick=onNetClick;   // 断线时点它重迷
+/* ---- 程序化音效（纯客户端，WebAudio，M 静音＋---- */
+const sfx={
+  ctx:null, on:true,
+  init(){ if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(this.ctx&&this.ctx.state==='suspended') this.ctx.resume(); },
+  beep(f,d,t,v){ if(!this.on||!this.ctx) return; const o=this.ctx.createOscillator(),g=this.ctx.createGain(); o.type=t||'square'; o.frequency.value=f; g.gain.value=v||0.07; o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+d); g.gain.exponentialRampToValueAtTime(0.0001,this.ctx.currentTime+d); },
+  noise(d,v){ if(!this.on||!this.ctx) return; const n=this.ctx.createBufferSource(),b=this.ctx.createBuffer(1,this.ctx.sampleRate*d,this.ctx.sampleRate),w=b.getChannelData(0); for(let i=0;i<w.length;i++)w[i]=Math.random()*2-1; n.buffer=b; const g=this.ctx.createGain(); g.gain.value=v||0.12; n.connect(g); g.connect(this.ctx.destination); n.start(); n.stop(this.ctx.currentTime+d); g.gain.exponentialRampToValueAtTime(0.0001,this.ctx.currentTime+d); },
+  select(){ this.init(); this.beep(620,0.05,'square',0.05); },
+  order(){ this.init(); this.beep(900,0.07,'square',0.06); this.beep(1250,0.07,'square',0.06); },
+  build(){ this.init(); this.beep(480,0.08,'triangle',0.08); this.beep(760,0.1,'triangle',0.08); },
+  boom(){ this.init(); this.noise(0.4,0.22); this.beep(85,0.4,'sine',0.2); },
+  super(){ this.init(); this.beep(380,0.15,'sawtooth',0.07); this.beep(800,0.2,'sawtooth',0.07); this.beep(1400,0.3,'sawtooth',0.07); },
+  invuln(){ this.init(); this.beep(1250,0.06,'square',0.05); this.beep(1650,0.09,'square',0.05); },
+  win(){ this.init(); [660,880,1320].forEach((f,i)=>setTimeout(()=>this.beep(f,0.25,'triangle',0.09),i*120)); },
+  lose(){ this.init(); [660,520,330].forEach((f,i)=>setTimeout(()=>this.beep(f,0.3,'sine',0.09),i*150)); }
+};
+/* ---- 特效（纯客户端渲染层，不迷sim＋---- */
+const fx=[];                       // {x,y,kind:'boom'|'flash'|'shimmer',t,dur}
+let prevEnts=new Map();            // id -> {x,y,hp,invuln,dead}
+function diffFx(st){
+  const cur=new Map();
+  for(const e of st.ents){
+    cur.set(e.id,{x:e.x,y:e.y,hp:e.hp,invuln:e.invuln,dead:e.dead});
+    const p=prevEnts.get(e.id);
+    if(!p||e.dead&&p.dead) { continue; }
+    if(!p.dead&&e.dead){ fx.push({x:SIM.tf(e.x),y:SIM.tf(e.y),kind:'boom',t:0,dur:28}); sfx.boom(); }
+    else if(!e.dead&&p.invuln<=0&&e.invuln>0){ fx.push({x:SIM.tf(e.x),y:SIM.tf(e.y),kind:'shimmer',t:0,dur:18}); sfx.invuln(); }
+    else if(!e.dead&&Math.hypot(SIM.tf(e.x)-SIM.tf(p.x),SIM.tf(e.y)-SIM.tf(p.y))>200){ fx.push({x:SIM.tf(e.x),y:SIM.tf(e.y),kind:'flash',t:0,dur:24}); sfx.super(); }
+  }
+  prevEnts=cur;
+}
+/* 子弹特效：纯渲染层����检测开火cd 令0 跳到满��生成飞弹，追踪目标，不进 sim */
+const bullets=[];                     // {fx,fy,tx,ty,tgtId,t,dur,kind}
+let prevCd=new Map();                 // id -> cd
+function diffBullets(st){
+  const cur=new Set();
+  for(const e of st.ents){
+    if(e.dead||!SIM.DEF[e.t].rng) continue;
+    cur.add(e.id);
+    const prev=prevCd.get(e.id)||0;
+    if(prev===0 && e.cd===SIM.DEF[e.t].cd){      // 刚开火
+      let tx=e.tx, ty=e.ty, tgtId=0;
+      if(e.tgt){ const tt=SIM.findE(e.tgt); if(tt){ tx=tt.x; ty=tt.y; tgtId=tt.id; } }
+      bullets.push({fx:SIM.tf(e.x), fy:SIM.tf(e.y), tx:SIM.tf(tx), ty:SIM.tf(ty), tgtId, t:0, dur:10,
+        kind:e.t===SIM.T_TESLA?'tesla':(e.t===SIM.T_PRISM?'beam':'shell')});
+    }
+    prevCd.set(e.id, e.cd);
+  }
+  for(const k of prevCd.keys()) if(!cur.has(k)) prevCd.delete(k);
+}
+function updateBullets(){
+  for(const b of bullets){
+    b.t++;
+    if(b.tgtId){ const tt=SIM.findE(b.tgtId); if(tt){ b.tx=SIM.tf(tt.x); b.ty=SIM.tf(tt.y); } }
+  }
+  for(let i=bullets.length-1;i>=0;i--) if(bullets[i].t>=bullets[i].dur) bullets.splice(i,1);
+}
+function drawBullets(){
+  for(const b of bullets){
+    const p=b.t/b.dur, a=1-p;
+    const bxw=b.fx+(b.tx-b.fx)*p, byw=b.fy+(b.ty-b.fy)*p;   // 当前世界坐标（float px）
+    if(!isTileVis(fovVis,(bxw/SIM.TILE)|0,(byw/SIM.TILE)|0,SIM.MW)) continue;   // M15 迷雾：雾中飞弹不显示
+    const sx=w2sx(b.fx), sy=w2sy(b.fy);
+    const x=w2sx(bxw), y=w2sy(byw);
+    if(b.kind==='tesla'){
+      // 磁暴链闪电：粗锯齿电式+ 亮头
+      ctx.strokeStyle='rgba(170,255,255,'+a+')'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(sx,sy);
+      for(let s=1;s<6;s++){ const q=s/6; ctx.lineTo(sx+(x-sx)*q+(s%2?6:-6), sy+(y-sy)*q+(s%2?-6:6)); }
+      ctx.lineTo(x,y); ctx.stroke();
+      ctx.fillStyle='rgba(220,255,255,'+a+')';
+      ctx.beginPath(); ctx.arc(x,y,Math.max(2,4*cam.s),0,7); ctx.fill();
+    }else if(b.kind==='beam'){
+      // 光棱束：亮粗光束 + 命中光斑
+      ctx.strokeStyle='rgba(170,255,255,'+a+')'; ctx.lineWidth=Math.max(2,3*cam.s);
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(x,y); ctx.stroke();
+      ctx.fillStyle='rgba(220,255,255,'+a+')';
+      ctx.beginPath(); ctx.arc(x,y,Math.max(2,4*cam.s),0,7); ctx.fill();
+    }else{
+      // 炮弹：曳光弹避+ 亮头
+      ctx.strokeStyle='rgba(255,220,120,'+a+')'; ctx.lineWidth=Math.max(1.5,2*cam.s);
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(x,y); ctx.stroke();
+      ctx.fillStyle='rgba(255,240,180,'+a+')';
+      ctx.beginPath(); ctx.arc(x,y,Math.max(2,3.5*cam.s),0,7); ctx.fill();
+    }
+    // 枪口火光：刚出膛 2 帧画丢�团亮
+    if(b.t<=2){
+      ctx.fillStyle='rgba(255,210,90,'+(0.8-b.t*0.3)+')';
+      ctx.beginPath(); ctx.arc(sx,sy,Math.max(3,6*cam.s),0,7); ctx.fill();
+    }
+  }
+}
+function hint(s){ elHint.textContent=s; }
+function startGame(){
+  if(net.spec) return;                    // 观战者不能重弢�
+  if(net.connected && net.live && net.humans.length>1){
+    netSend({t:'reqsnap'});   // 联机对局中：R=重同步，不做本地重开
+    return;
+  }
+  // 单机 / 独人屢�：本地重弢�
+  SIM.initWorld(newSeed(), net.connected ? 0 : diff);
+  if(net.connected){ SIM.setAISide(0, net.side!==0); SIM.setAISide(1, net.side!==1); }
+  else { SIM.setAISide(0, aiMode); SIM.setAISide(1, true); }
+  desync=false; desyncTick=-1; resyncFails=0; chkHist.clear(); peerChk.clear();
+  sel.clear(); buildType=-1; attackMode=false;
+  fovVis.fill(0); fovExpl.fill(0);   // M15 新开屢�重置迷雾
+  if(aiMode){ cam.cx=MAPW_PX/2; cam.cy=MAPW_PX/2; cam.s=fitScale(); }  // 演示：整图看全局
+  else if(isMobile()){                        // 手机默认整图可见（宽度自适应，整个画面不超出屏幕＋    cam.cx=MAPW_PX/2; cam.cy=MAPW_PX/2;
+    cam.s=fitScale();                         // 全图宽度适配：一眼看到整张地图，细节用双指放大
+  } else { cam.cx=MAPW_PX/2; cam.cy=MAPW_PX/2; cam.s=fitScale(); }
+}
+
+/* ---- 渲染 ---- */
+/* 地形：确定��hash 生成地面色块（两端每次刷新丢�致，不依赢Math.random＋*/
+function tileHash(gx,gy){
+  let h=(Math.imul(gx,374761393)+Math.imul(gy,668265263))|0;
+  h=(h^(h>>>13))|0; h=Math.imul(h,1274126177)|0;
+  h=(h^(h>>>16))|0;
+  return (h>>>0)/4294967296;
+}
+function groundColor(gx,gy){
+  const h=tileHash(gx,gy);
+  if(h<0.08) return '#4d4433';   // 沙地斑块
+  if(h>0.94) return '#33402a';   // 深草/湿地
+  if(h>0.82) return '#465433';   // 浅草
+  if(h>0.70) return '#3f4c2e';   // 草地变体
+  return '#3d4a2a';              // 草地主调
+}
+/* ---- 草地离屏预渲染：8px 细纹理，避免 32px 大方格 ---- */
+function _hexRgb(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+function _shadeHex(h, off){ const r=_hexRgb(h).map(v=>Math.max(0,Math.min(255,Math.round(v+off)))); return 'rgb('+r[0]+','+r[1]+','+r[2]+')'; }
+let terrCanvas=null;
+function buildTerrain(){
+  if(terrCanvas) return;
+  terrCanvas=document.createElement('canvas');
+  terrCanvas.width=MAPW_PX; terrCanvas.height=MAPW_PX;
+  const tc=terrCanvas.getContext('2d');
+  const CELL=8;
+  for(let cy=0; cy*CELL<MAPW_PX; cy++) for(let cx=0; cx*CELL<MAPW_PX; cx++){
+    const gx=(cx*CELL/SIM.TILE)|0, gy=(cy*CELL/SIM.TILE)|0;
+    const base=groundColor(gx,gy);
+    const sh=tileHash(gx*7919+cx*31+17, gy*104729+cy*13+29);
+    tc.fillStyle=_shadeHex(base, Math.round((sh-0.5)*16));
+    tc.fillRect(cx*CELL, cy*CELL, CELL, CELL);
+  }
+  // 平滑：轻微模糊去掉方格边界，草地更自然
+  const _blur=document.createElement('canvas');
+  _blur.width=terrCanvas.width; _blur.height=terrCanvas.height;
+  const _bc=_blur.getContext('2d');
+  _bc.filter='blur(10px)';
+  _bc.drawImage(terrCanvas,0,0);
+  terrCanvas=_blur;
+}
+/* 坦克造型：俯视（+x=炮管朝向）����阴影+ 双履带带节缩 + 车身 + 炮塔 + 粗炮管+ 炮口 */
+function drawTank(px,py,v,ang,bodyCol){
+  ctx.save();
+  ctx.translate(px,py); ctx.rotate(ang);
+  // 阴影
+  ctx.fillStyle='rgba(0,0,0,0.30)';
+  ctx.beginPath(); ctx.ellipse(v*0.06, v*0.08, v*1.05, v*0.74, 0, 0, 7); ctx.fill();
+  // 履带（两条，深灰，前后略超车身）
+  ctx.fillStyle='#232323';
+  ctx.fillRect(-v*1.12, -v*0.74, v*2.24, v*0.46);
+  ctx.fillRect(-v*1.12, v*0.28, v*2.24, v*0.46);
+  // 履带节缝（横纹）
+  ctx.fillStyle='#3a3a3a';
+  for(let i=0;i<5;i++){
+    const x=-v*0.95+i*v*0.48;
+    ctx.fillRect(x, -v*0.74, v*0.07, v*0.46);
+    ctx.fillRect(x, v*0.28, v*0.07, v*0.46);
+  }
+  // 负重轮（履带上的轮子）
+  ctx.fillStyle='#151515';
+  for(let i=0;i<4;i++){
+    const x=-v*0.8+i*v*0.53;
+    ctx.beginPath(); ctx.arc(x, -v*0.51, v*0.16, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, v*0.51, v*0.16, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle='#4a4a4a';
+  for(let i=0;i<4;i++){
+    const x=-v*0.8+i*v*0.53;
+    ctx.beginPath(); ctx.arc(x, -v*0.51, v*0.07, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, v*0.51, v*0.07, 0, 7); ctx.fill();
+  }
+  // 车身（两条履带之间）
+  ctx.fillStyle=bodyCol;
+  ctx.fillRect(-v*0.74, -v*0.52, v*1.48, v*1.04);
+  ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.lineWidth=1; ctx.strokeRect(-v*0.74,-v*0.52,v*1.48,v*1.04);
+  // 车身前端高光
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillRect(-v*0.74, -v*0.52, v*0.5, v*1.04);
+  // 炮塔（圆，居中略偏后）
+  ctx.fillStyle='#b9bdc1';
+  ctx.beginPath(); ctx.arc(-v*0.06, 0, v*0.42, 0, 7); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.55)'; ctx.lineWidth=1.2; ctx.stroke();
+  // 炮塔顶（阵营色圆）
+  ctx.fillStyle=bodyCol;
+  ctx.beginPath(); ctx.arc(-v*0.06, 0, v*0.2, 0, 7); ctx.fill();
+  // 炮管（粗，从炮塔伸出到车头前）
+  ctx.strokeStyle='#2b2b2b'; ctx.lineWidth=Math.max(2.5, v*0.24); ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(v*0.14, 0); ctx.lineTo(v*1.28, 0); ctx.stroke();
+  // 炮口制退器
+  ctx.fillStyle='#151515';
+  ctx.fillRect(v*1.18, -Math.max(1.5,v*0.18), Math.max(2,v*0.22), Math.max(3,v*0.36));
+  ctx.restore();
+}
+/* 基洛夫飞艇：俯视—��艇位+ 尾翼 + 螺旋桨（朝向移动方向，抬升飞行） */
+const KIROV_H=40, HARRIER_H=30;   // 飞行单位世界高度(令3D 模式抬升)
+function drawKirov(px,py,v,ang,side){
+  ctx.save();
+  ctx.translate(px,py); ctx.rotate(ang);
+  const by=-(R3D?KIROV_H*cam.sinP:24)*cam.s;   // 抬升高度(3D=世界高度,2D=固定24px)
+  ctx.fillStyle='rgba(0,0,0,0.26)';             // 地面影子
+  ctx.beginPath(); ctx.ellipse(v*0.12, v*0.18, v*1.05, v*0.5, 0,0,7); ctx.fill();
+  ctx.fillStyle=side===0?'#9fb2c0':'#c09f9f';   // 艇体（纵向椭圆）
+  ctx.beginPath(); ctx.ellipse(0, by, v*1.1, v*0.52, 0,0,7); ctx.fill();
+  ctx.strokeStyle='#2a2f33'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.22)';       // 高光
+  ctx.beginPath(); ctx.ellipse(-v*0.2, by-v*0.16, v*0.55, v*0.16, 0,0,7); ctx.fill();
+  ctx.fillStyle='#5a636b';                      // 尾翼
+  ctx.fillRect(-v*1.08, by-v*0.34, v*0.28, v*0.68);
+  ctx.fillRect(-v*1.16, by-v*0.12, v*0.34, v*0.24);
+  ctx.fillStyle='#3d4348';                      // 顶部螺旋桨
+  ctx.beginPath(); ctx.arc(0, by, v*0.13, 0, 7); ctx.fill();
+  ctx.strokeStyle='#8a9299'; ctx.lineWidth=1.4;
+  for(let k=0;k<3;k++){
+    const a=k*Math.PI*2/3 + 0.5;
+    ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(Math.cos(a)*v*0.42, by+Math.sin(a)*v*0.42); ctx.stroke();
+  }
+  ctx.restore();
+}
+/* 入侵者战机：俯视—��机身+ 后掠主翼 + 尾翼 + 座舱 */
+function drawHarrier(px,py,v,ang,side){
+  ctx.save();
+  ctx.translate(px,py); ctx.rotate(ang);
+  const body=side===0?'#c3ced6':'#b8bfc4';
+  ctx.fillStyle='rgba(0,0,0,0.24)';             // 阴影(贴地)
+  ctx.beginPath(); ctx.ellipse(v*0.1, v*0.1, v*1.0, v*0.55, 0,0,7); ctx.fill();
+  ctx.translate(0,-(R3D?HARRIER_H*cam.sinP:0)*cam.s);   // 3D 抬升
+  ctx.fillStyle=body;                           // 后掠主翼
+  ctx.beginPath();
+  ctx.moveTo(v*0.1, 0);
+  ctx.lineTo(-v*0.35, -v*1.0); ctx.lineTo(-v*0.7, -v*1.0); ctx.lineTo(-v*0.15, 0);
+  ctx.lineTo(-v*0.7, v*1.0); ctx.lineTo(-v*0.35, v*1.0);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#333'; ctx.lineWidth=1; ctx.stroke();
+  ctx.fillStyle=body;                           // 机身 + 机头
+  ctx.fillRect(-v*1.0, -v*0.17, v*1.85, v*0.34);
+  ctx.beginPath(); ctx.moveTo(v*0.85,0); ctx.lineTo(v*0.55,-v*0.17); ctx.lineTo(v*0.55,v*0.17); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#4a9fd8';                      // 座舱
+  ctx.beginPath(); ctx.ellipse(v*0.18, 0, v*0.2, v*0.11, 0,0,7); ctx.fill();
+  ctx.fillStyle='#8a9197';                      // 尾翼
+  ctx.beginPath(); ctx.moveTo(-v*0.9,0); ctx.lineTo(-v*1.25,-v*0.28); ctx.lineTo(-v*1.25,v*0.28); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#333'; ctx.lineWidth=1; ctx.stroke();
+  ctx.restore();
+}
+/* 建筑造型：俯视屋顶，各类型有专属结构（基地电厂/矿场/超时空传送仪/铁幕装置＋*/
+function drawBuilding(px,py,v,side,t,charge,cm){
+  const roof=side===0?'#3570ad':'#c24538';   // 屋顶主色
+  const wall=side===0?'#28527e':'#8e3227';   // 墙底座深色
+  const lit =side===0?'#6fbaff':'#ff8570';   // 高光
+  const charged=cm>0 && charge>=cm;
+  // 阴影
+  ctx.fillStyle='rgba(0,0,0,0.32)';
+  ctx.beginPath(); ctx.ellipse(px+v*0.06, py+v*0.06, v*1.14, v*1.14, 0,0,7); ctx.fill();
+  if(t===SIM.T_CHRONO){
+    // 超时空传送仪：圆形平可+ 中心光环（蓄满更亮）
+    ctx.fillStyle=wall; ctx.beginPath(); ctx.arc(px,py,v*1.06,0,7); ctx.fill();
+    ctx.fillStyle=roof; ctx.beginPath(); ctx.arc(px,py,v*0.82,0,7); ctx.fill();
+    ctx.strokeStyle=charged?'#9ff':'#3a7'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(px,py,v*0.82,0,7); ctx.stroke();
+    ctx.fillStyle=charged?'rgba(150,255,255,0.85)':'rgba(150,255,255,0.35)';
+    ctx.beginPath(); ctx.arc(px,py,v*0.42,0,7); ctx.fill();
+    ctx.strokeStyle='#0cc'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(px,py,v*0.6,0,7); ctx.stroke();
+  }else if(t===SIM.T_CURTAIN){
+    // 铁幕装置：方形基座 + 中央尖顶塔（蓄满金光）
+    ctx.fillStyle=wall; ctx.fillRect(px-v*1.06,py-v*1.06,v*2.12,v*2.12);
+    ctx.fillStyle=roof; ctx.fillRect(px-v*0.86,py-v*0.86,v*1.72,v*1.72);
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1; ctx.strokeRect(px-v*0.86,py-v*0.86,v*1.72,v*1.72);
+    ctx.fillStyle=charged?'#ffd94a':'#9aa0a6';
+    ctx.beginPath(); ctx.moveTo(px,py-v*0.8); ctx.lineTo(px+v*0.5,py); ctx.lineTo(px,py+v*0.8); ctx.lineTo(px-v*0.5,py); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='#333'; ctx.lineWidth=1; ctx.stroke();
+    if(charged){ ctx.strokeStyle='#fd0'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,v*0.95,0,7); ctx.stroke(); }
+  }else if(t===SIM.T_BASE){
+    // 红警建造场：混凝土基座 + 未完工钢架 + 组装楼 + 旋转吊臂 + 建造火花 + 阵营旗
+    const tA=performance.now()*0.001;                        // 渲染动画时间（render-only，不进 SIM）
+    const concrete=side===0?'#a3b6cc':'#b3a699';             // 混凝土板（盟军蓝灰 / 苏军暖灰）
+    const concreteL=side===0?'#c8d6e6':'#d8ccba';            // 板高光
+    // 阴影
+    ctx.fillStyle='rgba(0,0,0,0.32)';
+    ctx.beginPath(); ctx.ellipse(px+v*0.06,py+v*0.06,v*1.16,v*1.16,0,0,7); ctx.fill();
+    // 1) 混凝土基座（包边 + 亮板 + 网格）
+    ctx.fillStyle='#3a4046'; ctx.fillRect(px-v*1.14,py-v*1.14,v*2.28,v*2.28);
+    ctx.strokeStyle='#1a1e22'; ctx.lineWidth=2; ctx.strokeRect(px-v*1.14,py-v*1.14,v*2.28,v*2.28);
+    ctx.fillStyle=concrete; ctx.fillRect(px-v*1.06,py-v*1.06,v*2.12,v*2.12);
+    ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=1;
+    for(let i=1;i<4;i++){
+      const g=px-v*1.06+i*v*0.53;
+      ctx.beginPath(); ctx.moveTo(g,py-v*1.06); ctx.lineTo(g,py+v*1.06); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px-v*1.06,py-v*1.06+i*v*0.53); ctx.lineTo(px+v*1.06,py-v*1.06+i*v*0.53); ctx.stroke();
+    }
+    ctx.fillStyle=concreteL; ctx.fillRect(px-v*1.02,py-v*1.02,v*0.42,v*0.42);   // 左上角高人    // 2) 未完工钢架（虚线轮廓 + 竖杆），右上
+    ctx.strokeStyle='rgba(20,24,28,0.7)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([v*0.09,v*0.07]); ctx.strokeRect(px+v*0.28,py-v*0.78,v*0.62,v*0.62); ctx.setLineDash([]);
+    ctx.strokeStyle='#5f6670'; ctx.lineWidth=1.2;
+    for(let i=1;i<3;i++){ const gx=px+v*0.28+i*v*0.31;
+      ctx.beginPath(); ctx.moveTo(gx,py-v*0.78); ctx.lineTo(gx,py-v*0.16); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px+v*0.28,py-v*0.78+i*v*0.31); ctx.lineTo(px+v*0.9,py-v*0.78+i*v*0.31); ctx.stroke(); }
+    // 3) 组装楼（左下，吊自 pivot 根部）
+    ctx.fillStyle=wall; ctx.fillRect(px-v*0.86,py-v*0.48,v*0.56,v*0.8);
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1; ctx.strokeRect(px-v*0.86,py-v*0.48,v*0.56,v*0.8);
+    ctx.fillStyle=roof; ctx.fillRect(px-v*0.8,py-v*0.42,v*0.44,v*0.68);
+    ctx.fillStyle=lit; ctx.fillRect(px-v*0.62,py-v*0.42,v*0.08,v*0.68);
+    // 4) 旋转吊臂（从组装楼右缘伸出，缓慢摆动向右指）
+    const armAng=Math.sin(tA*0.7)*0.5;                       // -0.5..+0.5 rad 摆动
+    const ax=px-v*0.3, ay=py+v*0.05;                         // pivot
+    ctx.fillStyle='#4a5056'; ctx.beginPath(); ctx.arc(ax,ay,v*0.13,0,7); ctx.fill();
+    ctx.strokeStyle='#1a1e22'; ctx.lineWidth=1; ctx.stroke();
+    const tpx=ax+Math.cos(armAng)*v*0.95, tpy=ay+Math.sin(armAng)*v*0.95;   // 臂末端
+    ctx.strokeStyle='#565c62'; ctx.lineWidth=Math.max(3,v*0.09); ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(tpx,tpy); ctx.stroke();
+    ctx.lineCap='butt';
+    ctx.strokeStyle='rgba(210,216,224,0.9)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(tpx,tpy); ctx.lineTo(tpx,tpy+v*0.3); ctx.stroke();          // 吊缆
+    ctx.fillStyle='#7d838a'; ctx.fillRect(tpx-v*0.06,tpy+v*0.26,v*0.12,v*0.1);              // 吊钩
+    // 5) 建��火花（钢架内闪烁，阵营色）
+    for(let i=0;i<3;i++){
+      const ph=(tA*2.5+i*1.3)%3;
+      if(ph<1.1){
+        ctx.fillStyle=lit;
+        ctx.beginPath(); ctx.arc(px+v*0.45+ph*v*0.06,py-v*0.5+i*v*0.1,v*0.03,0,7); ctx.fill();
+      }
+    }
+    // 6) 阵营旗（左上角，轻摆）
+    const fy=py-v*0.92+Math.sin(tA*3)*v*0.02;
+    ctx.strokeStyle='#c8cdd2'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(px-v*0.94,py-v*0.94); ctx.lineTo(px-v*0.94,fy); ctx.stroke();
+    ctx.fillStyle=side===0?'#5aa8ff':'#ff6a5a';
+    ctx.beginPath(); ctx.moveTo(px-v*0.94,fy); ctx.lineTo(px-v*0.74,fy+v*0.07); ctx.lineTo(px-v*0.94,fy+v*0.14); ctx.closePath(); ctx.fill();
+  }else{
+    // 通用房子：墙 + 屋顶 + 瓦片纹理
+    ctx.fillStyle=wall; ctx.fillRect(px-v*1.06,py-v*1.06,v*2.12,v*2.12);
+    ctx.fillStyle=roof; ctx.fillRect(px-v*0.9,py-v*0.9,v*1.8,v*1.8);
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1; ctx.strokeRect(px-v*0.9,py-v*0.9,v*1.8,v*1.8);
+    ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1;
+    for(let i=-1;i<=1;i++){ ctx.beginPath(); ctx.moveTo(px-v*0.9, py+i*v*0.45); ctx.lineTo(px+v*0.9, py+i*v*0.45); ctx.stroke(); }
+    if(t===SIM.T_POWER){
+      // 电厂：灰白反应堆穹顶 + 冷却塔+ 烟囱 + 管道
+      ctx.fillStyle='#cdd3d8'; ctx.beginPath(); ctx.arc(px,py,v*0.26,0,7); ctx.fill();
+      ctx.strokeStyle='#667'; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle='#9aa2a8'; ctx.beginPath(); ctx.arc(px-v*0.32,py+v*0.32,v*0.16,0,7); ctx.fill();   // 冷却塔
+      ctx.strokeStyle='#667'; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle='#7a6a55'; ctx.fillRect(px+v*0.28,py-v*0.68,v*0.32,v*0.32);                        // 烟囱
+      ctx.strokeStyle='#554'; ctx.lineWidth=1; ctx.strokeRect(px+v*0.28,py-v*0.68,v*0.32,v*0.32);
+      ctx.strokeStyle='#889'; ctx.lineWidth=1.5;                                                       // 管道
+      ctx.beginPath(); ctx.moveTo(px+v*0.18,py+v*0.08); ctx.lineTo(px+v*0.45,py+v*0.08); ctx.lineTo(px+v*0.45,py-v*0.3); ctx.stroke();
+    }else if(t===SIM.T_REFIN){
+      // 矿场：中央金色矿堆+ 传��带
+      ctx.fillStyle='#e8b830';
+      ctx.beginPath(); ctx.moveTo(px,py-v*0.6); ctx.lineTo(px+v*0.6,py+v*0.4); ctx.lineTo(px-v*0.6,py+v*0.4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#f7dc7a';
+      ctx.beginPath(); ctx.moveTo(px,py-v*0.6); ctx.lineTo(px+v*0.32,py+v*0.05); ctx.lineTo(px,py); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='#555'; ctx.lineWidth=2;                                                          // 传��带
+      ctx.beginPath(); ctx.moveTo(px-v*0.7, py-v*0.5); ctx.lineTo(px-v*0.3, py-v*0.1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px+v*0.7, py-v*0.5); ctx.lineTo(px+v*0.3, py-v*0.1); ctx.stroke();
+    }
+  }
+}
+/* ---- M21 小地图：离屏底图（expl 变化才重渲）+ 每帧叠加单位点视野框---- */
+const MINI_S=132, MINI_IN=2, MINI_PX=128;      // 边框/内边跟底图像素
+const miniCv=document.createElement('canvas'); miniCv.width=MINI_PX; miniCv.height=MINI_PX;
+const miniCtx=miniCv.getContext('2d');
+let miniExplChk=null; let miniOff=false;       // ?mini=0 关闭
+function rebuildMini(){
+  for(let gy=0;gy<SIM.MH;gy++) for(let gx=0;gx<SIM.MW;gx++){
+    miniCtx.fillStyle=(fovFull||fovExpl[gy*SIM.MW+gx])?groundColor(gx,gy):'#000';
+    miniCtx.fillRect(gx*2,gy*2,2,2);
+  }
+}
+function drawMini(st){
+  const ox=cv.width-8-MINI_S+MINI_IN, oy=cv.height-8-MINI_S+MINI_IN;
+  ctx.fillStyle='rgba(8,12,16,0.85)';
+  ctx.fillRect(cv.width-8-MINI_S,cv.height-8-MINI_S,MINI_S,MINI_S);
+  ctx.drawImage(miniCv, ox, oy);
+  const toMini=(wx,wy)=>[ox+wx/SIM.MAPW_PX*MINI_PX, oy+wy/SIM.MAPW_PX*MINI_PX];
+  for(const e of st.ents){
+    if(e.dead) continue;
+    const isMe=e.side===mySide;
+    if(!isMe && !isEntVis(fovVis,e,mySide,fovFull,SIM.MW,SIM.TILE,SIM.tf)) continue;   // 迷雾外敌方不显示
+    const [mx,my]=toMini(SIM.tf(e.x),SIM.tf(e.y));
+    ctx.fillStyle=isMe?'#4af':'#f55';
+    const s=SIM.DEF[e.t].b?3:2;
+    ctx.fillRect(mx-s/2,my-s/2,s,s);
+  }
+  const hw=cv.width/(2*cam.s), hh=cv.height/(2*cam.s*cam.cosP);
+  const [x0,y0]=toMini(cam.cx-hw,cam.cy-hh), [x1,y1]=toMini(cam.cx+hw,cam.cy+hh);
+  ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=1;
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+}
+function miniHit(sx,sy){
+  return !miniOff && sx>=cv.width-8-MINI_S && sx<=cv.width-8 && sy>=cv.height-8-MINI_S && sy<=cv.height-8;
+}
+function jumpMini(sx,sy){
+  const ox=cv.width-8-MINI_S+MINI_IN, oy=cv.height-8-MINI_S+MINI_IN;
+  const px=(sx-ox)/MINI_PX, py=(sy-oy)/MINI_PX;
+  cam.cx=px*SIM.MAPW_PX; cam.cy=py*SIM.MAPW_PX; clampCam();
+}
+function draw(){
+  const st=SIM.getState();
+  diffFx(st);       // 渲染层 diff：检测死亡/传送/无敌 → 特效与音效
+  diffBullets(st);  // 渲染层 diff：检测开火 → 生成飞弹
+  if(!R3D){ ctx.fillStyle='#14161a'; ctx.fillRect(0,0,cv.width,cv.height); }
+  else ctx.clearRect(0,0,cv.width,cv.height);   // 3D 模式：清空2D 覆盖层，避免平移拖影(重影)
+  if(!R3D){   // 3D 模式：地形网格用 three3d.js 的 InstancedMesh 绘制
+  const vx0=cam.cx-cv.width/(2*cam.s), vx1=cam.cx+cv.width/(2*cam.s);
+  const vy0=cam.cy-cv.height/(2*cam.s), vy1=cam.cy+cv.height/(2*cam.s);
+  const gx0=Math.max(0,Math.floor(vx0/SIM.TILE)), gx1=Math.min(SIM.MW,Math.ceil(vx1/SIM.TILE));
+  const gy0=Math.max(0,Math.floor(vy0/SIM.TILE)), gy1=Math.min(SIM.MH,Math.ceil(vy1/SIM.TILE));
+  // 草地地形：离屏预渲染纹理贴图（8px 细纹理，自然过渡，无大方格）
+  buildTerrain();
+  ctx.imageSmoothingEnabled=true;
+  const tSX=Math.max(0,vx0), tSY=Math.max(0,vy0), tSX1=Math.min(MAPW_PX,vx1), tSY1=Math.min(MAPW_PX,vy1);
+  if(tSX1>tSX && tSY1>tSY) ctx.drawImage(terrCanvas, tSX,tSY,tSX1-tSX,tSY1-tSY, w2sx(tSX),w2sy(tSY), (tSX1-tSX)*cam.s, (tSY1-tSY)*cam.s);
+  // 网格线已移除：草地用离屏纹理，不再画 32px 方格线
+}
+  // 金色矿脉（矿石晶体：菱形 + 高光）；3D 模式用 three3d.js 的 Octahedron 绘制
+  if(!R3D) for(const o of st.ore){
+    if(o.amt<=0) continue;
+    if(!isTileVis(fovVis,(SIM.tf(o.x)/SIM.TILE)|0,(SIM.tf(o.y)/SIM.TILE)|0,SIM.MW)) continue;  // M15 迷雾：只在可见格显示（已探索让暗层盖住）
+    const px=w2sx(SIM.tf(o.x)), py=w2sy(SIM.tf(o.y));
+    const r=Math.max(3,7*cam.s);
+    ctx.fillStyle='#e8b830';
+    ctx.beginPath(); ctx.moveTo(px,py-r); ctx.lineTo(px+r,py); ctx.lineTo(px,py+r); ctx.lineTo(px-r,py); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#f7dc7a';
+    ctx.beginPath(); ctx.moveTo(px,py-r); ctx.lineTo(px+r*0.5,py); ctx.lineTo(px,py); ctx.closePath(); ctx.fill();
+  }
+  // 迷雾层（M20）：盖住地形/矿石；3D 模式用 WebGL 地形。顺序：矿石后、实体前。
+  // 逐格平滑 alpha（fovSoftBuf 已把 0/0.55/1 双层 box blur），量化 24 级 run 合并——黑雾边缘柔和。
+  if(!fovFull){
+    const fvx0=cam.cx-cv.width/(2*cam.s), fvx1=cam.cx+cv.width/(2*cam.s);
+    const fvy0=cam.cy-cv.height/(2*cam.s), fvy1=cam.cy+cv.height/(2*cam.s);
+    const fg0=Math.max(0,Math.floor(fvx0/SIM.TILE)), fg1=Math.min(SIM.MW-1,Math.ceil(fvx1/SIM.TILE));
+    const fh0=Math.max(0,Math.floor(fvy0/SIM.TILE)), fh1=Math.min(SIM.MH-1,Math.ceil(fvy1/SIM.TILE));
+    for(let gy=fh0;gy<=fh1;gy++){
+      let run0=-1, run1=-1, runA=-1;
+      const flush=()=>{ if(run0<0) return;
+        if(runA>=0){
+          const x=Math.round(w2sx(run0*SIM.TILE)), x2=Math.round(w2sx((run1+1)*SIM.TILE));
+          ctx.fillStyle='rgba(0,0,0,'+(runA/255).toFixed(3)+')';
+          ctx.fillRect(x, Math.round(w2sy(gy*SIM.TILE)), x2-x, SIM.TILE*cam.s+1);
+        }
+        run0=-1; };
+      for(let gx=fg0;gx<=fg1;gx++){
+        const q=Math.round(fovSoftBuf[gy*SIM.MW+gx]*255);   // 0..23
+        const stt=q<=0?-1:q;                                // 近透明→不画
+        if(run0<0){ run0=gx; run1=gx; runA=stt; }
+        else if(stt===runA){ run1=gx; }
+        else { flush(); run0=gx; run1=gx; runA=stt; }
+      }
+      flush();
+    }
+  }
+  // 实体
+  const entCol=['#4aa3ff','#ff5a4a'];
+  for(const e of st.ents){
+    if(e.dead) continue;
+    if(e.side!==fovSide && !isEntVis(fovVis,e,fovSide,fovFull,SIM.MW,SIM.TILE,SIM.tf)) continue;  // M15 迷雾：不可见敌方不显示
+    const px=w2sx(SIM.tf(e.x)), py=w2sy(SIM.tf(e.y));
+    const d=SIM.DEF[e.t], sz=d.sz*cam.s, isB=d.b;
+    const vr=isB?sz:Math.max(sz*1.7,10);   // 视觉半径：单位放大、最小 10px，建筑原样
+    if(px<-80||px>cv.width+80||py<-80||py>cv.height+80) continue;
+    ctx.save();
+    if(isB){
+      if(!R3D) drawBuilding(px,py,vr,e.side,e.t,e.charge,d.cm);   // 3D 模式用 three3d.js 绘制
+      if(d.cm>0){                          // 超武建筑：充能条
+        const f=d.cm?e.charge/d.cm:0;
+        ctx.fillStyle='#000'; ctx.fillRect(px-vr,py-vr-7,vr*2,5);
+        ctx.fillStyle=f>=1?'#ff0':'#0f0'; ctx.fillRect(px-vr,py-vr-7,vr*2*f,5);
+      }
+    }else{
+      const col=entCol[e.side];
+      const v=vr;                                   // 视觉半径（单位已放大）
+      if(e.t===SIM.T_HARV){
+        ctx.fillStyle='#1c1c1c'; ctx.fillRect(px-v*0.5,py-v*0.4,v*1.0,v*0.8);   // 采矿车：小货车
+        ctx.fillStyle=col; ctx.fillRect(px-v*0.5,py-v*0.4,v*0.5,v*0.8);
+        ctx.fillStyle='#5a5'; ctx.fillRect(px+v*0.05,py-v*0.25,v*0.45,v*0.5);
+      }else if(e.t===SIM.T_KIROV && !R3D){   // 3D 模式用 three3d.js 绘制
+        let kx=SIM.tf(e.tx), ky=SIM.tf(e.ty);
+        if(e.tgt){ const tt=SIM.findE(e.tgt); if(tt){ kx=SIM.tf(tt.x); ky=SIM.tf(tt.y); } }
+        drawKirov(px,py,v,Math.atan2(ky-SIM.tf(e.y), kx-SIM.tf(e.x)), e.side);
+      }else if(e.t===SIM.T_HARRIER && !R3D){
+        drawHarrier(px,py,v,Math.atan2(SIM.tf(e.ty)-SIM.tf(e.y), SIM.tf(e.tx)-SIM.tf(e.x)), e.side);
+      }else if(e.t===SIM.T_LEGION){
+        ctx.fillStyle='#7ff';                         // 超时空军团兵：青色小人光环
+        ctx.beginPath(); ctx.arc(px,py,Math.max(2,v*0.7),0,7); ctx.fill();
+        ctx.strokeStyle='#0ff'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(px,py,Math.max(5,v*0.7+4),0,7); ctx.stroke();
+        if(e.st===2){ ctx.fillStyle='rgba(0,255,255,0.4)'; ctx.beginPath(); ctx.arc(px,py,Math.max(8,v+8),0,7); ctx.fill(); }
+      }else if(e.t===SIM.T_DRONE){
+        ctx.fillStyle='#443';                         // 恐��机器人：小蜘蛛
+        ctx.beginPath(); ctx.arc(px,py,Math.max(2,v*0.6),0,7); ctx.fill();
+        ctx.strokeStyle='#555'; ctx.lineWidth=1;
+        for(let k=0;k<4;k++){ const a=k*Math.PI/2; ctx.beginPath(); ctx.moveTo(px+Math.cos(a)*v*0.6,py+Math.sin(a)*v*0.6); ctx.lineTo(px+Math.cos(a)*v,py+Math.sin(a)*v); ctx.stroke(); }
+      }else if(!R3D){
+        // 坦克类（轻坦/重坦/光棱/磁暴/幻影/天启）：车身+履带+炮塔+炮管，朝向目标
+        let txp=SIM.tf(e.tx), typ=SIM.tf(e.ty);
+        if(e.tgt){ const tt=SIM.findE(e.tgt); if(tt){ txp=SIM.tf(tt.x); typ=SIM.tf(tt.y); } }
+        const ang=Math.atan2(typ-SIM.tf(e.y), txp-SIM.tf(e.x));
+        drawTank(px,py,v,ang,col);
+        if(e.t===SIM.T_PRISM){                        // 光棱：塔顶蓝菱
+          ctx.fillStyle='#9cf'; ctx.beginPath();
+          ctx.moveTo(px,py-v*1.1); ctx.lineTo(px+v*0.5,py-v*0.4); ctx.lineTo(px-v*0.5,py-v*0.4); ctx.closePath(); ctx.fill();
+        }else if(e.t===SIM.T_TESLA){                  // 磁暴：青色外玩电芯
+          ctx.strokeStyle='#8ff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,Math.max(4,v*1.1),0,7); ctx.stroke();
+          ctx.fillStyle='#ffa'; ctx.beginPath(); ctx.arc(px,py,Math.max(1.5,v*0.3),0,7); ctx.fill();
+        }else if(e.t===SIM.T_MIRAGE){                 // 幻影：绿迷彩斜纹
+          ctx.strokeStyle='#6f6'; ctx.lineWidth=2;
+          ctx.beginPath(); ctx.moveTo(px-v*0.6,py+v*0.4); ctx.lineTo(px+v*0.6,py-v*0.4); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(px-v*0.6,py-v*0.2); ctx.lineTo(px+v*0.6,py+v*0.2); ctx.stroke();
+        }else if(e.t===SIM.T_APOC){                   // 天启：第二根炮管
+          ctx.strokeStyle='#200'; ctx.lineWidth=Math.max(1.5,v*0.14);
+          const ox=-Math.sin(ang)*v*0.22, oy=Math.cos(ang)*v*0.22;
+          ctx.beginPath(); ctx.moveTo(px+ox,py+oy); ctx.lineTo(px+Math.cos(ang)*v*1.3+ox,py+Math.sin(ang)*v*1.3+oy); ctx.stroke();
+        }
+      }
+    }
+    // 扣血显示
+    if(e.hp<e.maxhp){
+      const bw=Math.max(14,vr*2);
+      ctx.fillStyle='#000'; ctx.fillRect(px-bw/2,py-vr-6,bw,4);
+      ctx.fillStyle=e.hp>e.maxhp*0.5?'#4f4':e.hp>e.maxhp*0.25?'#ff4':'#f44';
+      ctx.fillRect(px-bw/2,py-vr-6,bw*(e.hp/e.maxhp),4);
+    }
+    // 选中
+    if(sel.has(e.id)){
+      ctx.strokeStyle='#cfc'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.arc(px,py,Math.max(8,vr+6),0,7); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // 铁幕无敌金圈
+    if(e.invuln>0){
+      ctx.strokeStyle='#fd0'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(px,py,Math.max(10,vr+8),0,7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 选择框
+  if(selBox){
+    const x=Math.min(selBox.x0,selBox.x1), y=Math.min(selBox.y0,selBox.y1);
+    const w=Math.abs(selBox.x1-selBox.x0), h=Math.abs(selBox.y1-selBox.y0);
+    ctx.fillStyle='rgba(74,163,255,0.08)'; ctx.fillRect(x,y,w,h);
+    ctx.strokeStyle='#4aa3ff'; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
+  }
+  // 建造幽灵
+  if(buildType>=0){
+    const d=SIM.DEF[buildType];
+    let gx,gy;
+    const base=st.ents.find(e=>!e.dead&&e.t===SIM.T_BASE&&e.side===mySide);
+    if(d.b){ gx=s2wx(mouse.x); gy=s2wy(mouse.y); }
+    else if(base){ gx=SIM.tf(base.x)+70; gy=SIM.tf(base.y)+70; }
+    else { gx=s2wx(mouse.x); gy=s2wy(mouse.y); }
+    const ok=canPlace(gx,gy);
+    ctx.save(); ctx.globalAlpha=0.6;
+    ctx.strokeStyle=ok?'#4f4':'#f44'; ctx.lineWidth=2;
+    const sz=d.sz*cam.s;
+    ctx.strokeRect(w2sx(gx)-sz, w2sy(gy)-sz, sz*2, sz*2);
+    ctx.fillStyle=ok?'#4f4':'#f44'; ctx.textAlign='center'; ctx.font='12px monospace';
+    ctx.fillText(d.n, w2sx(gx), w2sy(gy)-sz-6);
+    ctx.restore();
+  }
+  // 强制攻击指示
+  if(attackMode){
+    ctx.strokeStyle='#f44'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(mouse.x,mouse.y,10,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mouse.x-14,mouse.y); ctx.lineTo(mouse.x+14,mouse.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mouse.x,mouse.y-14); ctx.lineTo(mouse.x,mouse.y+14); ctx.stroke();
+  }
+  // 超武目标指示
+  if(superType>=0){
+    const col=superType===SIM.T_CHRONO?'#8ff':'#fd0';
+    ctx.strokeStyle=col; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(mouse.x,mouse.y,16,0,7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mouse.x-20,mouse.y); ctx.lineTo(mouse.x+20,mouse.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mouse.x,mouse.y-20); ctx.lineTo(mouse.x,mouse.y+20); ctx.stroke();
+    ctx.fillStyle=col; ctx.font='13px monospace'; ctx.textAlign='center';
+    ctx.fillText(superType===SIM.T_CHRONO?'超时空传送':'铁幕', mouse.x, mouse.y-28);
+  }
+  // 子弹：更新 + 绘制（在实体之上）
+  updateBullets();
+  drawBullets();
+  // 特效：衰击+ 绘制
+  for(const f of fx) f.t++;
+  for(let i=fx.length-1;i>=0;i--) if(fx[i].t>=fx[i].dur) fx.splice(i,1);
+  for(const f of fx){
+    if(!isTileVis(fovVis,(f.x/SIM.TILE)|0,(f.y/SIM.TILE)|0,SIM.MW)) continue;   // M15 迷雾：雾中特效不显示
+    const p=f.t/f.dur, sx=w2sx(f.x), sy=w2sy(f.y);
+    if(f.kind==='boom'){
+      ctx.strokeStyle='rgba(255,140,60,'+(1-p)+')'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(sx,sy,p*42*cam.s,0,7); ctx.stroke();
+      ctx.fillStyle='rgba(255,200,80,'+(1-p)*0.4+')'; ctx.beginPath(); ctx.arc(sx,sy,p*20*cam.s,0,7); ctx.fill();
+    }else if(f.kind==='flash'){
+      ctx.strokeStyle='rgba(140,240,255,'+(1-p)+')'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(sx,sy,(10+(1-p)*40)*cam.s,0,7); ctx.stroke();
+    }else if(f.kind==='shimmer'){
+      ctx.strokeStyle='rgba(255,220,0,'+(1-p)+')'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(sx,sy,(1+p*12)*cam.s,0,7); ctx.stroke();
+    }
+  }
+  // 胜利
+  if(st.win>=0){
+    const txt=st.win===0?'蓝方胜':'红方胜';
+    ctx.fillStyle='#000a'; ctx.fillRect(0,cv.height/2-46,cv.width,92);
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='32px monospace';
+    ctx.fillText(txt, cv.width/2, cv.height/2+6);
+    ctx.font='14px monospace'; ctx.fillStyle='#aaa'; ctx.fillText('按 R 重开', cv.width/2, cv.height/2+30);
+    if(!net.connected && !net.spec){
+      ctx.fillStyle= st.win===mySide ? '#ffd94a' : '#ff8570';
+      ctx.fillText(st.win===mySide ? '你赢了！下一局 AI 更强' : '输了，AI 难度不变', cv.width/2, cv.height/2+50);
+    }
+  }
+  if(!miniOff) drawMini(st);   // M21 小地图（最上层）
+}
+function uiUpdate(){
+  const st=SIM.getState();
+  if(st.win>=0 && lastWin<0 && !net.spec){
+    (st.win===mySide)?sfx.win():sfx.lose();
+    if(!net.connected && st.win===mySide){ diff++; try{ localStorage.setItem('rts_diff', String(diff)); }catch(e){} }  // 打赢 AI 下一屢�更难
+  }
+  lastWin=st.win;
+  elCred.textContent='$'+st.cred[mySide];
+  elPow.textContent='⚔'+st.powProd[mySide]+'/'+st.powUse[mySide];
+  let n=0; for(const e of st.ents) if(!e.dead&&e.side===mySide) n++;
+  elCnt.textContent='●'+n;
+  elFps.textContent=fps;
+  if(desync){ elChk.textContent='☠DESYNC@'+desyncTick; elChk.style.color='#f44'; }
+  else { elChk.textContent='#'+st.checksum; elChk.style.color='#aaa'; }
+  $('bar').style.display=(net.spec)?'none':'flex';
+  const rTag = net.room ? '房间'+net.room+'·' : '';
+  if(net.spec){ elNet.textContent=rTag+'观战'; }
+  else if(!net.connected){
+    elNet.textContent = net.serverUrl ? '断线·点重连' : ('单机·AI·难度'+(diff+1));
+  } else {
+    const peer=net.side===0?1:0;
+    const peerHuman=net.humans.indexOf(peer)>=0;
+    const who=net.side===0?'蓝方':'红方';
+    elNet.textContent = !net.live ? rTag+'联机-连接中…' : (peerHuman ? (rTag+'联机-'+who) : (rTag+'联机-'+who+' vs AI'));
+  }
+  // 阵营专属按钮：类型重映射 + 标签＋~9 位每方专属单位，修复红方造不了磁暴铁幕的映射bug＋  btnTypes[5]=mySide===0?SIM.T_PRISM:SIM.T_TESLA;
+  btnTypes[6]=mySide===0?SIM.T_CHRONO:SIM.T_CURTAIN;
+  btnTypes[7]=mySide===0?SIM.T_MIRAGE:SIM.T_KIROV;
+  btnTypes[8]=mySide===0?SIM.T_LEGION:SIM.T_APOC;
+  btnTypes[9]=mySide===0?SIM.T_HARRIER:SIM.T_DRONE;
+  $('b5').textContent=(mySide===0?'光棱坦克':'磁暴坦克')+' $1050';
+  $('b6').textContent=(mySide===0?'超时空传送仪':'铁幕装置')+' $2500';
+  $('b7').textContent=(mySide===0?'幻影坦克':'基洛夫空艇')+' $'+(mySide===0?750:1800);
+  $('b8').textContent=(mySide===0?'超时空军团兵':'天启坦克')+' $'+(mySide===0?500:1500);
+  $('b9').textContent=(mySide===0?'入侵者战机':'恐怖机器人')+' $'+(mySide===0?400:500);
+  const charged=superCharged();
+  $('bS').style.display=charged||superType>=0?'inline-block':'none';
+  $('bS').textContent=mySide===0?'超时空传送':'铁幕';
+  if(net.spec) elHint.textContent='观战中：滚轮缩放 · 方向键=平移';
+  else if(buildType>=0) elHint.textContent='左键放置 · 右键取消';
+  else if(superType>=0) elHint.textContent=superType===SIM.T_CHRONO?'超时空传送：左键点击目标位置（需先选中单位）':'铁幕：左键点击目标区域';
+  else if(attackMode) elHint.textContent='A 强制攻击模式：右键指定目标/地点';
+  else elHint.textContent='左键/拖框=选择 · 右键=移动或攻击 · A+点击=强制攻击 · 滚轮=缩放';
+  for(let i=0;i<10;i++) $('b'+i).style.background=buildType===btnTypes[i]?'#4a6a8a':'';
+  $('bS').style.background=superType>=0?'#4a6a8a':'';
+  $('bA').style.background=attackMode?'#4a6a8a':'';
+  $('bC').style.display=isMobile()?'inline-block':'none';
+  $('bC').style.background=commandMode?'#4a6a8a':'';
+  $('bAI').textContent = aiMode ? '👤我接管' : '🤖看AI打';
+}
+function loop(now){
+  requestAnimationFrame(loop);
+  let dt=now-last; last=now; if(dt>250) dt=250;
+  acc+=dt;
+  while(acc>=SIM.TICK_MS){
+    acc-=SIM.TICK_MS;
+    if(stepsOK()){ SIM.step(); afterStep(); }
+  }
+  if(R3D&&window.draw3d) draw3d();   // 3D 层（地形+坦克）
+  updateFov();                        // M15 迷雾视角（每帧重算可见性）
+  draw(); uiUpdate(); clampCam();     // 2D 覆盖层+ UI
+  fpsN++; if(now-fpsT>=1000){ fps=fpsN; fpsN=0; fpsT=now; }
+}
+
+/* 联机入口＋s=ws://192.168.x.x:8080 */
+const q=new URLSearchParams(location.search);
+const roomParam=q.get('r')||'';                 // 房间码（拼进 ws URL）
+if(q.get('ai')) aiMode=true;                    // AI 对打演示
+if(q.get('lobby')) enterLobby(q.get('lobby'));  // 大厅（不启动游戏）
+else if(q.get('sp')) connectSpectate(q.get('sp'));   // 观战
+else if(q.get('s')) connectNet(q.get('s'));     // 对战
+if(q.get('3d')!=null){                          // 3D 渲染层：仅换视觉，SIM/联机/回放不变
+  R3D=true;
+  import('./three3d.js').then(m=>m.init3d()).catch(err=>{ console.error('3D init 失败:',err); R3D=false; });
+}
+if(q.get('fov')==='0') noFov=true;              // M15 调试弢�关：?fov=0 关闭迷雾（全图）
+if(q.get('mini')==='0') miniOff=true;           // M21 调试开关：?mini=0 关闭小地图
+if(R3D){                                        // 3D 模式默认倾斜 35°(≥5°仰角)，可用 ?pitch= 覆盖(0=正俯视)
+  const p=q.get('pitch')!=null?parseFloat(q.get('pitch')):35;
+  if(isFinite(p)) setPitch(p);
+}
+
+if(!q.get('lobby')){                            // 大厅模式只显示浮层，后面不跑游戏
+  cam.s=fitScale();
+  startGame();
+  requestAnimationFrame(loop);
+}
+</script>
+
+<script>
+(function(){
+  'use strict';
+  
+  // --- UI Overhaul: Color HUD + Unit Panel ---
+  function applyOverhaul() {
+    const elCred  = document.getElementById('cred');
+    const elPow   = document.getElementById('pow');
+    const elNet   = document.getElementById('net');
+    const elHint  = document.getElementById('hint');
+    
+    // Power warning colors
+    if (elPow) {
+      const m = elPow.textContent.match(/(\d+)\/(\d+)/);
+      if (m) {
+        elPow.classList.remove('pow-low','pow-denied');
+        const prod = parseInt(m[1]), use = parseInt(m[2]);
+        if (prod === 0 && use > 0) elPow.classList.add('pow-denied');
+        else if (use > prod) elPow.classList.add('pow-low');
+      }
+    }
+    // Net status colors
+    if (elNet) {
+      elNet.classList.remove('online','spectate');
+      const t = elNet.textContent;
+      if (t.includes('联机')) elNet.classList.add('online');
+      if (t.includes('观战')) elNet.classList.add('spectate');
+    }
+    // Hint auto-hide: #hint is pointer-events:none, so bind hover to the
+    // top/bottom bars where the mouse actually lands, else it hides forever.
+    if (elHint && !elHint.dataset.hooked) {
+      elHint.dataset.hooked = '1';
+      setTimeout(() => elHint.classList.add('autohide'), 6000);
+      const showHint = () => elHint.classList.remove('autohide');
+      const hideHint = () => elHint.classList.add('autohide');
+      ['bar','ui'].forEach(id => {
+        const node = document.getElementById(id);
+        if (node) {
+          node.addEventListener('mouseenter', showHint);
+          node.addEventListener('mouseleave', hideHint);
+        }
+      });
+    }
+  }
+  
+  // Patch uiUpdate to call our overhaul
+  const _origUiUpdate = window.uiUpdate;
+  if (typeof _origUiUpdate === 'function') {
+    window.uiUpdate = function() {
+      _origUiUpdate();
+      applyOverhaul();
+      updatePanel();
+    };
+  } else {
+    const _poll = setInterval(() => {
+      if (typeof window.uiUpdate === 'function') {
+        clearInterval(_poll);
+        const _o = window.uiUpdate;
+        window.uiUpdate = function() { _o(); applyOverhaul(); };
+        applyOverhaul();
+      }
+    }, 200);
+  }
+  
+  // --- Unit Info Panel ---
+  const panel = document.getElementById('unitPanel');
+  const elName   = document.getElementById('upName');
+  const elSide   = document.getElementById('upSide');
+  const elHpBar  = document.getElementById('upHpBar');
+  const elHp     = document.getElementById('upHp');
+  const elDmg    = document.getElementById('upDmg');
+  const elSpd    = document.getElementById('upSpd');
+  const elRng    = document.getElementById('upRng');
+  
+  function updatePanel() {
+    if (!panel) return;
+    try {
+      if (typeof SIM === 'undefined' || typeof sel === 'undefined' || typeof mySide === 'undefined') return;
+      const st = SIM.getState();
+      if (!st || !st.ents) return;
+      
+      const ids = Array.from(sel || []);
+      if (ids.length === 0) { panel.classList.remove('visible'); return; }
+      
+      const targetId = (typeof ids[0] === 'object' && ids[0] !== null) ? ids[0].id : ids[0];
+      const ent = st.ents.find(e => e.id === targetId && !e.dead);
+      if (!ent) { panel.classList.remove('visible'); return; }
+      
+      const def = SIM.DEF[ent.t];
+      if (!def) { panel.classList.remove('visible'); return; }
+      
+      elName.textContent = def.n + (ids.length > 1 ? '  ×' + ids.length : '');
+      elSide.textContent = ent.side === 0 ? '●蓝方 (盟军)' : '●红方 (苏军)';
+      
+      const hpPct = Math.max(0, ent.hp / def.hp * 100);
+      elHpBar.style.width = hpPct + '%';
+      elHpBar.className = 'hp-bar-inner' + (hpPct < 25 ? ' low' : hpPct < 50 ? ' mid' : '');
+      elHp.textContent = Math.max(0, ent.hp) + ' / ' + def.hp;
+      elDmg.textContent = def.dmg > 0 ? def.dmg : '—';
+      elSpd.textContent = def.spd > 0 ? (def.spd / 65536).toFixed(1) : '—';
+      elRng.textContent = def.rng > 0 ? (def.rng / 65536).toFixed(0) : '—';
+      
+      panel.classList.add('visible');
+    } catch(e) {}
+  }
+  
+  // Hook into canvas mouse events to detect selection changes
+  const canvas = document.getElementById('c');
+  if (canvas) {
+    // mousedown capture removed to prevent black flash on click
+  }
+  
+  // Also poll every 200ms as fallback
+  setInterval(updatePanel, 200);
+  const _cv = document.getElementById('c');
+  if (_cv) _cv.addEventListener('click', () => { if (panel) panel.classList.remove('visible'); });
+  
+  console.log('[RTS UI] Overhaul injected successfully');
+})();
+</script>
+</body>
+</html>

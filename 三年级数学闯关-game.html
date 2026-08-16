@@ -1,0 +1,655 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>三年级数学闯关</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:16px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#f5f6fa;color:#1f2937;padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:520px;margin:0 auto;min-height:100vh;background:#fff;position:relative}
+header{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 16px;
+  display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
+header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:8px;
+  padding:6px 12px;font-size:14px;min-height:32px}
+.back.mute{opacity:.45;filter:grayscale(1)}
+.view{display:none;padding:16px}
+.view.on{display:block}
+.card{background:#fff;border:1px solid #eef0f4;border-radius:16px;padding:16px;margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card h2,.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0 0 12px;color:#6b7280;font-size:14px}
+.menu-item{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #eef0f4;
+  border-radius:16px;padding:16px;margin-bottom:12px;width:100%;text-align:left;font-size:16px}
+.menu-item .ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  font-size:24px;flex:none}
+.menu-item small{display:block;color:#9ca3af;font-size:12px;margin-top:2px}
+.btn{border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:600;
+  background:#6366f1;color:#fff;width:100%;min-height:48px;cursor:pointer}
+.btn.ghost{background:#eef2ff;color:#4f46e5}
+.btn.gray{background:#f3f4f6;color:#4b5563}
+.btn:active{transform:scale(.98)}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.inp{width:100%;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;font-size:16px;background:#fff;margin-bottom:10px;outline:none}
+.inp:focus{border-color:#6366f1}
+
+/* 口算 */
+.hud{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#fafafe;
+  border-bottom:1px solid #eef0f4;font-size:14px;position:sticky;top:52px;z-index:10}
+.hearts{letter-spacing:1px;font-size:17px}
+.timebar{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin:0 16px}
+.timebar i{display:block;height:100%;background:#22c55e;width:100%;transition:width .1s linear}
+.timebar i.warn{background:#f59e0b}.timebar i.dan{background:#ef4444}
+.qbox{text-align:center;padding:26px 16px 10px}
+.qtext{font-size:42px;font-weight:700;letter-spacing:2px;min-height:56px}
+.qtext.small{font-size:26px;min-height:76px;line-height:1.4}
+.ansbox{font-size:34px;font-weight:700;color:#4f46e5;margin-top:14px;
+  border-bottom:3px solid #ddd;display:inline-block;min-width:130px;min-height:46px;padding:0 10px}
+.ansbox.ok{color:#16a34a;border-color:#16a34a}
+.ansbox.bad{color:#dc2626;border-color:#dc2626;font-size:22px}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px 8px}
+.pad button{min-height:52px;font-size:22px;border:0;border-radius:12px;background:#f3f4f6;color:#1f2937;cursor:pointer}
+.pad button.op{background:#eef2ff;color:#4f46e5;font-size:18px}
+.pad button:active{transform:scale(.96)}
+.submit{margin:10px 16px 16px}
+.rule{font-size:13px;color:#9ca3af;margin:4px 16px 0}
+
+/* 关卡 */
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lvl{background:#fff;border:1px solid #eef0f4;border-radius:16px;padding:14px;text-align:center;cursor:pointer}
+.lvl .ico{font-size:28px}
+.lvl .lname{font-weight:700;font-size:15px;margin:6px 0 2px}
+.lvl .ldesc{font-size:11px;color:#9ca3af;min-height:30px}
+.lvl .lstars{color:#f59e0b;letter-spacing:2px;font-size:16px}
+.lvl.locked{opacity:.55;filter:grayscale(.6)}
+.lvl:nth-child(odd):last-child{grid-column:1/3}
+
+/* 联机 */
+.mp-panel{display:flex;gap:10px;margin:12px 16px 0}
+.pcard{flex:1;background:#fafafe;border:1px solid #eef0f4;border-radius:14px;padding:10px;text-align:center}
+.pcard.me{border-color:#c7d2fe;background:#eef2ff}
+.pname{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.phearts{font-size:14px;letter-spacing:1px;margin-top:2px}
+.pscore{font-size:18px;font-weight:700;color:#4f46e5;margin-top:4px}
+.pstatus{font-size:11px;color:#9ca3af;min-height:16px;margin-top:2px}
+.vs{display:grid;place-items:center;font-weight:800;color:#c7cbe0}
+.code-big{font-size:42px;font-weight:800;letter-spacing:10px;color:#4f46e5;text-align:center;margin:12px 0}
+.overlay{position:fixed;inset:0;background:rgba(17,24,39,.55);display:none;place-items:center;z-index:50;padding:24px}
+.overlay.on{display:grid}
+.overlay .box{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:360px;text-align:center}
+.rankline{font-size:15px;padding:6px 0;border-bottom:1px dashed #eef0f4}
+.stars-big{font-size:42px;letter-spacing:6px;color:#f59e0b;margin:6px 0}
+.errmsg{color:#ef4444;font-size:13px;min-height:18px;margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="back" id="btnBack" onclick="goHome()" style="visibility:hidden">‹ 返回</button>
+    <h1 id="title">三年级数学闯关</h1>
+    <button class="back" id="btnSound" onclick="toggleSound()">🔊</button>
+    <button class="back" id="btnMusic" onclick="toggleMusic()">🎵</button>
+  </header>
+
+  <!-- 首页 -->
+  <section class="view on" id="view-home">
+    <div class="card">
+      <h2>🎯 闯关模式</h2>
+      <p>完成口算挑战，收集星星，解锁更多关卡！</p>
+      <button class="btn" onclick="openLevels()">开始闯关</button>
+    </div>
+    <div class="card">
+      <h2>⚔️ 联机对战</h2>
+      <p>和同学实时 PK 口算速度（需要电脑运行服务器）</p>
+      <button class="btn ghost" onclick="openMP()">联机对战</button>
+    </div>
+    <div class="card">
+      <h3 id="progressInfo">已解锁 1/7 关</h3>
+      <p id="progressDetail" style="margin-bottom:0"></p>
+    </div>
+  </section>
+
+  <!-- 关卡选择 -->
+  <section class="view" id="view-levels">
+    <div class="levels" id="levels"></div>
+  </section>
+
+  <!-- 单机游戏 -->
+  <section class="view" id="view-game">
+    <div class="hud">
+      <span class="hearts" id="hearts"></span>
+      <span id="qPos">1/10</span>
+      <span style="flex:1"></span>
+      <span id="combo" style="color:#f59e0b;font-weight:700"></span>
+      <span id="score">0 分</span>
+    </div>
+    <div class="timebar"><i id="timebarG"></i></div>
+    <div class="qbox">
+      <div class="qtext" id="qtext"></div>
+      <div class="ansbox" id="ansG">&nbsp;</div>
+    </div>
+    <div class="pad" id="padG"></div>
+    <div class="submit"><button class="btn" onclick="submitG()">提交答案</button></div>
+  </section>
+
+  <!-- 单机结果 -->
+  <section class="view" id="view-result">
+    <div class="card" style="text-align:center">
+      <h2 id="resTitle" style="font-size:22px"></h2>
+      <div class="stars-big" id="resStars"></div>
+      <p id="resStats" style="font-size:15px;color:#4b5563"></p>
+    </div>
+    <div class="row">
+      <button class="btn gray" id="btnRetry" onclick=""></button>
+      <button class="btn" id="btnNext" onclick="" style="display:none">下一关 ➡️</button>
+    </div>
+    <button class="btn ghost" style="margin-top:10px" onclick="openLevels()">关卡列表</button>
+  </section>
+
+  <!-- 联机对战 -->
+  <section class="view" id="view-mp">
+    <div id="mpMenu">
+      <div class="card">
+        <h3>⚙️ 联机设置</h3>
+        <input class="inp" id="mpName" placeholder="你的昵称（默认：玩家）" maxlength="10">
+        <input class="inp" id="mpServer" placeholder="服务器地址">
+        <p style="font-size:12px;color:#9ca3af;margin:0 0 10px">电脑需先双击“启动联机服务器.bat”；手机与电脑连同一 Wi-Fi，地址形如 ws://192.168.1.5:8090</p>
+        <div class="row">
+          <button class="btn" onclick="createRoom()">创建房间</button>
+          <button class="btn ghost" onclick="joinRoom()">加入房间</button>
+        </div>
+        <input class="inp" id="mpCode" placeholder="输入 4 位房间号（加入时）" maxlength="4" style="margin-top:10px">
+        <p class="errmsg" id="mpMenuMsg"></p>
+      </div>
+    </div>
+    <div id="mpRoom" style="display:none">
+      <div class="card" style="text-align:center">
+        <h3>房间已创建，等对手加入</h3>
+        <div class="code-big" id="roomCode"></div>
+        <p id="mpStatus" style="color:#9ca3af">把房间号告诉你的同学</p>
+        <button class="btn gray" onclick="copyCode()">复制房间号</button>
+      </div>
+    </div>
+    <div id="mpBattle" style="display:none">
+      <div class="mp-panel">
+        <div id="mpMePanel"></div>
+        <div class="vs">VS</div>
+        <div id="mpOppPanel"></div>
+      </div>
+      <div class="timebar"><i id="timebarM"></i></div>
+      <div class="qbox">
+        <div style="color:#9ca3af;font-size:13px;margin-bottom:6px" id="mpRound"></div>
+        <div class="qtext small" id="mpQtext"></div>
+        <div class="ansbox" id="ansM">&nbsp;</div>
+      </div>
+      <div class="pad" id="padM"></div>
+      <div class="submit"><button class="btn" onclick="submitM()">提交答案</button></div>
+    </div>
+    <div class="overlay" id="mpOverlay">
+      <div class="box">
+        <div id="mpOverlayBody"></div>
+        <div class="row" style="margin-top:16px">
+          <button class="btn" onclick="rematch()">再来一局</button>
+          <button class="btn gray" onclick="mpExit()">返回大厅</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+'use strict';
+/* ================= 工具 ================= */
+const $=id=>document.getElementById(id);
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const heartsHTML=n=>'❤️'.repeat(Math.max(0,n))+'🖤'.repeat(Math.max(0,3-n));
+const vibrate=ms=>{try{if(navigator.vibrate)navigator.vibrate(ms)}catch(e){}};
+
+/* ================= 音效 ================= */
+let AC=null,muted=localStorage.getItem('g3m_muted')==='1';
+function audio(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
+function tone(f,d,type,g,when){if(muted)return;const ac=audio();if(!ac)return;
+  const o=ac.createOscillator(),v=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+  v.gain.value=g||.12;o.connect(v);v.connect(ac.destination);
+  const t=ac.currentTime+(when||0);o.start(t);o.stop(t+d);
+  v.gain.setValueAtTime(g||.12,t);v.gain.exponentialRampToValueAtTime(.001,t+d);}
+const sndClick=()=>tone(880,.06,'sine',.08);
+const sndOk=()=>{tone(660,.09,'sine',.12);tone(880,.12,'sine',.1,.09)};
+const sndCombo=()=>{tone(880,.08,'sine',.12);tone(1108,.1,'sine',.1,.08)};
+const sndBad=()=>tone(180,.25,'sawtooth',.12);
+const sndWin=()=>[523,659,784,1047].forEach((f,i)=>tone(f,.18,'sine',.12,i*.13));
+const sndLose=()=>[392,330,262].forEach((f,i)=>tone(f,.22,'sine',.12,i*.15));
+const sndGo=()=>tone(520,.1,'sine',.1);
+﻿/* ================= 背景音乐（轻快八音盒风格，循环播放） ================= */
+const MUS={on:localStorage.getItem('g3m_music')==='1',started:false,timer:null,gain:null,
+           bpm:90,line:0,ni:0,next:0};
+const NOTE_SEMI={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function freq(name){
+  const m=name.match(/^([A-G])([0-9])$/);
+  const semi=NOTE_SEMI[m[1]]+(parseInt(m[2],10)+1)*12;
+  return 440*Math.pow(2,(semi-69)/12);
+}
+const MUSIC_LINES=[
+ {bass:'C3',spark:'E5',notes:[['C4',.5],['C4',.5],['G4',.5],['G4',.5],['A4',.5],['A4',.5],['G4',1]]},
+ {bass:'F3',spark:'A5',notes:[['F4',.5],['F4',.5],['E4',.5],['E4',.5],['D4',.5],['D4',.5],['C4',1]]},
+ {bass:'G3',spark:'B5',notes:[['G4',.5],['G4',.5],['F4',.5],['F4',.5],['E4',.5],['E4',.5],['D4',1]]},
+ {bass:'G3',spark:'B5',notes:[['G4',.5],['G4',.5],['F4',.5],['F4',.5],['E4',.5],['E4',.5],['D4',1]]},
+ {bass:'C3',spark:'E5',notes:[['C4',.5],['C4',.5],['G4',.5],['G4',.5],['A4',.5],['A4',.5],['G4',1]]},
+ {bass:'F3',spark:'A5',notes:[['F4',.5],['F4',.5],['E4',.5],['E4',.5],['D4',.5],['D4',.5],['C4',1.5]]},
+];
+function musicNote(f,d,type,v,t){
+  if(!MUS.gain)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(v,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);g.connect(MUS.gain);
+  o.start(t);o.stop(t+d+0.05);
+}
+function startMusic(){
+  if(MUS.started||!AC)return;
+  MUS.started=true;
+  MUS.gain=AC.createGain();MUS.gain.gain.value=1;MUS.gain.connect(AC.destination);
+  MUS.line=0;MUS.ni=0;MUS.next=AC.currentTime+0.1;
+  musicSched();
+  MUS.timer=setInterval(musicSched,120);
+}
+function stopMusic(){
+  if(MUS.timer){clearInterval(MUS.timer);MUS.timer=null;}
+  MUS.started=false;
+  if(MUS.gain){const g=MUS.gain;const t=AC.currentTime;
+    g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+    setTimeout(()=>{try{g.disconnect();}catch(e){}},400);
+    MUS.gain=null;
+  }
+}
+function musicSched(){
+  if(MUS.next<AC.currentTime-1){MUS.next=AC.currentTime+0.05;}
+  if(!MUS.on||!AC||!MUS.gain)return;
+  const horizon=AC.currentTime+0.35;
+  while(MUS.next<horizon){
+    const line=MUSIC_LINES[MUS.line];
+    const t0=MUS.next;
+    if(MUS.ni===0){
+      const lineLen=line.notes.reduce((s,n)=>s+n[1],0);
+      musicNote(freq(line.bass),lineLen*0.9,'sine',0.05,t0);
+      musicNote(freq(line.spark),0.6,'sine',0.02,t0);
+    }
+    const n=line.notes[MUS.ni];
+    if(n[0]!=='R')musicNote(freq(n[0]),n[1]*(60/MUS.bpm)*0.9,'triangle',0.07,t0);
+    MUS.next+=n[1]*(60/MUS.bpm);
+    MUS.ni++;
+    if(MUS.ni>=line.notes.length){MUS.ni=0;MUS.line=(MUS.line+1)%MUSIC_LINES.length;}
+  }
+}
+function toggleMusic(){
+  MUS.on=!MUS.on;
+  localStorage.setItem('g3m_music',MUS.on?'1':'0');
+  $('btnMusic').classList.toggle('mute',!MUS.on);
+  if(MUS.on){audio();startMusic();}else{stopMusic();}
+  sndClick();
+}
+document.addEventListener('pointerdown',()=>{if(MUS.on&&!MUS.started){audio();startMusic();}},{once:true});
+document.addEventListener('keydown',()=>{if(MUS.on&&!MUS.started){audio();startMusic();}},{once:true});
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){if(MUS.on&&MUS.started)stopMusic();}
+  else if(MUS.on&&!MUS.started){audio();startMusic();}
+});
+
+function toggleSound(){muted=!muted;localStorage.setItem('g3m_muted',muted?'1':'0');
+  $('btnSound').textContent=muted?'🔇':'🔊';sndClick();}
+
+/* ================= 进度 ================= */
+const PROG_KEY='g3m_progress';
+let prog={stars:{},best:{}};
+function loadProg(){try{prog=JSON.parse(localStorage.getItem(PROG_KEY))||{stars:{},best:{}}}catch(e){prog={stars:{},best:{}}}}
+function saveProg(){localStorage.setItem(PROG_KEY,JSON.stringify(prog));}
+const maxUnlocked=()=>{for(let i=1;i<=LEVELS.length;i++){if((prog.stars[i]||0)<=0)return i;}return LEVELS.length;};
+
+/* ================= 关卡 ================= */
+const LEVELS=[
+ {id:1,name:'10以内加减',icon:'🔢',desc:'10以内的加法与减法',time:15},
+ {id:2,name:'20以内加减',icon:'🧮',desc:'进位加法与退位减法',time:15},
+ {id:3,name:'100以内加减',icon:'➕',desc:'两位数加减法',time:18},
+ {id:4,name:'乘法口诀',icon:'✖️',desc:'2–9 的乘法口诀',time:15},
+ {id:5,name:'除法入门',icon:'➗',desc:'用乘法口诀求商',time:15},
+ {id:6,name:'混合运算',icon:'🎲',desc:'加减乘除随机混合',time:20},
+ {id:7,name:'趣味应用题',icon:'📖',desc:'生活中的数学问题',time:25},
+];
+const GEN=[
+ () => {if(Math.random()<.5){const a=rand(1,9),b=rand(1,10-a);return {text:a+' + '+b+' = ?',answer:a+b};}
+        const a=rand(2,10),b=rand(1,a-1);return {text:a+' - '+b+' = ?',answer:a-b};},
+ () => {if(Math.random()<.5){const a=rand(1,19),b=rand(1,20-a);return {text:a+' + '+b+' = ?',answer:a+b};}
+        const a=rand(2,20),b=rand(1,a-1);return {text:a+' - '+b+' = ?',answer:a-b};},
+ () => {if(Math.random()<.5){const a=rand(11,89),b=rand(11,99-a);return {text:a+' + '+b+' = ?',answer:a+b};}
+        const a=rand(21,99),b=rand(11,a-11);return {text:a+' - '+b+' = ?',answer:a-b};},
+ () => {const a=rand(2,9),b=rand(2,9);return {text:a+' × '+b+' = ?',answer:a*b};},
+ () => {const b=rand(2,9),c=rand(2,9);return {text:(b*c)+' ÷ '+b+' = ?',answer:c};},
+ () => {if(Math.random()<.3){return GEN[6]();}
+        const t=rand(1,4);
+        if(t===1){const a=rand(2,9),b=rand(2,9);return {text:a+' × '+b+' = ?',answer:a*b};}
+        if(t===2){const b=rand(2,9),c=rand(2,9);return {text:(b*c)+' ÷ '+b+' = ?',answer:c};}
+        if(t===3){const a=rand(11,89),b=rand(11,99-a);return {text:a+' + '+b+' = ?',answer:a+b};}
+        const a=rand(21,99),b=rand(11,a-11);return {text:a+' - '+b+' = ?',answer:a-b};},
+ () => {const t=rand(1,12);
+   switch(t){
+    case 1:{const a=rand(10,60),b=rand(10,99-a);return {text:'书架上有 '+a+' 本书，又放进去 '+b+' 本，现在一共有多少本？',answer:a+b};}
+    case 2:{const a=rand(20,60),b=rand(5,a-10);return {text:'停车场有 '+a+' 辆车，开走了 '+b+' 辆，还剩多少辆？',answer:a-b};}
+    case 3:{const a=rand(2,9),b=rand(2,9);return {text:'每个盒子装 '+a+' 个苹果，'+b+' 个盒子一共能装多少个苹果？',answer:a*b};}
+    case 4:{const a=rand(2,9),b=rand(2,9),c=a*b;return {text:c+' 块饼干平均分给 '+a+' 个小朋友，每人分到几块？',answer:b};}
+    case 5:{const a=rand(2,9),b=rand(2,9);return {text:'一支铅笔 '+a+' 角，买 '+b+' 支一共需要多少角？',answer:a*b};}
+    case 6:{const a=rand(10,50),b=rand(10,99-a);return {text:'小明有 '+a+' 颗星星，小红比小明多 '+b+' 颗，小红有多少颗？',answer:a+b};}
+    case 7:{const a=rand(20,80),b=rand(5,a-10);return {text:'商店里有 '+a+' 颗糖果，卖出了 '+b+' 颗，还剩多少颗？',answer:a-b};}
+    case 8:{const a=rand(2,9),b=rand(2,9);return {text:'教室里每排坐 '+a+' 人，一共 '+b+' 排，教室里有多少人？',answer:a*b};}
+    case 9:{const a=rand(20,80),b=rand(5,a-10);return {text:'小红跳了 '+a+' 下绳，小明比小红少跳 '+b+' 下，小明跳了多少下？',answer:a-b};}
+    case 10:{const a=rand(20,80),b=rand(5,a-10);return {text:'一箱香蕉有 '+a+' 根，吃掉了 '+b+' 根，还剩多少根？',answer:a-b};}
+    case 11:{const a=rand(2,9),b=rand(2,9);return {text:'一本故事书 '+a+' 元，买 '+b+' 本一共需要多少元？',answer:a*b};}
+    default:{const a=rand(2,9),b=rand(2,9),c=a*b;return {text:c+' 个苹果平均分给 '+a+' 个小朋友，每人分到几个？',answer:b};}
+   }},
+];
+
+LEVELS.forEach((l,i)=>{l.gen=GEN[i];});
+/* ================= 视图切换 ================= */
+const TITLES={home:'三年级数学闯关',levels:'选择关卡',game:'',result:'闯关结果',mp:'联机对战'};
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  $('view-'+id).classList.add('on');
+  $('title').textContent=TITLES[id]||'';
+  $('btnBack').style.visibility=(id==='home')?'hidden':'visible';
+  window.scrollTo(0,0);
+}
+function goHome(){closeWS();stopTimer('g');stopTimer('m');showView('home');}
+
+/* ================= 首页 / 关卡 ================= */
+function renderHomeStats(){
+  const totalStars=LEVELS.reduce((s,l)=>s+(prog.stars[l.id]||0),0);
+  const mu=maxUnlocked();
+  $('progressInfo').textContent='已解锁 '+mu+'/'+LEVELS.length+' 关';
+  $('progressDetail').textContent='星星 '+totalStars+' / '+(LEVELS.length*3)+'　第 7 关（应用题）可直接玩，其他关卡需逐关解锁';
+}
+function renderLevels(){
+  const mu=maxUnlocked();
+  $('levels').innerHTML=LEVELS.map(l=>{
+    const un=(l.id<=mu)||l.id===7,st=prog.stars[l.id]||0;
+    return '<button class="lvl'+(un?'':' locked')+'" onclick="startLevel('+l.id+')" '+(un?'':'disabled')+'>'+
+      '<div class="ico">'+(un?l.icon:'🔒')+'</div>'+
+      '<div class="lname">'+l.name+'</div>'+
+      '<div class="ldesc">'+l.desc+'</div>'+
+      '<div class="lstars">'+'★'.repeat(st)+'☆'.repeat(3-st)+'</div></button>';
+  }).join('');
+}
+function openLevels(){renderLevels();showView('levels');}
+
+/* ================= 单机游戏 ================= */
+const G={level:null,lives:3,score:0,combo:0,maxCombo:0,idx:0,total:10,correct:0,
+         timer:null,tLeft:15,qTime:15,buffer:'',locked:false,q:null};
+function startLevel(lid){
+  G.level=LEVELS[lid-1];G.lives=3;G.score=0;G.combo=0;G.maxCombo=0;G.idx=0;G.correct=0;G.buffer='';G.locked=false;
+  showView('game');$('title').textContent=G.level.name;
+  updateHUD();nextQ();
+}
+function updateHUD(){
+  $('hearts').textContent=heartsHTML(G.lives);
+  $('qPos').textContent=(Math.min(G.idx,G.total-1)+1)+'/'+G.total;
+  $('score').textContent=G.score+' 分';
+  $('combo').textContent=G.combo>=2?'🔥×'+G.combo:'';
+}
+function nextQ(){
+  if(G.lives<=0||G.idx>=G.total){endGame(G.idx>=G.total);return;}
+  G.q=G.level.gen();G.buffer='';G.locked=false;
+  $('qtext').textContent=G.q.text;$('qtext').className=G.q.text.length>12?'qtext small':'qtext';
+  $('ansG').textContent='?';$('ansG').className='ansbox';
+  G.qTime=G.level.time;G.tLeft=G.qTime;
+  const bar=$('timebarG');bar.style.width='100%';bar.className='';
+  startTimer('g');updateHUD();
+}
+function startTimer(mode){
+  stopTimer(mode);const st=mode==='g'?G:MP;
+  st._last=Date.now();
+  st.timer=setInterval(()=>tick(mode),100);tick(mode);
+}
+function stopTimer(mode){const st=mode==='g'?G:MP;if(st.timer){clearInterval(st.timer);st.timer=null;}}
+function tick(mode){
+  const st=mode==='g'?G:MP;
+  const dt=(Date.now()-(st._last||Date.now()))/1000;st._last=Date.now();
+  st.tLeft-=dt;
+  if(st.tLeft<=0){st.tLeft=0;timeout(mode);return;}
+  const bar=mode==='g'?$('timebarG'):$('timebarM');
+  bar.style.width=(st.tLeft/st.qTime*100)+'%';
+  bar.className=st.tLeft/st.qTime<.35?'warn':'';
+}
+function timeout(mode){
+  if(mode==='g'){if(G.locked)return;G.buffer='';submitG();}
+  else{if(MP.locked)return;MP.locked=true;stopTimer('m');
+    $('ansM').textContent='⏰ 时间到';$('ansM').className='ansbox bad';
+    setMeStatus('时间到！');setOppStatus('对方作答中…');}
+}
+function submitG(){
+  if(G.locked)return;
+  stopTimer('g');G.locked=true;
+  const val=G.buffer===''?null:parseInt(G.buffer,10);
+  const ok=val===G.q.answer;
+  G.idx++;
+  if(ok){
+    G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);G.correct++;
+    const bonus=Math.round(G.tLeft/G.qTime*5);
+    G.score+=10+Math.min(G.combo-1,10)*2+bonus;
+    $('ansG').textContent='✓ '+val;$('ansG').className='ansbox ok';
+    if(G.combo>=3&&G.combo%3===0){sndCombo();vibrate(20);}else sndOk();vibrate(15);
+  }else{
+    G.lives--;G.combo=0;
+    $('ansG').textContent=(val==null?'未作答':'✗ '+val)+'　答案：'+G.q.answer;$('ansG').className='ansbox bad';
+    sndBad();vibrate(80);
+  }
+  updateHUD();
+  setTimeout(()=>{if(G.lives<=0)endGame(false);else if(G.idx>=G.total)endGame(true);else nextQ();},ok?500:1100);
+}
+function endGame(win){
+  stopTimer('g');const lv=G.level.id;
+  if(win){
+    const stars=G.correct>=9?3:(G.correct>=8?2:1);
+    prog.stars[lv]=Math.max(prog.stars[lv]||0,stars);
+    prog.best[lv]=Math.max(prog.best[lv]||0,G.score);
+    saveProg();sndWin();
+  }else sndLose();
+  $('resTitle').textContent=win?(G.correct>=9?'🌟 太棒了！':'🎉 通关成功！'):'💪 再接再厉！';
+  $('resStars').textContent=win?'★'.repeat(prog.stars[lv])+'☆'.repeat(3-prog.stars[lv]):'☆☆☆';
+  $('resStats').innerHTML='答对 <b>'+G.correct+'/'+G.total+'</b>　最高连击 <b>'+G.maxCombo+'</b>　得分 <b>'+G.score+'</b>';
+  $('btnNext').style.display=(win&&lv<LEVELS.length)?'':'none';
+  $('btnRetry').textContent=win?'再玩一次':'重新挑战';
+  $('btnRetry').onclick=()=>startLevel(lv);
+  $('btnNext').onclick=()=>startLevel(lv+1);
+  renderHomeStats();
+  showView('result');
+}
+/* ================= 数字键盘 ================= */
+function renderPads(){
+  ['g','m'].forEach(p=>{
+    const el=$(p==='g'?'padG':'padM');let h='';
+    for(let i=1;i<=9;i++)h+='<button onclick="padKey(\''+p+'\',\''+i+'\')">'+i+'</button>';
+    h+='<button class="op" onclick="padKey(\''+p+'\',\'C\')">C</button>';
+    h+='<button onclick="padKey(\''+p+'\',\'0\')">0</button>';
+    h+='<button class="op" onclick="padKey(\''+p+'\',\'B\')">⌫</button>';
+    el.innerHTML=h;
+  });
+}
+function padKey(p,k){
+  if(p==='g'){
+    if(G.locked)return;
+    if(k==='C')G.buffer='';else if(k==='B')G.buffer=G.buffer.slice(0,-1);
+    else if(G.buffer.length<3)G.buffer+=k;
+    $('ansG').textContent=G.buffer||'?';
+  }else{
+    if(MP.locked)return;
+    if(k==='C')MP.buffer='';else if(k==='B')MP.buffer=MP.buffer.slice(0,-1);
+    else if(MP.buffer.length<3)MP.buffer+=k;
+    $('ansM').textContent=MP.buffer||'?';
+  }
+  sndClick();
+}
+document.addEventListener('keydown',e=>{
+  if($('view-game').classList.contains('on')){
+    if(/^[0-9]$/.test(e.key))padKey('g',e.key);
+    else if(e.key==='Backspace')padKey('g','B');
+    else if(e.key==='Enter'){e.preventDefault();submitG();}
+  }else if($('view-mp').classList.contains('on')&&$('mpBattle').style.display!=='none'){
+    if(/^[0-9]$/.test(e.key))padKey('m',e.key);
+    else if(e.key==='Backspace')padKey('m','B');
+    else if(e.key==='Enter'){e.preventDefault();submitM();}
+  }
+});
+
+/* ================= 联机对战（客户端） ================= */
+const MP={ws:null,room:'',name:'玩家',me:null,opp:null,over:false,round:0,total:10,
+          qTime:15,tLeft:15,buffer:'',locked:true,timer:null,q:null,meStatus:'',oppStatus:''};
+function openMP(){showView('mp');showMPMenu();$('mpServer').value=$('mpServer').value||defaultWS();}
+function showMPMenu(){
+  $('mpMenu').style.display='';$('mpRoom').style.display='none';
+  $('mpBattle').style.display='none';$('mpOverlay').classList.remove('on');
+  $('mpMenuMsg').textContent='';
+}
+function defaultWS(){
+  if(location.protocol.startsWith('http')){
+    const h=location.hostname||'localhost';
+    const port=location.port?location.port:8080;
+    return 'ws://'+h+':'+port;
+  }
+  return 'ws://localhost:8090';
+}
+function connectMP(onopen){
+  const url=$('mpServer').value.trim()||defaultWS();
+  if(MP.ws){
+    if(MP.ws.readyState===1){onopen();}else MP.ws.onopen=onopen;
+    return;
+  }
+  MP.wsFailed=false;
+  try{MP.ws=new WebSocket(url);}catch(e){mpError('无法连接服务器：请先双击运行“启动联机服务器.bat”');return;}
+  MP.ws.onopen=onopen;
+  MP.ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(err){return;}onMP(m);};
+  MP.ws.onclose=()=>{MP.ws=null;if(MP.me&&!MP.over){mpError('与服务器的连接已断开');MP.me=null;MP.opp=null;}else if(!MP.me&&MP.wsFailed&&!MP.over){mpError('无法连接服务器：请先双击运行“启动联机服务器.bat”，或检查服务器地址');}};
+  MP.ws.onerror=()=>{MP.wsFailed=true;};
+}
+function closeWS(){if(MP.ws){try{MP.ws.close();}catch(e){}}MP.ws=null;MP.me=null;MP.opp=null;MP.over=false;MP.room='';}
+function sendMP(o){if(MP.ws&&MP.ws.readyState===1)MP.ws.send(JSON.stringify(o));}
+function mpError(t){showMPMenu();$('mpMenuMsg').textContent=t;sndBad();}
+function createRoom(){
+  MP.name=$('mpName').value.trim()||'玩家';
+  connectMP(()=>{MP.room='';sendMP({type:'create',name:MP.name});});
+  $('mpMenuMsg').textContent='连接中…';
+}
+function joinRoom(){
+  const code=$('mpCode').value.trim().toUpperCase();
+  if(code.length!==4){$('mpMenuMsg').textContent='请输入 4 位房间号';return;}
+  MP.name=$('mpName').value.trim()||'玩家';MP.room=code;
+  connectMP(()=>sendMP({type:'join',code,name:MP.name}));
+  $('mpMenuMsg').textContent='连接中…';
+}
+function rematch(){closeWS();createRoom();}
+function mpExit(){closeWS();showMPMenu();}
+function copyCode(){
+  const c=$('roomCode').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(c).then(()=>{$('mpStatus').textContent='已复制房间号：'+c;}).catch(()=>{});}
+  $('mpStatus').textContent='房间号：'+c+'　等同学输入后加入';
+}
+function onMP(m){
+  switch(m.type){
+    case 'created':
+      MP.room=m.code;
+      $('mpMenu').style.display='none';$('mpRoom').style.display='';
+      $('roomCode').textContent=m.code;$('mpStatus').textContent='把房间号告诉你的同学';
+      break;
+    case 'start':
+      MP.me=m.players.find(p=>p.pid===m.you);
+      MP.opp=m.players.find(p=>p.pid!==m.you);
+      if(MP.me){MP.me.score=0;MP.me.lives=3;}
+      if(MP.opp){MP.opp.score=0;MP.opp.lives=3;}
+      MP.total=m.total;MP.round=0;MP.over=false;MP.meStatus='';MP.oppStatus='';
+      $('mpMenu').style.display='none';$('mpRoom').style.display='none';
+      $('mpBattle').style.display='';$('mpOverlay').classList.remove('on');
+      renderPanels();sndGo();
+      break;
+    case 'q':
+      MP.q={text:m.text};MP.round=m.seq;MP.buffer='';MP.locked=false;
+      MP.tLeft=m.time;MP.qTime=m.time;
+      $('mpQtext').textContent=m.text;
+      $('ansM').textContent='?';$('ansM').className='ansbox';
+      $('mpRound').textContent='第 '+m.seq+'/'+MP.total+' 题';
+      const bar=$('timebarM');bar.style.width='100%';bar.className='';
+      setMeStatus('');setOppStatus('');
+      startTimer('m');
+      break;
+    case 'res':{
+      stopTimer('m');MP.locked=true;
+      const mr=m.results.find(r=>r.pid===MP.me.pid);
+      const or=m.results.find(r=>r.pid===MP.opp.pid);
+      MP.me.score=mr.score;MP.me.lives=mr.lives;
+      MP.opp.score=or.score;MP.opp.lives=or.lives;
+      MP.meStatus=mr.ok?('+'+mr.gained+' 分 ✓'):'答错了';
+      MP.oppStatus=or.ok?('✓ '+or.answer):('✗ 答案：'+m.answer);
+      if(mr.ok){$('ansM').textContent='✓ '+mr.answer;$('ansM').className='ansbox ok';sndOk();}
+      else{$('ansM').textContent='✗　答案：'+m.answer;$('ansM').className='ansbox bad';sndBad();}
+      renderPanels();
+      break;
+    }
+    case 'end':
+      MP.over=true;stopTimer('m');MP.locked=true;
+      renderOverlay(m.ranking);
+      break;
+    case 'opponent-left':
+      MP.over=true;stopTimer('m');
+      closeWS();showMPMenu();$('mpMenuMsg').textContent='对方离开了房间';
+      break;
+    case 'error':
+      mpError(m.msg||'操作失败');break;
+  }
+}
+function renderPanels(){
+  $('mpMePanel').innerHTML=panelHTML(MP.me,true);
+  $('mpOppPanel').innerHTML=panelHTML(MP.opp,false);
+}
+function panelHTML(p,isMe){
+  return '<div class="pname">'+esc(p.name)+(isMe?'（你）':'')+'</div>'+
+    '<div class="phearts">'+heartsHTML(p.lives)+'</div>'+
+    '<div class="pscore">'+p.score+' 分</div>'+
+    '<div class="pstatus">'+esc(isMe?MP.meStatus:MP.oppStatus)+'</div>';
+}
+function setMeStatus(s){MP.meStatus=s;if(MP.me){const el=$('mpMePanel').querySelector('.pstatus');if(el)el.textContent=s;}}
+function setOppStatus(s){MP.oppStatus=s;if(MP.opp){const el=$('mpOppPanel').querySelector('.pstatus');if(el)el.textContent=s;}}
+function submitM(){
+  if(MP.locked)return;
+  MP.locked=true;stopTimer('m');
+  const val=MP.buffer===''?null:parseInt(MP.buffer,10);
+  sendMP({type:'answer',val:val});
+  $('ansM').textContent='⏳ 等待对方…';$('ansM').className='ansbox';
+  setMeStatus('已提交，等待对方…');
+  setOppStatus('对方作答中…');
+}
+function renderOverlay(ranking){
+  const mePid=MP.me?MP.me.pid:null;
+  const winner=ranking[0];
+  const win=winner.pid===mePid;
+  let h='<div style="font-size:44px">'+(win?'🏆':'🥈')+'</div>';
+  h+='<h2 style="margin:8px 0">'+(win?'你赢了！':'你输了，继续加油！')+'</h2>';
+  h+=ranking.map((r,i)=>
+    '<div class="rankline">'+(i+1)+'. '+esc(r.name)+(r.pid===mePid?'（你）':'')+' — '+r.score+' 分</div>').join('');
+  $('mpOverlayBody').innerHTML=h;
+  $('mpOverlay').classList.add('on');
+}
+
+/* ================= 初始化 ================= */
+loadProg();renderHomeStats();renderPads();
+$('btnSound').textContent=muted?'🔇':'🔊';
+$('btnMusic').classList.toggle('mute',!MUS.on);
+$('mpServer').value=defaultWS();
+</script>
+</body>
+</html>
+
