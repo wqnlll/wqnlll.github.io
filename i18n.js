@@ -93,6 +93,8 @@
     'about.games1':     { zh: '<strong>英语打砖块</strong> —— 将小学英语单词融入经典打砖块玩法。每个砖块都是一张单词卡（英文 + 中文），打碎时自动朗读发音。覆盖 8 大主题 200+ 核心词汇，让背单词不再枯燥。适合小学生和英语初学者。', en: '<strong>English Brick Breaker</strong> — merges primary-school English words into classic brick-breaker gameplay. Every brick is a flashcard (English + Chinese) that speaks aloud when broken. Covers 8 topics and 200+ core words to make memorizing fun. Great for kids and beginners.' },
     'about.games2':     { zh: '<strong>坦克大战（电脑版）</strong> —— 经典俯视角射击游戏，WASD 移动 + 空格开火，保护基地、消灭敌军。致敬红白机时代的经典之作。', en: '<strong>Tank Battle (PC)</strong> — a classic top-down shooter. Move with WASD, fire with Space, protect your base, and destroy enemies. A tribute to the NES classics.' },
     'about.games3':     { zh: '<strong>坦克大战（手机版）</strong> —— 为手机触屏专门优化的版本，虚拟摇杆操控，随时随地来一局。核心玩法与电脑版一致，操作方式更适合移动端。', en: '<strong>Tank Battle (Mobile)</strong> — optimized for mobile touch screens with a virtual joystick. Same core gameplay as the PC version, with controls built for phones.' },
+    'about.games4':     { zh: '<strong>三年级数学闯关</strong> —— 加减乘除口算闯关游戏，限时挑战逐关变难，还能同 Wi-Fi 联机对战。贴近三年级课程，手机电脑都能玩。', en: '<strong>Grade 3 Math Challenge</strong> — a mental-math game of mixed addition, subtraction, multiplication and division. Timed levels get harder as you advance, and you can battle a friend over the same Wi-Fi. Aligned with the 3rd-grade curriculum; plays on mobile and desktop.' },
+    'about.games5':     { zh: '<strong>红警RTS · 网页版红色警戒</strong> —— 红警2风格的网页即时战略游戏：采矿造兵、双阵营超级武器，单机打 AI。键鼠和触屏都能玩。', en: '<strong>Red Alert RTS</strong> — a Red Alert 2 style web real-time strategy game. Mine gold, build an army, deploy super weapons and fight the AI in single-player. Works with keyboard/mouse and touch.' },
     'about.whyTitle':   { zh: '💡 为什么做这个网站', en: '💡 Why We Built This' },
     'about.why1':       { zh: '作为一个开发者，我一直觉得学习编程最好的方式就是动手做项目。这些游戏是我在学习和实践中一步步打磨出来的。把它们免费分享出来，既是对自己技能的检验，也希望能给其他人带来一些乐趣和帮助。', en: 'As a developer, I believe the best way to learn programming is to build real projects. These games were polished one step at a time through learning and practice. Sharing them for free tests my skills and, I hope, brings others some fun and help.' },
     'about.why2':       { zh: '特别是英语打砖块这个游戏，灵感来自于看到小朋友背单词很痛苦——与其死记硬背，不如在游戏中自然习得。每打碎一块砖，就记住一个单词，这种即时反馈让学习变得轻松愉快。', en: 'English Brick Breaker in particular was inspired by watching kids struggle to memorize words — instead of rote learning, why not learn naturally through play? Every brick you break is a word you remember; that instant feedback makes learning easy and fun.' },
@@ -127,7 +129,7 @@
     'privacy.s7':       { zh: '我们可能会不定期更新本隐私政策。更新后会在本页面发布，并在页面顶部标注更新日期。', en: 'We may update this Privacy Policy from time to time. When updated, it will be published on this page with the revision date shown at the top.' },
 
     /* ---------- 英语打砖块 ---------- */
-    'brick.title':      { zh: '小学英语打砖块 · 学单词神器', en: 'English Brick Breaker · Learn Words' },
+    'brick.title':      { zh: '小学英语打砖块 · 学单词神器', en: 'English Brick Breaker — Learn 200+ English Words by Playing' },
     'brick.desc':       { zh: '免费在线学英语单词：打砖块记单词，真人发音自动朗读，8大主题200+词汇，小学生必备！', en: 'Learn English words online for free: break bricks and memorize words with real pronunciation. 8 topics, 200+ words — perfect for kids!' },
     'brick.ogTitle':    { zh: '小学英语打砖块 · 一边打砖块一边学英语单词', en: 'English Brick Breaker · Learn English words while breaking bricks' },
     'brick.ogDesc':     { zh: '200+ 小学英语单词，8 大主题，自动朗读发音！打砖块学英语，孩子越玩越上瘾。免费在线玩，无需下载。', en: '200+ primary-school English words across 8 topics with auto-pronunciation! Break bricks and learn — kids will love it. Free to play online, no download.' },
@@ -176,9 +178,9 @@
     'brick.copied':     { zh: '✅ 已复制链接！', en: '✅ Link copied!' },
 
     /* ---------- 坦克大战（桌面 + 手机共用） ---------- */
-    'tank.title':       { zh: '坦克大战',       en: 'Tank Battle' },
+    'tank.title':       { zh: '坦克大战',       en: 'Tank Battle — Classic NES Tank Shooter | Free Online Game' },
     'tank.mobileTitle': { zh: '🎮 坦克大战',    en: '🎮 Tank Battle' },
-    'tank.mobilePageTitle':{ zh: '坦克大战 · 手机版', en: 'Tank Battle · Mobile' },
+    'tank.mobilePageTitle':{ zh: '坦克大战 · 手机版', en: 'Tank Battle Mobile — Touch Tank Shooter | Free Online Game' },
     'tank.controls':    { zh: 'WASD/方向键移动 空格射击 保护基地 消灭所有敌军', en: 'WASD/Arrows move · Space shoot · Protect base · Destroy all enemies' },
     'tank.mobileControls':{ zh: '方向键移动 · 开火按钮射击', en: 'D-pad to move · Fire button to shoot' },
     'tank.baseDestroyed':{ zh: '基地被毁！',     en: 'Base Destroyed!' },
@@ -217,7 +219,7 @@
     'common.navPrivacy':{ zh: '隐私',         en: 'Privacy' },
 
     /* ---------- 三年级数学闯关 ---------- */
-    'math.title':   { zh: '三年级数学闯关 · 免费在线口算练习 | Grade 3 Math Game', en: 'Grade 3 Math Challenge · Free Online Math Game | 三年级数学闯关' },
+    'math.title':   { zh: '三年级数学闯关 · 免费在线口算练习 | Grade 3 Math Game', en: 'Grade 3 Math Challenge — Free Mental Math Game for Kids' },
     'math.desc':    { zh: '三年级数学闯关 · 免费在线口算练习小游戏！加减乘除计时闯关，还能同 Wi-Fi 联机对战。手机电脑都能玩，无需下载。Grade 3 Math Challenge — free mental math game.', en: 'Grade 3 Math Challenge — a free online mental-math game! Timed + − × ÷ levels plus PvP over the same Wi-Fi. Works on mobile & desktop, no download. 三年级数学闯关免费口算游戏。' },
     'math.keywords':{ zh: '三年级数学,口算,数学练习,小学数学,在线游戏,加减乘除,数学小游戏,教育游戏,grade 3 math,mental math,math game,educational game', en: 'grade 3 math,mental math,math game,educational game,free online math,三年级数学,口算,加减乘除' },
     'math.ogTitle': { zh: '三年级数学闯关 · 免费在线口算练习 | Grade 3 Math Game', en: 'Grade 3 Math Challenge · Free Mental Math Game' },
@@ -244,7 +246,7 @@
     'math.tip':     { zh: '单机模式打开页面直接就能玩，不需要服务器。右上角 🎵/🔊 按钮可开关背景音乐和音效，设置会自动记住，下次打开还是你选的。', en: 'Solo mode works right away — no server needed. Use the 🎵/🔊 buttons to toggle music and sound; your choice is remembered.' },
 
     /* ---------- 红警RTS ---------- */
-    'rts.title':    { zh: '红警RTS · 网页版红色警戒 | Web Red Alert Strategy Game', en: 'Red Alert RTS · Web Strategy Game | 红警RTS 网页版红色警戒' },
+    'rts.title':    { zh: '红警RTS · 网页版红色警戒 | Web Red Alert Strategy Game', en: 'Red Alert RTS — Free Web Real-Time Strategy Game' },
     'rts.desc':     { zh: '红警RTS · 网页版红色警戒！红警2风格的免费在线即时战略游戏：基地建造、采矿经济、兵种对战、超级武器，单机打 AI。电脑手机都能玩，无需下载。Web Red Alert style RTS strategy game.', en: 'Red Alert RTS — a free browser real-time strategy game in the style of Red Alert 2: base building, mining economy, unit combat and super weapons, vs AI in single player. Desktop & mobile, no download. 红警2风格网页即时战略。' },
     'rts.keywords': { zh: '红警,红色警戒,即时战略,RTS,坦克大战,战略游戏,网页游戏,免费在线游戏,red alert,real time strategy,browser game,online strategy game', en: 'red alert,real time strategy,rts,strategy game,browser game,free online strategy,红警,即时战略,坦克大战' },
     'rts.ogTitle':  { zh: '红警RTS · 网页版红色警戒 | Web Red Alert Strategy Game', en: 'Red Alert RTS · Web Strategy Game' },
