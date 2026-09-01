@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>经方辨证学习助手·家人版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f6f2ea; color: #333; min-height: 100vh;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { text-align: center; margin-bottom: 16px; }
+  header h1 { font-size: 22px; color: #5b3a24; }
+  header p { font-size: 13px; color: #8a7a6a; margin-top: 6px; }
+  .box { background: #fff; border: 1px solid #e6ddcd; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .box h3 { font-size: 15px; color: #5b3a24; margin-bottom: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid #d8cbb8; background: #fdf9f0; border-radius: 20px;
+    padding: 6px 14px; font-size: 13px; cursor: pointer; user-select: none; color: #5b3a24;
+  }
+  .chip.sel { background: #5b3a24; color: #fff; border-color: #5b3a24; }
+  textarea {
+    width: 100%; height: 70px; border: 1px solid #d8cbb8; border-radius: 8px;
+    padding: 12px; font-size: 14px; resize: vertical; line-height: 1.6; margin-top: 10px;
+  }
+  button.primary {
+    background: #5b3a24; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 22px; font-size: 15px; cursor: pointer; margin-top: 12px;
+  }
+  button.primary:disabled { background: #b8a894; cursor: not-allowed; }
+  #out { display: none; white-space: pre-wrap; word-break: break-word; line-height: 1.8; font-size: 14px; }
+  #out.show { display: block; }
+  .disclaimer { margin-top: 24px; font-size: 12px; color: #8a7a6a; line-height: 1.6; border-top: 1px dashed #d8cbb8; padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>经方辨证学习助手 · 家人版</h1>
+    <p>面向家庭日常的经方辨证学习参考 · 非医疗诊断工具</p>
+  </header>
+
+  <div class="box">
+    <h3>勾选你的主要不适（可多选）</h3>
+    <div class="chips" id="chips"></div>
+    <h3 style="margin-top:16px">或用一句话描述</h3>
+    <textarea id="extra" placeholder="例如：最近总是怕冷、手脚凉、肚子胀、容易拉肚子"></textarea>
+    <button class="primary" id="btn">辨证看看</button>
+  </div>
+
+  <div id="out" class="box"></div>
+
+  <div class="disclaimer">
+    免责声明：本工具为中医经方知识学习参考，所列方剂与用量仅供学习理解，不构成医疗诊断或处方建议，切勿自行抓药服用。如有身体不适，请及时前往正规医院就诊。
+  </div>
+</div>
+
+<script>
+// ============ 家人版·规则辨证引擎（纯前端，无后端） ============
+// 症状标签
+const SYMPTOMS = [
+  { key:'怕冷', label:'怕冷' },
+  { key:'手脚凉', label:'手脚凉' },
+  { key:'出冷汗', label:'出冷汗' },
+  { key:'肚子胀', label:'肚子胀' },
+  { key:'拉肚子', label:'拉肚子' },
+  { key:'没胃口', label:'没胃口/食少' },
+  { key:'失眠烦躁', label:'失眠烦躁' },
+  { key:'多梦', label:'多梦' },
+  { key:'累乏力', label:'累/乏力' },
+  { key:'口干', label:'口干' },
+  { key:'咳嗽', label:'咳嗽' },
+  { key:'喉咙痛', label:'喉咙痛' },
+  { key:'发热', label:'发热' },
+  { key:'头痛', label:'头痛' },
+  { key:'口苦', label:'口苦' },
+  { key:'咽干', label:'咽干' },
+  { key:'胸胁胀', label:'胸胁胀/胸口闷' },
+  { key:'便秘', label:'便秘' },
+  { key:'心烦', label:'心烦' },
+  { key:'盗汗潮热', label:'盗汗/潮热' },
+  { key:'小便黄', label:'小便黄' },
+  { key:'胸胁苦满', label:'两胁不适' },
+  { key:'往来寒热', label:'往来寒热' },
+  { key:'叹气', label:'叹气（善太息）' },
+];
+// 证型规则：命中该组症状 → 给经方（含组成·剂量·煎服法）
+const RULES = [
+  {
+    name:'太阴虚寒（脾胃虚寒）',
+    symptoms:['怕冷','手脚凉','肚子胀','拉肚子','累乏力'],
+    formula:'理中丸（理中汤）',
+    comp:'人参9g、干姜9g、白术9g、炙甘草9g',
+    how:'约800ml水，泡30分钟，大火煮开转小火煮40分钟至约300ml，去渣分两次温服（早晚或早晚饭前）。趁热喝，微发汗即可。',
+    desc:'证见中焦阳虚、运化无力：肚子胀、易泻、怕冷、手脚凉。当温中散寒、健脾止泻。'
+  },
+  {
+    name:'心脾两虚、心神不宁',
+    symptoms:['失眠烦躁','多梦','累乏力','没胃口'],
+    formula:'酸枣仁汤（或归脾汤思路）',
+    comp:'酸枣仁18g、甘草3g、知母6g、茯苓6g、川芎6g',
+    how:'先煮酸枣仁，再加入其余药，水煎取汁，温服，睡前服。',
+    desc:'证见肝血不足、心神失养：睡不好、多梦、白天累。当养血安神、清热除烦。'
+  },
+  {
+    name:'外感风寒表证',
+    symptoms:['怕冷','发热','头痛','喉咙痛'],
+    formula:'桂枝汤 或 葛根汤（据汗/项强）',
+    comp:'桂枝9g、白芍9g、生姜9g、大枣4枚、炙甘草6g',
+    how:'约700ml水，煮取300ml，温服一碗，喝后盖被微汗出；若不汗再服。',
+    desc:'证见风寒束表：怕冷发热、头痛、或有汗怕风。当解肌发表、调和营卫。'
+  },
+  {
+    name:'肺气不宣、咳嗽',
+    symptoms:['咳嗽','喉咙痛'],
+    formula:'止嗽散思路 / 杏苏散（据寒热）',
+    comp:'桔梗、紫菀、百部、白前、陈皮、荆芥、甘草（各约9g）',
+    how:'水煎取汁，分两次温服。',
+    desc:'证见外邪犯肺、咳嗽。当宣肺止咳。',
+  },
+  {
+    name:'气虚乏力',
+    symptoms:['累乏力'],
+    formula:'四君子汤（补气基础方）',
+    comp:'人参9g、白术9g、茯苓9g、炙甘草6g',
+    how:'水煎取汁，分两次温服。',
+    desc:'证见脾气虚弱、倦怠乏力。当健脾益气。'
+  },
+  {
+    name:'少阳证（半表半里）',
+    symptoms:['口苦','咽干','胸胁胀','往来寒热'],
+    formula:'小柴胡汤',
+    comp:'柴胡24g、黄芩9g、人参9g、半夏9g、炙甘草9g、生姜9g、大枣4枚',
+    how:'约1200ml水，煮取600ml，去渣再煎取300ml，分三次温服。',
+    desc:'证见邪在半表半里、少阳枢机不利：口苦咽干、胸胁苦满、往来寒热。当和解少阳。'
+  },
+  {
+    name:'肝气郁结',
+    symptoms:['胸胁胀','心烦','叹气','胸胁苦满'],
+    formula:'四逆散 或 逍遥散',
+    comp:'柴胡、枳实、白芍、炙甘草各9g（四逆散）；逍遥散加当归、白术、茯苓、薄荷、生姜',
+    how:'四逆散为散剂，每次6g，温水送服，一日三次；或水煎取汁分两次温服。',
+    desc:'证见肝气郁滞：胁肋胀闷、情志不舒、善太息。当疏肝解郁、理气和中。'
+  },
+  {
+    name:'阴津亏虚、肠燥便秘',
+    symptoms:['便秘','口干','盗汗潮热'],
+    formula:'麻子仁丸 思路（润肠通便）',
+    comp:'麻子仁20g、白芍9g、枳实9g、大黄6g、厚朴9g、杏仁9g',
+    how:'炼蜜为丸，每次9g，一日两次，温开水送下；或水煎取汁睡前温服。',
+    desc:'证见胃热肠燥、津液不足：大便秘结、口干。当润肠泄热、行气通便。'
+  },
+  {
+    name:'肺阴亏虚、燥热咳',
+    symptoms:['咳嗽','口干','咽干'],
+    formula:'麦门冬汤（润肺止咳）',
+    comp:'麦门冬42g、半夏9g、人参6g、炙甘草6g、粳米9g、大枣4枚',
+    how:'约1200ml水，煮取600ml，温服一碗，日三服。',
+    desc:'证见肺胃阴虚、虚火上逆：干咳、少痰、口干咽燥。当滋阴润肺、降逆下气。'
+  },
+  {
+    name:'湿热蕴结（口苦尿黄）',
+    symptoms:['口苦','小便黄','肚子胀'],
+    formula:'茵陈蒿汤 思路（退黄利湿）',
+    comp:'茵陈18g、栀子9g、大黄6g',
+    how:'先煮茵陈，后下栀子、大黄，水煎取汁，分两次温服。',
+    desc:'证见湿热蕴结：口苦、小便黄、脘腹胀满。当清热利湿退黄。'
+  },
+
+];
+
+// 其它未命中时的兜底
+const FALLBACK = {
+  name:'需进一步辨证',
+  formula:'（建议就医面诊辨证）',
+  comp:'不宜自行套方',
+  how:'建议携带主诉，由中医师面诊四诊合参辨证开方。',
+  desc:'您的症状组合未落入常见简化证型，为提高准确与安全，建议就医辨证。'
+};
+
+function renderChips() {
+  const box = document.getElementById('chips');
+  box.innerHTML = '';
+  SYMPTOMS.forEach(s => {
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = s.label;
+    c.dataset.key = s.key;
+    c.onclick = () => c.classList.toggle('sel');
+    box.appendChild(c);
+  });
+}
+function pickedKeys() {
+  const chips = document.querySelectorAll('.chip.sel');
+  return Array.from(chips).map(c => c.dataset.key);
+}
+function matchRule(keys) {
+  let best = null, bestScore = 0;
+  for (const r of RULES) {
+    const score = r.symptoms.filter(s => keys.includes(s)).length;
+    if (score > bestScore) { bestScore = score; best = r; }
+  }
+  if (best && bestScore >= 2) return best;
+  return null;
+}
+function buildOutput(r) {
+  let s = '【辨证方向】' + r.name + '\n\n';
+  s += '【思路】' + r.desc + '\n\n';
+  s += '【方名】' + r.formula + '\n';
+  s += '【组成·剂量】' + r.comp + '\n';
+  s += '【煎服法】' + r.how + '\n\n';
+  s += '（家人版为简化学习参考，量效与个体差异请以医师为准。）';
+  return s;
+}
+function run() {
+  const keys = pickedKeys();
+  const out = document.getElementById('out');
+  if (keys.length === 0) { alert('请至少勾选一个症状'); return; }
+  const r = matchRule(keys);
+  out.textContent = buildOutput(r || FALLBACK);
+  out.classList.add('show');
+}
+document.getElementById('btn').onclick = run;
+renderChips();
+</script>
+</body>
+</html>
