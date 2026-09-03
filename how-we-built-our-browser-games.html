@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9748302823213677" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An honest, behind-the-scenes look at how the wqnlll Game Center games were built — the decisions, the mistakes, and the design rules that keep every game free, safe and ad-lite.">
+<meta property="og:title" content="How We Built Our Browser Games: A Developer's Journey">
+<meta property="og:description" content="The story and craft behind wqnlll Game Center: how a hobby developer built free browser games, learned from mistakes, and kept everything kid-safe.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wqnlll.github.io/how-we-built-our-browser-games.html">
+<meta property="og:image" content="https://wqnlll.github.io/og-image.png">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="wqnlll Game Center">
+<link rel="canonical" href="https://wqnlll.github.io/how-we-built-our-browser-games.html">
+<title>How We Built Our Browser Games: A Developer's Journey | wqnlll Game Center</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How We Built Our Browser Games: A Developer's Journey",
+  "description": "Behind the scenes of wqnlll Game Center: the craft, decisions and design rules behind free, kid-safe browser games.",
+  "image": "https://wqnlll.github.io/og-image.png",
+  "author": { "@type": "Person", "name": "wqnlll" },
+  "publisher": { "@type": "Organization", "name": "wqnlll Game Center", "logo": { "@type": "ImageObject", "url": "https://wqnlll.github.io/og-image.png" } },
+  "datePublished": "2026-09-03",
+  "dateModified": "2026-09-03",
+  "mainEntityOfPage": "https://wqnlll.github.io/how-we-built-our-browser-games.html",
+  "inLanguage": "en"
+}
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a1a; color: #d8d8ea; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; line-height: 1.85; }
+  header { display: flex; gap: 18px; align-items: center; padding: 14px 20px; background: rgba(10,10,26,.92); border-bottom: 1px solid #26263f; position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+  header a { color: #9a9ab0; text-decoration: none; font-size: 14px; }
+  header a:hover { color: #00f0ff; }
+  main { max-width: 780px; margin: 0 auto; padding: 36px 20px 56px; }
+  h1 { font-size: 32px; color: #fff; line-height: 1.4; margin-bottom: 10px; }
+  .byline { color: #666; font-size: 14px; margin-bottom: 26px; border-bottom: 1px solid #1a1a30; padding-bottom: 18px; }
+  .byline a { color: #00f0ff; }
+  p { margin-bottom: 18px; font-size: 16px; }
+  h2 { font-size: 22px; color: #00f0ff; margin: 30px 0 12px; }
+  ul, ol { padding-left: 22px; margin-bottom: 18px; }
+  li { margin-bottom: 10px; font-size: 16px; }
+  li strong { color: #fff; }
+  .callout { background: #13132a; border: 1px solid #00f0ff33; border-left: 3px solid #00f0ff; border-radius: 10px; padding: 16px 18px; margin: 22px 0; font-size: 15px; color: #b8b8cc; }
+  .callout a { color: #00f0ff; }
+  .cta { text-align: center; background: #13132a; border: 1px solid #26263f; border-radius: 12px; padding: 22px; margin-top: 30px; }
+  .cta .btn { display: inline-block; background: #00f0ff; color: #0a0a1a; font-weight: 700; text-decoration: none; padding: 10px 24px; border-radius: 8px; margin-top: 6px; }
+  .cta .btn:hover { background: #5ff7ff; }
+  footer { text-align: center; color: #555; font-size: 13px; padding: 10px 0 30px; }
+  footer a { color: #00f0ff; text-decoration: none; }
+  @media (max-width: 600px) { h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← Game Center</a>
+  <a href="about.html">About</a>
+  <a href="how-html5-browser-games-work.html">How Games Work</a>
+</header>
+<main>
+  <article>
+    <h1>How We Built Our Browser Games: A Developer's Journey</h1>
+    <div class="byline">By <a href="about.html">wqnlll</a> · September 3, 2026 · 9 min read</div>
+
+    <p>Everyone on this site is free to play, needs no download, and runs entirely in the browser. That "just works" quality is the result of specific choices, and a few honest mistakes along the way. This is the behind-the-scenes story of wqnlll Game Center — how the games were made, what we care about, and the design rules we hold ourselves to. We share it partly because transparency matters, and partly because we genuinely enjoy the craft.</p>
+
+    <h2>Where it started</h2>
+    <p>The project began with a simple observation: watching kids struggle to memorize English words. Flashcards and vocabulary books worked for some, but the moment any child discovered a game, the resistance to "study" vanished. It felt wrong that learning had to be a chore. So we set out to build a game that taught vocabulary the way games naturally teach anything — by making the player want to keep going.</p>
+    <p>The first release was a classic brick breaker mechanic, but with a twist that turned out to be the whole point: <strong>every brick is a word card</strong>. English word on the brick, and when you break it, the word is spoken aloud with its Chinese meaning. Boredom, the enemy of vocabulary, simply has no room in a game that asks you to keep your eye on a moving ball.</p>
+
+    <h2>Learning (and re-learning) the technology</h2>
+    <p>Every game here is built with plain web technologies — HTML, CSS and JavaScript — rendering to the HTML5 Canvas. No third-party engine, no installable runtime. That was a deliberate choice for support and portability: anything with a modern browser, phone or desktop, can play the same game. Once we had the core loop working in one game, the technique carried over to the next — a tank shooter, a math facts game, and a real-time strategy game all rest on the same foundation.</p>
+    <p>We also made our share of mistakes, and they were instructive. Early on, we placed ad placeholders on a screen with no meaningful content, which taught us a hard rule about showing advertising honestly. We misjudged how a game would behave on a real phone versus a test environment, and had to rework input handling, since touches are not just tiny mouse clicks. Each of these failures fed directly into design rules we now never break.</p>
+
+    <h2>Our design rules</h2>
+    <p>Over time we settled on four rules that shape everything on the site:</p>
+    <ul>
+      <li><strong>Free and complete.</strong> No paywall, no "premium" half of the game, no registration before you play. Opening the page is the whole experience.</li>
+      <li><strong>Safely ad-lite.</strong> A game should never be interrupted by a full-screen ad in the middle of play. When advertising exists, it is modest and never hijacks the experience. No ads at all run on screens that carry no real content.</li>
+      <li><strong>Kid-first privacy.</strong> The games collect nothing and upload nothing. Scores and progress stay in the browser's own local storage. There is no account to create and therefore no personal data to lose.</li>
+      <li><strong>Honest and transparent.</strong> We tell you who made this, how to reach us, and what our <a href="privacy.html">privacy policy</a> actually says. No dark patterns, no surprise downloads, nothing to clean up after.</li>
+    </ul>
+
+    <h2>Teaching was the point</h2>
+    <p>Beyond entertainment, the games carry a learning purpose. English Brick Breaker pairs every word with pronunciation and context rather than rote repetition. The math game forces the kind of timed recall that research shows turns number facts from conscious effort into instant answers. We write plain guides — on <a href="learn-english-with-games.html">learning English through games</a>, on <a href="learn-math-facts-through-games.html">math fact fluency</a>, on <a href="vocabulary-games-vs-flashcards.html">why games beat flashcards</a> — because a game is most useful when the learner understands <em>why</em> it works.</p>
+
+    <h2>An open approach</h2>
+    <p>We keep the site open and accountable: the <a href="about.html">about page</a> names the creator and links to our public <a href="https://github.com/wqnlll/wqnlll.github.io/issues" target="_blank" rel="noopener">issue tracker</a> for feedback and bug reports. If something is broken, unclear, or could be better, we would rather hear about it than have it sit quietly in the background. This is a site built by a developer who uses it, for people who actually play the games — and that relationship only works if we keep listening.</p>
+
+    <div class="callout">
+      🎮 Curious how a single page becomes a game? Read <a href="how-html5-browser-games-work.html">How HTML5 Browser Games Work</a>, or just jump straight in and <a href="index.html">play something</a>.
+    </div>
+
+    <h2>What's next</h2>
+    <p>The library keeps growing, and each new game is an excuse to learn one more technique and then give it away. Our guiding question for every addition remains the same as it was for the first brick breaker: does this make learning — or play — genuinely better for the person on the other side of the screen? If it does, it earns its place. If it does not, no matter how clever the code, it does not.</p>
+
+    <h2>The bottom line</h2>
+    <p>Browser games feel like magic, but they are assembled from plain tools, patient iteration, and a clear set of values. We are proud that <a href="index.html">every game here</a> is free, install-free, and built with the player — especially the young ones — in mind. The journey has been one of constant learning, and the best part of teaching through games is that we keep learning alongside the players.</p>
+  </article>
+
+  <div class="cta">
+    <p>Meet the team and the rules:</p>
+    <a class="btn" href="about.html">About Us</a>
+  </div>
+</main>
+<footer><a href="index.html">← Back to Game Center</a> &nbsp;|&nbsp; <a href="about.html">About</a> &nbsp;|&nbsp; <a href="privacy.html">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms-of-service.html">Terms of Service</a></footer>
+</body>
+</html>

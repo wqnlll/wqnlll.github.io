@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9748302823213677" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How do browser games work without downloads? A plain-English tour of HTML5, JavaScript and the Canvas API — the technology behind free in-browser games like brick breakers and real-time strategy games.">
+<meta property="og:title" content="How HTML5 Browser Games Work (No Downloads Explained)">
+<meta property="og:description" content="Ever wonder how a game runs right in your browser with nothing to install? Here's the technology behind HTML5 games: JavaScript, Canvas, and how one web page becomes a game.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wqnlll.github.io/how-html5-browser-games-work.html">
+<meta property="og:image" content="https://wqnlll.github.io/og-image.png">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="wqnlll Game Center">
+<link rel="canonical" href="https://wqnlll.github.io/how-html5-browser-games-work.html">
+<title>How HTML5 Browser Games Work (No Downloads Explained) | wqnlll Game Center</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How HTML5 Browser Games Work (No Downloads Explained)",
+  "description": "A plain-English tour of the technology behind free in-browser games: JavaScript, Canvas, and the game loop.",
+  "image": "https://wqnlll.github.io/og-image.png",
+  "author": { "@type": "Person", "name": "wqnlll" },
+  "publisher": { "@type": "Organization", "name": "wqnlll Game Center", "logo": { "@type": "ImageObject", "url": "https://wqnlll.github.io/og-image.png" } },
+  "datePublished": "2026-09-03",
+  "dateModified": "2026-09-03",
+  "mainEntityOfPage": "https://wqnlll.github.io/how-html5-browser-games-work.html",
+  "inLanguage": "en"
+}
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a1a; color: #d8d8ea; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; line-height: 1.85; }
+  header { display: flex; gap: 18px; align-items: center; padding: 14px 20px; background: rgba(10,10,26,.92); border-bottom: 1px solid #26263f; position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+  header a { color: #9a9ab0; text-decoration: none; font-size: 14px; }
+  header a:hover { color: #00f0ff; }
+  main { max-width: 780px; margin: 0 auto; padding: 36px 20px 56px; }
+  h1 { font-size: 32px; color: #fff; line-height: 1.4; margin-bottom: 10px; }
+  .byline { color: #666; font-size: 14px; margin-bottom: 26px; border-bottom: 1px solid #1a1a30; padding-bottom: 18px; }
+  .byline a { color: #00f0ff; }
+  p { margin-bottom: 18px; font-size: 16px; }
+  h2 { font-size: 22px; color: #00f0ff; margin: 30px 0 12px; }
+  ul, ol { padding-left: 22px; margin-bottom: 18px; }
+  li { margin-bottom: 10px; font-size: 16px; }
+  li strong { color: #fff; }
+  pre { background: #13132a; border: 1px solid #26263f; border-radius: 8px; padding: 14px; overflow-x: auto; color: #9ff; font-size: 14px; margin-bottom: 18px; }
+  code { font-family: 'Consolas','Courier New',monospace; }
+  .callout { background: #13132a; border: 1px solid #00f0ff33; border-left: 3px solid #00f0ff; border-radius: 10px; padding: 16px 18px; margin: 22px 0; font-size: 15px; color: #b8b8cc; }
+  .callout a { color: #00f0ff; }
+  .cta { text-align: center; background: #13132a; border: 1px solid #26263f; border-radius: 12px; padding: 22px; margin-top: 30px; }
+  .cta .btn { display: inline-block; background: #00f0ff; color: #0a0a1a; font-weight: 700; text-decoration: none; padding: 10px 24px; border-radius: 8px; margin-top: 6px; }
+  .cta .btn:hover { background: #5ff7ff; }
+  footer { text-align: center; color: #555; font-size: 13px; padding: 10px 0 30px; }
+  footer a { color: #00f0ff; text-decoration: none; }
+  @media (max-width: 600px) { h1 { font-size: 26px; } }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html">← Game Center</a>
+  <a href="how-we-built-our-browser-games.html">How We Build</a>
+</header>
+<main>
+  <article>
+    <h1>How HTML5 Browser Games Work (No Downloads Explained)</h1>
+    <div class="byline">By <a href="about.html">wqnlll</a> · September 3, 2026 · 8 min read</div>
+
+    <p>It still surprises people: you click a link, and a full game — a brick breaker with sound, a tank shooter, even a real-time strategy match — appears in your browser. No install wizard, no "100 MB required," no update nag. The game is simply <em>there</em>. The magic behind this is not a single technology but a small, elegant stack that has quietly become the standard for casual gaming on the web. This article explains how it works, in plain English, using the games on this very site as examples.</p>
+
+    <h2>One web page, one game</h2>
+    <p>At its core, a browser game is just a <strong>web page</strong> — nothing more exotic than a page you have read a thousand times. The page is written in HTML (for structure and text), CSS (for colors and layout), and JavaScript (for behavior). But where a normal page changes once and sits still, a game page keeps changing ~60 times every second, responding to your keys and the mouse with a relentless game loop.</p>
+
+    <h2>The canvas: the game's drawing board</h2>
+    <p>A typical game doesn't render text and buttons like a document. Instead it draws every single frame onto a <strong>canvas</strong> — a programmable drawing surface that is part of the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API" target="_blank" rel="noopener">HTML5 Canvas API</a> (Mozilla's free documentation is a great reference). Think of a canvas as a digital easel wide enough for your screen. Each of the 60 frames per second, the game clears the canvas and redraws everything: the paddle, the ball, the bricks, the score.</p>
+
+    <p>That sounds heavy, but modern browsers are extremely fast at this exact task. Drawing a few hundred colored rectangles 60 times a second is trivial for even a modest phone. Here is the beating heart of almost every browser game — a loop that runs forever:</p>
+
+    <pre><code>function gameLoop() {
+  update();   // move the ball, check collisions, apply physics
+  draw();     // clear the canvas, redraw every object
+  requestAnimationFrame(gameLoop); // schedule the next frame
+}
+gameLoop(); // start the loop</code></pre>
+
+    <h2>The game loop: update, then draw</h2>
+    <p>Every frame, the game does two things. First it <strong>updates</strong> the game's state: it reads your keyboard or touch input, moves the ball by the speed multiplied by the tiny time since the last frame, and checks whether the ball just hit a brick, the paddle, or the wall. Then it <strong>draws</strong> that up-to-date state to the canvas. Do this sixty times a second and you get the illusion of smooth, continuous motion — the same trick movie projectors have used for over a century, just done per-frame on a web page.</p>
+
+    <h2>Physics without a physics engine</h2>
+    <p>Believe it or not, most browser games do not ship a physics engine. The "physics" in a brick breaker or a tank game is a few lines of code: when the ball overlaps a rectangle (a brick), reverse its direction and remove the brick. That is collision detection in its simplest, most readable form. Complex 3D games may add a library, but the classic arcade feel that many of us love comes from math you could write on a napkin.</p>
+
+    <h2>Sound without plugins</h2>
+    <p>Sound used to be the hard part — browsers once needed plug-ins to make noise. Today the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" target="_blank" rel="noopener">Web Audio API</a> lets a page synthesize effects and speech directly. That is why some of the games here can <em>speak words out loud</em> when you break a brick: they are using the browser's built-in speech or audio generation, no audio file required.</p>
+
+    <h2>Why the "no download" promise is real and safe</h2>
+    <p>Because the whole game is just a web page, there is literally nothing to install. The moment you navigate away, or close the tab, the game is gone — nothing was added to your computer. This has a real safety benefit, especially for children's games: nothing gets downloaded onto the family machine, so there is no unwanted software and no app-store permissions to worry about. You are, in effect, renting a few minutes of a game that lives on a server, and the moment you leave, it is no longer there. Progress can be saved locally in your browser's own storage, but the game itself is a guest, not a resident.</p>
+
+    <div class="callout">
+      🎮 Put the theory to work: <a href="英语打砖块.html">English Brick Breaker</a> shows off canvas drawing, collision detection and even read-aloud word pronunciation — all inside one page. Or see how a bigger game scales with the <a href="红警rts.html">browser RTS</a>.
+    </div>
+
+    <h2>From simple to complex: a game grows</h2>
+    <p>A single canvas and a loop can take you surprisingly far. A brick breaker is a paddle, a ball, and an array of bricks — a few hundred lines of code. A real-time strategy game stacks more systems on the same foundation: a map, units that need pathfinding, a resource economy, and an AI opponent that decides what to build. None of these are separate technologies — they are more code, more state, and better algorithms, all still drawn by a canvas and driven by the same loop.</p>
+
+    <h2>The bottom line</h2>
+    <p>Browser games work because a webpage can redraw itself fast enough to fool your eye into seeing motion, and can read your input so the picture responds to you in real time. That HTML + CSS + JavaScript + Canvas stack is open, free, and runs on any device with a browser — which is why you can play the same game on your laptop at noon and your phone on the bus, with nothing to install either time. The web quietly became a games console, and you were probably already holding one.</p>
+  </article>
+
+  <div class="cta">
+    <p>See the technology in action:</p>
+    <a class="btn" href="index.html">Play the Games</a>
+  </div>
+</main>
+<footer><a href="index.html">← Back to Game Center</a> &nbsp;|&nbsp; <a href="about.html">About</a> &nbsp;|&nbsp; <a href="privacy.html">Privacy Policy</a> &nbsp;|&nbsp; <a href="terms-of-service.html">Terms of Service</a></footer>
+</body>
+</html>
