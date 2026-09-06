@@ -22,6 +22,8 @@
              background:rgba(0,0,0,.6); color:#fff; text-align:center; }
   #overlay h1 { font-size:48px; color:#0ff; text-shadow:0 0 15px #0ff; margin:0 0 10px; }
   #overlay p  { font-size:17px; line-height:1.9; color:#ccc; }
+  #overlay .en-sub { margin:0 0 8px; color:#6cf; font-size:15px; letter-spacing:1px; }
+  #overlay .en-help { margin-top:8px; font-size:15px; line-height:1.9; color:#a8d4ff; background:rgba(255,255,255,.05); border:1px solid rgba(120,200,255,.28); border-radius:10px; padding:10px 16px; text-align:left; max-width:720px; }
   #overlay button { margin-top:20px; padding:12px 40px; font-size:20px; background:#0ff; color:#000;
                     border:none; border-radius:6px; cursor:pointer; }
   #overlay button:hover { background:#fff; }
@@ -39,13 +41,21 @@
 <div id="warn" class="hidden">⚠ WARNING ⚠</div>
 <div id="overlay">
   <h1>3D 打飞机 Pro</h1>
+  <p class="en-sub">3D Plane Battle · Free browser shooter game</p>
   <p id="msg">
     WASD / 方向键 移动 &nbsp;|&nbsp; 空格 / 鼠标左键 射击 &nbsp;|&nbsp; <span style="color:#fc0">Shift 加力</span><br>
     <span style="color:#0f6">◆ 绿色</span> 回血 &nbsp;
     <span style="color:#fc0">◆ 黄色</span> 散弹 &nbsp;
     <span style="color:#39f">◆ 蓝色</span> 护盾<br>
-    每隔一段分数会出现 <span style="color:#f6f">BOSS</span>，击败它有大量分数和道具！  </p>
-  <button id="startBtn">开始游戏</button>
+    每隔一段分数会出现 <span style="color:#f6f">BOSS</span>，击败它有大量分数和道具！
+  </p>
+  <p class="en-help">
+    <b>HOW TO PLAY</b><br>
+    Move: <b>WASD</b> / <b>Arrow Keys</b> &nbsp;|&nbsp; Shoot: <b>Space</b> / <b>Left Click</b> &nbsp;|&nbsp; Boost: <b>Shift</b><br>
+    Pickups: <span style="color:#0f6">■ Green</span> = Heal &nbsp;·&nbsp; <span style="color:#fc0">■ Yellow</span> = Spread shot &nbsp;·&nbsp; <span style="color:#39f">■ Blue</span> = Shield<br>
+    A <span style="color:#f6f">BOSS</span> shows up from time to time — beat it for bonus score &amp; drops!
+  </p>
+  <button id="startBtn">开始游戏 · <span style="font-size:16px">START</span></button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
