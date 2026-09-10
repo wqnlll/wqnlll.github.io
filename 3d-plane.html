@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9748302823213677" crossorigin="anonymous"></script>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script src="i18n.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="3D 打飞机 Pro · 免费网页版 3D 飞行射击游戏！用 Three.js / WebGL 渲染的立体空战：躲避弹幕、击落敌机、拾取回血/散弹/护盾道具，还有 BOSS 战。键盘鼠标即点即玩，手机也能玩，无需下载。Free 3D browser flight shooter game." data-i18n="3d.desc">
+<meta name="keywords" content="3D打飞机,打飞机,飞行射击,飞机游戏,网页3D游戏,WebGL游戏,Three.js,免费在线游戏,弹幕射击,BOSS战,3d plane game,flight shooter,browser 3d game,webgl game,free online shooter" data-i18n="3d.keywords">
+<meta property="og:title" content="3D 打飞机 Pro · 免费网页 3D 飞行射击 | Free 3D Browser Shooter" data-i18n="3d.ogTitle">
+<meta property="og:description" content="Three.js 渲染的免费网页 3D 飞行射击：躲避弹幕、击落敌机、拾取道具，挑战 BOSS。键盘鼠标即点即玩，无需下载！" data-i18n="3d.ogDesc">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wqnlll.github.io/3d-plane.html">
+<meta property="og:image" content="https://wqnlll.github.io/og-image.png">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="3D 打飞机 Pro · 免费网页 3D 飞行射击" data-i18n="3d.twTitle">
+<meta name="twitter:description" content="Three.js 免费网页 3D 飞行射击，躲避弹幕挑战 BOSS，无需下载！" data-i18n="3d.twDesc">
+<link rel="canonical" href="https://wqnlll.github.io/3d-plane.html">
+<title data-i18n="3d.title">3D Plane Battle — Free Browser 3D Flight Shooter Game</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "VideoGame",
+      "name": "3D Plane Battle — Free Browser 3D Flight Shooter",
+      "description": "A free 3D flight shooter that runs entirely in your browser, rendered with Three.js and WebGL. Fly through a starfield, dodge bullet patterns, shoot down enemy craft, collect heal/spread-shot/shield pickups and fight bosses. No download, no install — works with keyboard and mouse on desktop and with touch on mobile.",
+      "genre": "Flight shooter",
+      "gamePlatform": "Web Browser",
+      "playMode": "SinglePlayer",
+      "operatingSystem": "Any (desktop, tablet and mobile)",
+      "inLanguage": "en",
+      "url": "https://wqnlll.github.io/3d-plane.html",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is this 3D flight shooter really free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is completely free, with no downloads, no installs and no account. Open the page and the game starts in your browser immediately." }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the controls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Move with WASD or the arrow keys, shoot with the spacebar or the left mouse button, and hold Shift to boost. On mobile you steer with touch controls." }
+        },
+        {
+          "@type": "Question",
+          "name": "What do the coloured pickups do?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Green restores health, yellow upgrades you to a spread shot that covers more of the screen, and blue activates a shield that absorbs damage. Grabbing the right one at the right moment is what turns a losing run around." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work on a phone or a low-end laptop?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The game is built on WebGL and is lightweight enough to run on phones and older laptops. Touch controls are included, so no keyboard is required." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a1a;
+    --cyan: #00f0ff;
+    --magenta: #ff00aa;
+    --warm: #e8e8f0;
+    --dim: #9a9ab0;
+    --card: #14142b;
+    --border: #26263f;
+  }
+  html, body { background: var(--bg); }
+  body {
+    color: var(--warm);
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  main { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 24px 16px 40px; }
+  .topbar {
+    display: flex; gap: 18px; align-items: center;
+    padding: 14px 20px; background: rgba(10,10,26,.85);
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5;
+  }
+  .topbar a { color: var(--dim); text-decoration: none; font-size: 14px; }
+  .topbar a:hover { color: var(--cyan); }
+  h1 { font-size: 28px; margin: 22px 0 6px; color: #fff; }
+  h1 .en { display: block; font-size: 13px; color: var(--cyan); font-weight: 400; letter-spacing: .5px; margin-top: 4px; }
+  .sub { color: var(--dim); font-size: 15px; margin-bottom: 20px; line-height: 1.7; }
+  .frame { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 0 30px rgba(0,240,255,.08); }
+  .frame iframe { display: block; width: 100%; height: 75vh; min-height: 540px; border: 0; background: #1a1a1a; }
+  .frame-links { display: flex; gap: 16px; margin: 10px 0 26px; font-size: 14px; flex-wrap: wrap; }
+  .frame-links a { color: var(--cyan); text-decoration: none; }
+  .frame-links a:hover { text-decoration: underline; }
+  .block {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px 22px; margin-bottom: 18px;
+  }
+  .block h2 { font-size: 19px; margin-bottom: 12px; color: #fff; }
+  .block ul { list-style: none; }
+  .block li { padding: 7px 0 7px 4px; color: var(--warm); font-size: 15px; line-height: 1.7; }
+  .block li strong { color: var(--cyan); }
+  .block p { color: var(--warm); font-size: 15px; line-height: 1.8; }
+  .block p + p { margin-top: 10px; }
+  .back { text-align: center; margin: 26px 0 0; }
+  .back a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+  .back a:hover { text-decoration: underline; }
+  footer {
+    position: relative; z-index: 1;
+    text-align: center; color: #777; font-size: 13px;
+    padding: 6px 0 24px;
+  }
+  @media (max-width: 600px) {
+    .frame iframe { height: 80vh; min-height: 500px; }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a href="index.html" data-i18n="common.backCenter">← 游戏中心</a>
+  <a href="about.html" data-i18n="common.navAbout">关于</a>
+  <a href="privacy.html" data-i18n="common.navPrivacy">隐私</a>
+</header>
+<main>
+  <h1><span data-i18n="3d.h1">✈️ 3D 打飞机 Pro</span>
+    <span class="en" data-i18n="3d.h1en">3D Plane Battle — Free Browser Flight Shooter</span>
+  </h1>
+  <p class="sub" data-i18n="3d.sub">用 Three.js 渲染的免费网页 3D 飞行射击游戏：驾驶战机在星空里穿梭，躲避弹幕、击落敌机，靠绿色回血、黄色散弹、蓝色护盾三种道具撑过一波又一波，每隔一段分数还会遇到 BOSS。键盘鼠标即点即玩，手机触屏也能玩，无需下载。</p>
+
+  <div class="frame">
+    <iframe src="3d-plane-game.html" title="3D打飞机 Pro 网页版3D飞行射击游戏" loading="lazy" allow="autoplay; fullscreen"></iframe>
+  </div>
+  <p class="frame-links">
+    <a href="3d-plane-game.html" target="_blank" rel="noopener" data-i18n="3d.openNew">↗ 在新窗口打开游戏</a>
+  </p>
+
+  <section class="block">
+    <h2 data-i18n="3d.featuresTitle">🎯 核心特色</h2>
+    <ul>
+      <li data-i18n="3d.f1"><strong>真 3D 立体空战</strong>：Three.js / WebGL 渲染，星空背景 + 能量网格 + 粒子爆炸</li>
+      <li data-i18n="3d.f2"><strong>三种道具改变战局</strong>：绿色回血、黄色散弹、蓝色护盾，捡对道具就能翻盘</li>
+      <li data-i18n="3d.f3"><strong>BOSS 战</strong>：每隔一段分数出现 BOSS，击败后给大量分数和稀有道具</li>
+      <li data-i18n="3d.f4"><strong>Shift 加力冲刺</strong>：关键时刻拉开距离或抢道具，速度感十足</li>
+      <li data-i18n="3d.f5"><strong>PC + 手机</strong>：键鼠和触屏都能玩，打开网页即开始，不用下载安装</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2 data-i18n="3d.howTitle">🕹 玩法说明</h2>
+    <ul>
+      <li data-i18n="3d.how1">用 <strong>WASD 或方向键</strong>移动战机，在三维空间里上下左右闪避</li>
+      <li data-i18n="3d.how2">按 <strong>空格键或鼠标左键</strong>射击，长按可连续开火</li>
+      <li data-i18n="3d.how3">按住 <strong>Shift 加力</strong>可以短时间冲刺提速</li>
+      <li data-i18n="3d.how4">捡道具：<strong>绿色回血、黄色散弹、蓝色护盾</strong>，血少时优先抢绿色</li>
+      <li data-i18n="3d.how5">分数攒到一定值会刷出 <strong>BOSS</strong>，集中火力打掉它拿大量分数</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2 data-i18n="3d.tipTitle">💡 小贴士</h2>
+    <p data-i18n="3d.tip">这是<strong>单机闯关</strong>玩法，打开网页就能玩，不需要注册或安装。3D 射击比平面射击更考验距离判断：敌机远近会影响它子弹到达你的时间，别只盯着屏幕中心。手机端用触屏操控，画面会自动适配窗口大小。</p>
+  </section>
+
+  <section class="block">
+    <h2>✈️ How to Play 3D Plane Battle</h2>
+    <p>You fly a fighter through a 3D starfield. Move with <strong>WASD or the arrow keys</strong>, fire with the <strong>spacebar or left mouse button</strong>, and hold <strong>Shift</strong> to boost. Enemies come at you from depth, so the threat is not only left and right but also near and far — a shot that looks far away can reach you faster than you expect.</p>
+    <ul>
+      <li><strong>Green pickup</strong>：restores health. Grab it early rather than at the last second.</li>
+      <li><strong>Yellow pickup</strong>：upgrades you to a spread shot, covering far more of the screen.</li>
+      <li><strong>Blue pickup</strong>：activates a shield that soaks damage — best saved for a boss.</li>
+      <li><strong>Bosses</strong>：appear once your score crosses a threshold. Focus fire and keep moving.</li>
+      <li><strong>Boost</strong>：Shift gives you a burst of speed to escape a bullet wall or reach a pickup.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2>❓ Frequently Asked Questions</h2>
+    <p><strong>Is this 3D flight shooter really free?</strong><br>
+    Yes. It is completely free, with no downloads, no installs and no account. Open the page and the game starts in your browser immediately.</p>
+    <p><strong>What are the controls?</strong><br>
+    Move with WASD or the arrow keys, shoot with the spacebar or the left mouse button, and hold Shift to boost. On mobile you steer with touch controls.</p>
+    <p><strong>What do the coloured pickups do?</strong><br>
+    Green restores health, yellow upgrades you to a spread shot that covers more of the screen, and blue activates a shield that absorbs damage. Grabbing the right one at the right moment is what turns a losing run around.</p>
+    <p><strong>Does it work on a phone or a low-end laptop?</strong><br>
+    Yes. The game is built on WebGL and is lightweight enough to run on phones and older laptops. Touch controls are included, so no keyboard is required.</p>
+  </section>
+
+  <section class="block">
+    <h2>🎁 Pickups are the real skill ceiling</h2>
+    <p>Shooting is the easy part. What separates a long run from a short one is how you treat the three pickups. Green restores health, and the temptation is to grab it the moment your health bar dips — but if the screen is calm, that is exactly the wrong time. Take the damage, keep your positioning, and save the green for the moment a boss appears or a bullet wall closes in and you have nowhere to run. A heal used at full health is a heal wasted.</p>
+    <p>Yellow is the opposite: it is pure offence, and it rewards aggression. A spread shot covers a much wider slice of the screen, which means you clear waves faster and reach the next score threshold sooner. Blue is the defensive panic button — a shield that lets you fly straight through a pattern you would otherwise have to dodge. Learning which one you actually need, rather than grabbing whichever floats past first, is most of the game's depth.</p>
+  </section>
+
+  <section class="block">
+    <h2>👹 Reading a boss instead of reacting to it</h2>
+    <p>Bosses in a flight shooter are not really tests of reflexes — they are tests of memory. Every boss telegraphs what it is about to do before it does it, and the first attempt is usually where you learn the pattern, not where you beat it. Watch where the shots originate rather than where they currently are, and you will find that most patterns have a safe lane that stays safe for the whole attack.</p>
+    <p>The mistake players make is panic-boosting. Shift feels like the answer to everything, but a boost in the wrong direction flies you straight into the next volley. Save the boost for the gap between two attacks, when repositioning is cheap. If you are low on health when a boss spawns, spend the first phase collecting rather than shooting — surviving the pattern matters more than damage output, because a boss you outlast is a boss you eventually beat.</p>
+  </section>
+
+  <section class="block">
+    <h2>🧊 Why 3D shooters are harder than they look</h2>
+    <p>A traditional 2D shooter asks you to judge a single plane: left, right, and the timing of the bullets coming at you. A 3D flight shooter adds depth, and depth breaks the intuition most players bring with them. In a flat game, two objects at the same screen position are at the same place. Here they are not — an enemy that appears small and distant may be closing fast, and one that looks nearby may already be behind you.</p>
+    <p>That is why the starfield and the energy grid on the ground are not just decoration. They are depth cues: the grid gives you a sense of how far you have travelled and how fast, and the stars drifting past tell you your speed even when nothing is on screen. Players who learn to read those cues stop being surprised by enemies arriving from the distance, and their runs get dramatically longer without any change in how well they aim.</p>
+    <p>If you enjoy this style of game, the site also has a <a href="rts.html">real-time strategy game</a> and a <a href="english-brick-breaker.html">vocabulary brick breaker</a> that teaches English words while you play.</p>
+  </section>
+
+  <p class="back"><a href="index.html" data-i18n="common.backHome">← 返回首页 · 更多游戏</a></p>
+</main>
+<footer>📊 <span data-i18n="common.statsLabel">本页被访问 </span><span id="busuanzi_value_page_pv"></span><span data-i18n="common.statsUnit"> 次</span><p style="text-align:center;color:#777;font-size:0.85em;padding:12px 0 6px;"><a href="index.html" style="color:#f44;">Home</a> &nbsp;·&nbsp; <a href="about.html" style="color:#f44;">About</a> &nbsp;·&nbsp; <a href="privacy.html" style="color:#f44;">Privacy Policy</a> &nbsp;·&nbsp; <a href="terms-of-service.html" style="color:#f44;">Terms of Service</a></p></footer>
+</body>
+</html>

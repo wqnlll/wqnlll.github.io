@@ -282,7 +282,32 @@
     'rts.how4':     { zh: '把敌方 AI 的<strong>基地拆掉</strong>就赢；自己的基地被打掉就输', en: '<strong>Win by destroying</strong> the enemy AI base; lose if your own base falls' },
     'rts.how5':     { zh: '选中单位后按 <strong>A</strong> 可强制攻击指定位置（拆建筑清矿场很好用）', en: 'With units selected, press <strong>A</strong> to force-attack a spot (great for demolishing buildings)' },
     'rts.tipTitle': { zh: '💡 小贴士', en: '💡 Tips' },
-    'rts.tip':      { zh: '网站版是<strong>单机 AI 对战</strong>，打开即玩、不需要服务器。滚轮缩放、方向键平移视野；地图、建筑、兵种的详细数值见游戏内玩法指南。想试 3D 渲染点上面的「3D 渲染模式」，设备不支持时会自动回退到 2D。', en: 'The site version is <strong>single-player vs AI</strong> — click and play, no server needed. Scroll to zoom, arrows to pan; full unit/building stats are in the in-game guide. Try 3D mode above — it falls back to 2D automatically if unsupported.' }
+    'rts.tip':      { zh: '网站版是<strong>单机 AI 对战</strong>，打开即玩、不需要服务器。滚轮缩放、方向键平移视野；地图、建筑、兵种的详细数值见游戏内玩法指南。想试 3D 渲染点上面的「3D 渲染模式」，设备不支持时会自动回退到 2D。', en: 'The site version is <strong>single-player vs AI</strong> — click and play, no server needed. Scroll to zoom, arrows to pan; full unit/building stats are in the in-game guide. Try 3D mode above — it falls back to 2D automatically if unsupported.' },
+    '3d.title':     { zh: '3D 打飞机 Pro · 免费网页3D飞行射击游戏 | Free Browser 3D Shooter', en: '3D Plane Battle — Free Browser 3D Flight Shooter Game' },
+    '3d.desc':      { zh: '3D 打飞机 Pro · 免费网页版 3D 飞行射击游戏！用 Three.js / WebGL 渲染的立体空战：躲避弹幕、击落敌机、拾取回血/散弹/护盾道具，还有 BOSS 战。键盘鼠标即点即玩，手机也能玩，无需下载。Free 3D browser flight shooter game.', en: '3D Plane Battle — a free 3D flight shooter that runs in your browser, rendered with Three.js and WebGL. Dodge bullet patterns, shoot down enemy craft, collect heal/spread-shot/shield pickups and fight bosses. Desktop & mobile, no download. 免费网页3D飞行射击游戏。' },
+    '3d.keywords':  { zh: '3D打飞机,打飞机,飞行射击,飞机游戏,网页3D游戏,WebGL游戏,Three.js,免费在线游戏,弹幕射击,BOSS战,3d plane game,flight shooter,browser 3d game,webgl game,free online shooter', en: '3d plane game,flight shooter,browser 3d game,webgl game,three.js game,free online shooter,bullet hell,boss fight,3D打飞机,飞行射击,打飞机' },
+    '3d.ogTitle':   { zh: '3D 打飞机 Pro · 免费网页 3D 飞行射击 | Free 3D Browser Shooter', en: '3D Plane Battle · Free Browser 3D Flight Shooter' },
+    '3d.ogDesc':    { zh: 'Three.js 渲染的免费网页 3D 飞行射击：躲避弹幕、击落敌机、拾取道具，挑战 BOSS。键盘鼠标即点即玩，无需下载！', en: 'A free browser 3D flight shooter rendered with Three.js: dodge bullet patterns, shoot down enemies, grab pickups and fight bosses. Click to play, no download!' },
+    '3d.twTitle':   { zh: '3D 打飞机 Pro · 免费网页 3D 飞行射击', en: '3D Plane Battle · Free Browser 3D Shooter' },
+    '3d.twDesc':    { zh: 'Three.js 免费网页 3D 飞行射击，躲避弹幕挑战 BOSS，无需下载！', en: 'Free Three.js browser 3D flight shooter — dodge bullets, fight bosses, no download!' },
+    '3d.h1':        { zh: '✈️ 3D 打飞机 Pro', en: '✈️ 3D Plane Battle' },
+    '3d.h1en':      { zh: '3D Plane Battle — Free Browser Flight Shooter', en: '免费网页 3D 飞行射击游戏' },
+    '3d.sub':       { zh: '用 Three.js 渲染的免费网页 3D 飞行射击游戏：驾驶战机在星空里穿梭，躲避弹幕、击落敌机，靠绿色回血、黄色散弹、蓝色护盾三种道具撑过一波又一波，每隔一段分数还会遇到 BOSS。键盘鼠标即点即玩，手机触屏也能玩，无需下载。', en: 'A free browser 3D flight shooter rendered with Three.js: fly a fighter through a starfield, dodge bullet patterns, shoot down enemies, and survive wave after wave with three pickups — green restores health, yellow upgrades to a spread shot, blue raises a shield. A boss shows up every so many points. Keyboard/mouse or touch, no download needed.' },
+    '3d.openNew':   { zh: '↗ 在新窗口打开游戏', en: '↗ Open game in new window' },
+    '3d.featuresTitle':{ zh: '🎯 核心特色', en: '🎯 Key Features' },
+    '3d.f1':        { zh: '<strong>真 3D 立体空战</strong>：Three.js / WebGL 渲染，星空背景 + 能量网格 + 粒子爆炸', en: '<strong>True 3D combat</strong>: rendered with Three.js / WebGL — starfield, energy grid and particle explosions' },
+    '3d.f2':        { zh: '<strong>三种道具改变战局</strong>：绿色回血、黄色散弹、蓝色护盾，捡对道具就能翻盘', en: '<strong>Three pickups, three decisions</strong>: green heals, yellow gives a spread shot, blue raises a shield' },
+    '3d.f3':        { zh: '<strong>BOSS 战</strong>：每隔一段分数出现 BOSS，击败后给大量分数和稀有道具', en: '<strong>Boss fights</strong>: a boss appears every so many points and drops big score plus rare pickups' },
+    '3d.f4':        { zh: '<strong>Shift 加力冲刺</strong>：关键时刻拉开距离或抢道具，速度感十足', en: '<strong>Boost with Shift</strong>: burst of speed to break away or beat an enemy to a pickup' },
+    '3d.f5':        { zh: '<strong>PC + 手机</strong>：键鼠和触屏都能玩，打开网页即开始，不用下载安装', en: '<strong>PC + mobile</strong>: keyboard/mouse and touch both work — open the page and play, nothing to install' },
+    '3d.howTitle':  { zh: '🕹 玩法说明', en: '🕹 How to Play' },
+    '3d.how1':      { zh: '用 <strong>WASD 或方向键</strong>移动战机，在三维空间里上下左右闪避', en: 'Move with <strong>WASD or the arrow keys</strong> and dodge in three dimensions' },
+    '3d.how2':      { zh: '按 <strong>空格键或鼠标左键</strong>射击，长按可连续开火', en: 'Fire with the <strong>spacebar or left mouse button</strong> — hold it down to keep shooting' },
+    '3d.how3':      { zh: '按住 <strong>Shift 加力</strong>可以短时间冲刺提速', en: 'Hold <strong>Shift</strong> to boost for a short burst of extra speed' },
+    '3d.how4':      { zh: '捡道具：<strong>绿色回血、黄色散弹、蓝色护盾</strong>，血少时优先抢绿色', en: 'Grab pickups: <strong>green heals, yellow spreads your shot, blue shields</strong> — take green first when low' },
+    '3d.how5':      { zh: '分数攒到一定值会刷出 <strong>BOSS</strong>，集中火力打掉它拿大量分数', en: 'A <strong>boss</strong> spawns at set score thresholds — focus fire on it for a large payout' },
+    '3d.tipTitle':  { zh: '💡 小贴士', en: '💡 Tips' },
+    '3d.tip':       { zh: '这是<strong>单机闯关</strong>玩法，打开网页就能玩，不需要注册或安装。3D 射击比平面射击更考验距离判断：敌机远近会影响它子弹到达你的时间，别只盯着屏幕中心。手机端用触屏操控，画面会自动适配窗口大小。', en: 'This is a <strong>single-player</strong> game — open the page and play, no account or install. 3D shooting tests distance judgement more than flat shooters do: how far away an enemy is changes when its shots reach you, so do not stare only at the centre of the screen. On mobile, touch controls are used and the view adapts to your window.' }
   };
 
   /* ===== 语言检测 ===== */
