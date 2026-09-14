@@ -168,7 +168,7 @@
     'brick.infoTitle':  { zh: '📚 英语打砖块 · 学单词神器', en: '📚 English Brick Breaker · Learn Words' },
     'brick.infoDesc':   { zh: '将小学英语单词和经典打砖块玩法巧妙结合，让孩子在游戏中不知不觉记住单词！', en: 'Combines primary-school English words with classic brick-breaker gameplay, so kids memorize words effortlessly while playing!' },
     'brick.featuresTitle':{ zh: '🎯 核心特色',   en: '🎯 Key Features' },
-    'brick.feature1':   { zh: '<strong>8 大主题</strong>：动物、食物、颜色、数字、家庭成员、身体部位、学校用品、日常用品', en: '<strong>8 topics</strong>: Animals, Food, Colors, Numbers, Family, Body, School, Daily Items' },
+    'brick.feature1':   { zh: '<strong>8 大主题</strong>：动物、食物、身体、自然、颜色与形状、动作、学校、日用品', en: '<strong>8 topics</strong>: Animals, Food, Body, Nature, Colors & Shapes, Actions, School, Daily Items' },
     'brick.feature2':   { zh: '<strong>200+ 核心词汇</strong>：覆盖小学阶段常用英语单词，每个砖块都是英文 + 中文翻译', en: '<strong>200+ core words</strong>: covering common primary-school vocabulary. Every brick is English + Chinese' },
     'brick.feature3':   { zh: '<strong>真人发音</strong>：打碎砖块时自动朗读英语发音和美式口语例句，帮助建立正确的语音印象和语感', en: '<strong>Real pronunciation</strong>: speaks the English word and a natural American example sentence when you break a brick, building correct sound and sentence sense' },
     'brick.feature4':   { zh: '<strong>分数激励</strong>：打碎砖块获得分数，每关结束展示成绩，激励不断挑战', en: '<strong>Score rewards</strong>: earn points for each brick broken, with results shown at the end of every level to keep you going' },
